@@ -240,6 +240,82 @@ float calculateAngleQuadrent(float mouseX, float mouseY, float row_user, float c
 }
 
 
+bool eventHandler(SDL_Event* event,float* mouseX, float* mouseY, image_representation* default_player){
+	bool quit = false;
+
+            if (event->type == SDL_EVENT_QUIT) {
+
+                quit = true;
+
+            }
+            else {
+
+                if (event->type == SDL_EVENT_MOUSE_MOTION) {
+
+                    uint32_t buttons = SDL_GetMouseState(mouseX, mouseY);
+
+                }
+
+                if (event->type == SDL_EVENT_KEY_DOWN) {
+                    //every time that we update the images staring rendering positino, we are also going to have to update its center
+
+                    if (event->key.key == SDLK_UP) {
+
+                        default_player->m_start.m_row -= 2;
+
+                        default_player->m_center.m_row -= 2;
+
+                    }
+                    if (event->key.key == SDLK_DOWN) {
+
+                        default_player->m_start.m_row += 2;
+
+                        default_player->m_center.m_row += 2;
+
+                    }
+                    if (event->key.key == SDLK_LEFT) {
+
+                        default_player->m_start.m_column -= 2;
+
+                        default_player->m_center.m_column -= 2;
+
+                    }
+                    if (event->key.key == SDLK_RIGHT) {
+
+                        default_player->m_start.m_column += 2;
+
+                        default_player->m_center.m_column += 2;
+
+                    }
+
+
+                }
+
+}
+         default_player->m_angle = calculateAngleQuadrent(*(mouseX), *(mouseY), default_player->m_center.m_row, default_player->m_center.m_column);
+
+	return quit;
+
+}
+
+
+void rendering(SDL_Renderer* renderer, image_representation* default_player){
+
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+	SDL_RenderClear(renderer);
+
+        render_with_rotation(renderer, default_player);
+
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+
+	SDL_RenderPoint(renderer, default_player->m_center.m_column, default_player->m_center.m_row);
+
+        SDL_RenderPresent(renderer);
+
+
+}
+
 int main(int argc, char* argv[]) {
 
     SDL_Window* window = NULL;
@@ -292,80 +368,19 @@ int main(int argc, char* argv[]) {
 
         while (SDL_PollEvent(&event)) {
 
-            if (event.type == SDL_EVENT_QUIT) {
-
-                quit = true;
-
-            }
-            else {
-
-                if (event.type == SDL_EVENT_MOUSE_MOTION) {
-
-                    uint32_t buttons = SDL_GetMouseState(&mouseX, &mouseY);
-
-                }
-
-                if (event.type == SDL_EVENT_KEY_DOWN) {
-                    //every time that we update the images staring rendering positino, we are also going to have to update its center
-
-                    if (event.key.key == SDLK_UP) {
-
-                        default_player.m_start.m_row -= 2;
-
-                        default_player.m_center.m_row -= 2;
-
-                    }
-                    if (event.key.key == SDLK_DOWN) {
-
-                        default_player.m_start.m_row += 2;
-
-                        default_player.m_center.m_row += 2;
-
-                    }
-                    if (event.key.key == SDLK_LEFT) {
-
-                        default_player.m_start.m_column -= 2;
-
-                        default_player.m_center.m_column -= 2;
-
-                    }
-                    if (event.key.key == SDLK_RIGHT) {
-
-                        default_player.m_start.m_column += 2;
-
-                        default_player.m_center.m_column += 2;
-
-                    }
-
-
-                }
-
-
-                default_player.m_angle = calculateAngleQuadrent(mouseX, mouseY, default_player.m_center.m_row, default_player.m_center.m_column);
-		printf("angle of the player: %f\n", default_player.m_angle);
-		printf("the center of the player: x position: %f  --  y position: %f\n\n\n", default_player.m_center.m_column, default_player.m_center.m_row);
+		quit = eventHandler(&event, &mouseX, &mouseY, &default_player);
 
             }
 
 
-SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderClear(renderer);
-
-        render_with_rotation(renderer, &default_player);
-
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderPoint(renderer, default_player.m_center.m_column, default_player.m_center.m_row);
-
-        SDL_RenderPresent(renderer);
-
-
+		rendering(renderer, &default_player);
 
         }
 
-    }
+
         destroyImageRepresentation(&default_player);
 
         closeRendererWindow(&renderer, &window);
 
         return 0;
-    }
+}
