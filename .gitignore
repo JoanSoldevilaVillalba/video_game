@@ -3,3 +3,5 @@
 .vscode/
 .DS_Store
 external_libraries/
+docs.txt
+code_tests_lazyfoo/
