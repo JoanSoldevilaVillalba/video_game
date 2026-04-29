@@ -1,0 +1,4 @@
+Dins d'aquest text explicarem errors i comentaris sobre el nostre codi
+
+comanda per poder compilar el codi:
+gcc -g render.c -o binary_render_c -I../vendored/SDL/include -L../vendored/SDL/build -lSDL3 -I../SDL_image/include/SDL3_image -L../SDL_image/build -lSDL3_image
