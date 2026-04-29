@@ -43,3 +43,7 @@ perf (linux tool that allows us to profile our program)
 
 
 The main goal is to be able to use this tools in an efficient way to enhance my capabilities as a programmer and as a software engineer.
+
+
+This project is also only possible thanks to the sdl3 tutorials of Lazyfoo, they offer greate programming tutorials specialy for those who want to write code right away.
+
