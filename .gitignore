@@ -1,4 +1,5 @@
 *.o
+*.out
 .vscode/
 .DS_Store
 external_libraries/

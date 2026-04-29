@@ -141,24 +141,7 @@ void render(SDL_Renderer* renderer, image_representation* image_file) {
     SDL_RenderTexture(renderer, image_file->m_texture, NULL, &destinationRect);
 
 }
-/*
-void render(SDL_Renderer* renderer, image_representation* image_file){
 
-        SDL_FRect destinationRect;
-
-        destinationRect.x = image_file->m_start.m_column;
-
-        destinationRect.y = image_file->m_start.m_row;
-
-        destinationRect.h = image_file->m_dimensions.m_row;
-
-        destinationRect.w = image_file->m_dimensions.m_column;
-
-        SDL_RenderTextureRotated(renderer, image_file->m_texture,NULL, &destinationRect, degrees, image_file->m_center);
-
-
-
-}*/
 void destroyImageRepresentation(image_representation* image_file) {
 
     if (image_file != NULL) {
@@ -213,7 +196,7 @@ void closeRendererWindow(SDL_Renderer** renderer, SDL_Window** window) {
 
 }
 
-float calculateAngleQuadrent(float mouseX, float mouseY, float row_user, float column_user) {
+float calculateAngleQuadrent(float mouseX, float mouseY, float row_user, float column_user){
 
     float angle_final = 0.0f;
 
@@ -221,24 +204,18 @@ float calculateAngleQuadrent(float mouseX, float mouseY, float row_user, float c
 
     float m_dif_y = (mouseY - row_user);
 
-    printf("diferencia de x (primer mouse i despres user): %f - %f = %f\n", mouseX, row_user, m_dif_x);
-
-    printf("diferencia de y (primer mouse i despres user): %f - %f = %f\n", mouseY, column_user, m_dif_y);
-
-
     float distance_between_points = sqrtf(m_dif_x * m_dif_x + m_dif_y * m_dif_y);
-printf("distance between points: %f\n", distance_between_points);
 
+    angle_final = atan2f(m_dif_y,m_dif_x);
 
-	angle_final = atan2f(m_dif_y,m_dif_x);
-	angle_final = angle_final * (180.0f / M_PI);
-	if(angle_final<0){
+    angle_final = angle_final * (180.0f / M_PI);
+
+    if(angle_final<0){
 
 		angle_final+=360.0f;
 
-	}
+    }
 
-	printf("angle final retornat: %f\n\n\n", angle_final);
     return angle_final;
 
 }
@@ -354,14 +331,11 @@ int main(int argc, char* argv[]) {
 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
-        // Draw your player image
         render(renderer, &default_player);
 
-        // Draw a RED pixel at the player's center point
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         SDL_RenderPoint(renderer, default_player.m_center.m_column, default_player.m_center.m_row);
 
-        // Show the result
         SDL_RenderPresent(renderer);
 
 

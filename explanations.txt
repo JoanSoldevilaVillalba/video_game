@@ -1,4 +1,13 @@
 Dins d'aquest text explicarem errors i comentaris sobre el nostre codi
 
 comanda per poder compilar el codi:
-gcc -g render.c -o binary_render_c -I../vendored/SDL/include -L../vendored/SDL/build -lSDL3 -I../SDL_image/include/SDL3_image -L../SDL_image/build -lSDL3_image
+
+compile command, indicating where the declarations of the sdl variables/functions, we are also indifcating that the compiler needs to look somwhere else to be able to find the math.h implementaion code using the -lm flag
+
+gcc -g razor_temporal.c -o razor_temporal.out -I../external_libraries/SDL/include -I../external_libraries/SDL_image/include -L../external_libraries/SDL/build -L../external_libraries/SDL_image/build -lSDL3 -lSDL3_image -lm
+
+
+the following linux terminal command is used to indicate where the dynamic libraries are that sdl uses to be able to execute our code, the operating system at the beginning does not know where to look, we need to tell it where it has to look.keep in mind that for each session that we create, this command needs to executed just once (but every session).
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/projectesMeu/programming/video_game/external_libraries/SDL/build:~/projectesMeu/programming/video_game/external_libraries/SDL_image/build
+
