@@ -1,0 +1,30 @@
+
+								 ---- Protocol for communication between client game engine and server ----
+								 --------------------------------------------------------------------------
+
+ In order to make an online game, cross platform communication is needed. This communication between server and client is going to be needed for two main actions:
+
+ - sending a petition to the server to create a game (private or public) 
+
+ - trying to connect to an already created game (private)
+
+ - asking the server for any available games (public)
+
+* what does private mean? -> private means that the creater of the game is able to select what players are allowed to enter his/her game
+
+* what does public mean? -> public means that the created of the game allows anyone to enter the game
+
+
+ UDP is goint to be used for fast transport layer in order to receive and send packages quickly, at least when the game is in session and the players are competing against each other.
+
+ We are also going to be using TCP only when the player is waiting for a game: the player has sent a petition to the server to create a game or to enter a game. In this case, we don't really care about 
+
+ the speed in which the packages arrieve in this case, we just want to make sure that the clients petition actually arrieves in order and that the server is also able to connect the client to a new game.
+
+
+
+ ---- Methode/Protocol to create a game ----
+
+ 
+
+
