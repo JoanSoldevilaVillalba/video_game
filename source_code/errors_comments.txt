@@ -1,7 +1,0 @@
-we first had to "prepare" the enviorment. To be able to use external libraries, these external libraries have cmake files/CMakefiles.txt that contain a set of commands to check if our enviorment is able to execute
-the code of the external library: it checks computer architecutre, drivers, operating system, what compiler we are using... and after cheking everyting it creates a separete file that conatins the information that the compiler needs to be able to build the exectubale of the external library.
-After that, we are able to compiler oru main.c, but we have a new problem, i am guessing that the external library is using some type of dynamic library, and the operating system was not able to locate this library.
-to fix this we just need to tell the operating system where the file is that contains the code. we use LD_LIBRARY_PATH
-
-
-SDL_renderer is just the manager of the information, it is the manager of the GPU, it moves things into the gpu buffer. SDL_Texture is the image data that is stored in the GPU
