@@ -1,15 +1,27 @@
- ---- High-Performance Online 1v1 Game in C Using SDL and TCP/UDP Sockets ----
- -----------------------------------------------------------------------------
+							 ---- High-Performance Online 1v1 Game in C Using SDL and TCP/UDP Sockets ----
+							 -----------------------------------------------------------------------------
 
 
- This is a learning project, where the main focus is not making a really fun videogame that everyone can enjoy,
+									 ---- Brief description of the video game ----
+									 ---------------------------------------------
+
+
+ A high-performance multiplayer video game written in C using SDL.
+ The game uses a client–server architecture with socket programming
+ to support real-time online 1v1 matches across multiple platforms.
+
+
+											 ---- Goals ----
+											 ---------------
+
+This is a learning project, where the main focus is not making a really fun videogame that everyone can enjoy,
  but rather a learning experience on being proficient in c and have a somewhat understanding on how games are made at a fundemental level.
 
  I understand that most games are written in c++, due to being in that interface between abstraction and system level aplication  which is what it makes a great language for making videogames and other 
  softwares that require performance wiht some abstraction. I have decided to use c, the main reason being i don't want abstraction, i want to understand what is happening all of the time even if it makes 
  the process of developing a videogame more frustrating and hard.
 
- The main focus of this game will be the game engine (client and server side game engine), which will have a combination of c and SDL, specificly SDL3.
+ The main focus of this game will be the game engine (client and server side game engine), which will have a combination of c, sockets and SDL (SDL3).
  For those who don't know, Simple DirectMediaLayer(SDL) is an open source library that gives you access and control over low-level perphierals/systems such as 
  mouse, joystick, keyboard, graphics ... by using OpenGL, Vulkan or Metal. This community driven open source project is natively written in c and abstracts low-level systems 
  for software developers who want to write high-performace games and multimedia applications.
