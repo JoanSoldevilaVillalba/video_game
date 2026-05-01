@@ -253,6 +253,8 @@ bool eventHandler(SDL_Event* event,float* mouseX, float* mouseY, image_represent
 			*(mouseX) = event->motion.x;
 			*(mouseY) = event->motion.y;
 			movement = true;
+
+		//in here we are going to have to check if  we are clicking the mouse, because now we are going to do the animations for punching
                 }else if (event->type == SDL_EVENT_KEY_DOWN) {
 
 			switch(event->key.key){
