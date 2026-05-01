@@ -8,6 +8,11 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+void parse_received_data(char*r_buffer, ssize_t size_buffer,char* s_buffer ){
+//both bufferes have the same size
+
+}
+
 int bind_socket(int server_fd, struct sockaddr_in* address, int port){
 
 	bool quit = false;
@@ -81,4 +86,34 @@ return 3;
 }
 //we have now implemented the logic for creating a socket and binding it to a usbale port.
 
+listen(server_file_descritpor,2); //we are only allowing 4 people at once to enter the queue
+
+while(1){
+
+new_socket = accept(server_file_descriptor, (struct sockaddr*)&address,(socklen_t*)&addrlen);
+
+if(new_socket<0){
+
+printf("something went wrong, we were not able to create a socket or assigna file descriptor");
+
+exit(EXIT_FAILURE);
+
 }
+//new_socket is just a file descriptor of a new socket that we have created as someone has just tried to eestablish a connection with us: SOCK_STREAM
+//we have accepted
+//the client always has to send information, it is going to be a non-memory server.
+char receive_buffer[1024];
+char send_buffer[1024];
+ssize_t bytes_received = recv(new_socket, receive_buffer, sizeof(receive_buffer), 0);
+if(bytes_received<0){
+printf("Error, for some reason there was an error with receiving the data from the client\n");
+return 4;
+}
+
+parse_received_data(receive_buffer, bytes_received, send_buffer);
+
+close(new_socket);
+
+
+}
+close(server_file_descriptor);
