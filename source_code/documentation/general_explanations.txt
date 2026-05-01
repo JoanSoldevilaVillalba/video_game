@@ -1,0 +1,16 @@
+								---- General Documentation of the video game ----
+                                                                -------------------------------------------------
+
+ 
+										 --- Code division ----
+										 ----------------------
+
+ 
+ source_code/
+	- main.c
+	- initilize.c
+	- initilize.h
+	- server_folder/
+		-first_server.c
+
+
