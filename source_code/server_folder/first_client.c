@@ -52,5 +52,6 @@ return 67;
 }
 printf("message was receives with succes\n");
 
+close(client_file_descriptor);
 return 0;
 }
