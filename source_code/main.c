@@ -1,6 +1,6 @@
 #include "initilize.h"
 
-#include "main_loop.h"
+#include "loop_logic.h"
 
 int main(int argc, char* argv[]) {
 

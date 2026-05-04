@@ -1,4 +1,4 @@
-#include "main_loop.h"
+#include "loop_logic.h"
 
 void rendering(SDL_Renderer* renderer, image_representation* default_player){
 
@@ -64,7 +64,7 @@ bool eventHandler(SDL_Event* event,float* mouseX, float* mouseY, image_represent
 
                                 case SDLK_UP:
 
-                                        default_player->m_start.m_row -=2;
+                                        default_player->m_start.m_row -=1;
 
                                         movement = true;
 
@@ -72,21 +72,21 @@ bool eventHandler(SDL_Event* event,float* mouseX, float* mouseY, image_represent
 
                                 case SDLK_DOWN:
 
-                                        default_player->m_start.m_row +=2;
+                                        default_player->m_start.m_row +=1;
 
                                         movement = true;
 
                                         break;
                                 case SDLK_LEFT:
 
-                                        default_player->m_start.m_column -=2;
+                                        default_player->m_start.m_column -=1;
 
                                         movement = true;
 
                                         break;
 
                                 case SDLK_RIGHT:
-                                        default_player->m_start.m_column +=2;
+                                        default_player->m_start.m_column +=1;
 
                                         movement = true;
 
