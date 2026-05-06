@@ -23,8 +23,19 @@ return bytes_read;
 }
 
 
+void printMenuSC(){
+
+	printf("Menu for Server communication\n");
+	printf("1. Ask server for number of active players");
+	printf("2. Ask server for all players names");
+	printf("3. Message someone specificly");
+	printf("4. Ask server for your incoming messages");
+	printf("5. Create/change your name\n");
+	printf("6. Quit server communication\n");
+}
+
 void handleServerCommunication(int server_port){
-	char buffer_send[1024] = "HELLO";
+	char buffer_send[1024];
 	char buffer_receive[1024];
 	struct sockaddr_in server_address;
 	int bytes_receive = 0;
@@ -34,18 +45,26 @@ void handleServerCommunication(int server_port){
 	int client_file_descriptor = 0;
 
 	setupConnection(&client_file_descriptor, &server_address, server_port);
+	printMenuSC();
+	while(!quit){
+		printf("Enter option: \n");
+		scanf("%d", &option);
+		buffer_send[0] = option + '0';
+		bytes_receive = send_data_to_server(buffer_receive, buffer_send , client_file_descriptor);
+		printf("Number of bytes received from server: %d\n", bytes_receive);
+		printf("Servers resposne: \n%s",buffer_receive);
+		if(option==6){
 
-	bytes_receive = send_data_to_server(buffer_receive, buffer_send, client_file_descriptor);
-	printf("we have received %d bytes\n", bytes_receive);
-	printf("the server responded with the following: %s\n", buffer_receive);
-	close(client_file_descriptor);
+			close(client_file_descriptor);
+			quit = false;
+
+		}
+
+	}
+
 }
 int main(){
-
-
 printf("This is the client interface\n");
 int port = 8080;
 handleServerCommunication(port);
-
-
 }
