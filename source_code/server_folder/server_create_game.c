@@ -37,9 +37,6 @@ return return_value;
 
 
 void handle_client(int temporary_fd){
-//this function will be called everytime that the server has to handle a client. We can probabnly use threds instead of functions here, because it is important to be able to execute different clients symotanouilsy
-//keep in mind that this is just for tcp, when handeling udp packages, meaning when we are in game and have to send ifnormatoin,  we are going to use a different methode.
-//we are just going to need a file descriptor
 printf("\nSERVER CONNECTED TO CLIENT WITH FD: %d\n", new_socket);
 if(temporary_fd<0){
 
@@ -49,10 +46,26 @@ exit(EXIT_FAILURE);
 
 }
 char buffer_receive[1024];
-char buffer_send[1024] = "HELLO THIS IS THE SERVER";
+char buffer_send[1024];
 int bytes_received = read(new_socket, buffer_receive, 1023);
 printf("CLIENT NUMBER %d HAS SENT THE FOLLOWING MESSAGE: %s\n\n",new_socket, buffer_receive);
-//now we are going to have to interpret what it wants:
+int result = buffer_receive[0] - '0';
+switch(result){
+//when the server receives the result, depending on what the client has sent, we are going to call a function, that will load up the char* that we will send to the client
+case :
+
+break;
+
+case :
+
+break;
+
+case :
+
+break;
+
+
+}
 send(new_socket,buffer_send, strlen(buffer_send),0);
 close(new_socket);
 
