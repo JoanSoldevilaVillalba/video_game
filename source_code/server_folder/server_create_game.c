@@ -7,12 +7,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <stdbool.h>
+//for now we are juist going to be using port number 8080
 
-void parse_received_data(char*r_buffer, ssize_t size_buffer,char* s_buffer ){
-
-}
-
-int bind_socket(int server_fd, struct sockaddr_in* address, int port){
+/*int bind_socket(int server_fd, struct sockaddr_in* address, int port){
 
 	bool quit = false;
 	int return_value = 0;
@@ -34,7 +31,9 @@ int bind_socket(int server_fd, struct sockaddr_in* address, int port){
 		}
 	}
 return return_value;
-}
+}*/
+
+
 
 int main(int argc, char const* argv[])
 {
@@ -48,8 +47,8 @@ int opt = 1;
 int port_number =8080;
 
 socklen_t addrlen = sizeof(address);
-char buffer[1024] = {0};
-char* hello = "Hello from server";
+char buffer_receive[1024];
+char buffer_send[1024] = "HELLO FROM SERVER";
 
 server_file_descriptor = socket(AF_INET, SOCK_STREAM,0);
 if(server_file_descriptor<0){
@@ -68,19 +67,22 @@ address.sin_family = AF_INET;
 address.sin_addr.s_addr = INADDR_ANY;
 address.sin_port = htons(port_number);
 
-int success_bind = bind_socket(server_file_descriptor, &address, port_number);
+if (bind(server_file_descriptor, (struct sockaddr*)&address,sizeof(address))< 0) {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
 
-if(success_bind == 1){
-printf("error, unable to find a usable address\n");
-return 3;
-}
 
-listen(server_file_descritpor,2); 
+printf("THIS IS THE SERVER\n THE SERVER HAS THE FOLLOWING INFORMATION\n");
+printf("SERVER FAMILY: %hd\n", address.sin_family);
+printf("SERVER PORT NUMBER: %hu\n",ntohs(address.sin_port));
+printf("\nTHE SERVER IS READY\n\n\n");
+
+listen(server_file_descriptor,2);
 
 while(1){
-
 new_socket = accept(server_file_descriptor, (struct sockaddr*)&address,(socklen_t*)&addrlen);
-
+printf("\nSERVER CONNECTED TO CLIENT WITH FD: %d\n", new_socket);
 if(new_socket<0){
 
 printf("something went wrong, we were not able to create a socket or assigna file descriptor");
@@ -88,18 +90,12 @@ printf("something went wrong, we were not able to create a socket or assigna fil
 exit(EXIT_FAILURE);
 
 }
-char receive_buffer[1024];
-char send_buffer[1024];
-ssize_t bytes_received = recv(new_socket, receive_buffer, sizeof(receive_buffer), 0);
-if(bytes_received<0){
-printf("Error, for some reason there was an error with receiving the data from the client\n");
-return 4;
-}
-
-parse_received_data(receive_buffer, bytes_received, send_buffer);
-
+int bytes_received = read(new_socket, buffer_receive, 1023);
+printf("CLIENT NUMBER %d HAS SENT THE FOLLOWING MESSAGE: %s\n\n",new_socket, buffer_receive);
+send(new_socket,buffer_send, strlen(buffer_send),0);
 close(new_socket);
 
 
 }
 close(server_file_descriptor);
+}
