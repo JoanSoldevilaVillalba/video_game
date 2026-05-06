@@ -1,8 +1,9 @@
 #include "initilize.h"
-
+#include "menu.h"
 #include "loop_logic.h"
+#include "server_folder/client_create_game.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]){
 
     SDL_Window* window = NULL;
 
@@ -14,7 +15,13 @@ int main(int argc, char* argv[]) {
 
     image_representation player_punch_right[8];
 
+    image_representation* current_image = NULL;
+
     int exit_code = 0;
+
+    exit_code = init(&window, &renderer);
+
+	bool quit = false;
 
     const char* image_path = "../videoGameImatges/default.png";
 
@@ -28,16 +35,7 @@ int main(int argc, char* argv[]) {
     "../videoGameImatges/punch_right/sixth.png","../videoGameImatges/punch_right/seventh.png","../videoGameImatges/punch_right/vuit.png"
     };
 
-    exit_code = init(&window, &renderer);
-
-    if (exit_code != 0) {
-
-        SDL_Log("error");
-
-        return exit_code;
-
-    }
-
+	//in the following lines of code  we are preparing all images that are going to be used in game
     exit_code = loadMedia(&default_player, image_path, renderer, 0.0f, 0.0f);
 
     for (int i =0;i<8;i++){
@@ -51,44 +49,37 @@ int main(int argc, char* argv[]) {
 	loadMedia(&player_punch_right[i], image_path_punch_right[i], renderer, 0.0f, 0.0f);
 
     }
+while(!quit){
+
+    int option = menuCallFunction();
+    switch(option){
+
+	case 1:
+		handleServerCommunication(8080);
+		break;
+
+	case 2:
+		handleGameLoop(renderer, &default_player);
+		break;
+
+	case 3:
+	//	showCharactersMenu();
+		break;
+
+	case 4:
+		quit = true;
+		break;
 
 
-    if (exit_code != 0) {
+	default:
+		printf("invalid\n");
+		break;
 
-        SDL_Log("error");
-
-        return exit_code;
-
-    }
+	}
 
 
-    bool quit = false;
 
-    SDL_Event event;
-
-    SDL_zero(event);
-
-    image_representation* current_image = NULL;
-
-    int counter_image = 0;
-
-    float mouseX = 0.0f;
-
-    float mouseY = 0.0f;
-
-
-    while (!quit) {
-
-        while (SDL_PollEvent(&event)){
-
-		quit = eventHandler(&event, &mouseX, &mouseY, &default_player);
-        }
-
-		rendering(renderer, &default_player);
-
-    }
-
-
+}
         destroyImageRepresentation(&default_player);
 
         closeRendererWindow(&renderer, &window);

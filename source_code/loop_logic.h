@@ -11,3 +11,4 @@ float calculateAngleQuadrent(float mouseX, float mouseY, float row_user, float c
 
 bool eventHandler(SDL_Event* event,float* mouseX, float* mouseY, image_representation* default_player);
 
+void handleGameLoop(SDL_Renderer* renderer, image_representation* default_player);

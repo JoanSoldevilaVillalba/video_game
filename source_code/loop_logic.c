@@ -114,3 +114,40 @@ bool eventHandler(SDL_Event* event,float* mouseX, float* mouseY, image_represent
         return quit;
 
 }
+
+
+void handleGameLoop(SDL_Renderer* renderer, image_representation* default_player){
+
+
+ bool quit = false;
+
+    SDL_Event event;
+
+    SDL_zero(event);
+
+    image_representation* current_image = NULL;
+
+    int counter_image = 0;
+
+    float mouseX = 0.0f;
+
+    float mouseY = 0.0f;
+
+
+    while (!quit) {
+
+        while (SDL_PollEvent(&event)){
+
+                quit = eventHandler(&event, &mouseX, &mouseY, default_player);
+        }
+
+                rendering(renderer, default_player);
+
+    }
+
+
+//        destroyImageRepresentation(&default_player);
+
+  //      closeRendererWindow(&renderer, &window);
+
+}
