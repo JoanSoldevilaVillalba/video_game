@@ -22,31 +22,61 @@ char name[62];
 int game_id;
 }game_struct_players;
 
+
+
+/*
+for creating a game, we need to keep in mind the following:
+we should probably add more depth to the protocol to indicate what setp we are in for the specific type of message exchange we are doign with the client.
+
+for creating/entering a game: 1
+
+in this protocol:
+
+1 game was creatd but no second player, user is idle watiing for someone to enter the game.
+
+2 you have found an already created game
+
+3 no games found and not able to createe game do to maximum server handle size.
+
+
+*/
 char* create_game(int temporary_fd, char* buffer_receive, int counter, game_struct_players* game_list){
+	//when a game is inietilized for the first time, first_player attribute is givin to the player that creates the game.
+	//after that when someone wants to create the game or enter a game, the attribute that the player will occupy will be second_player
 
-	int i =0;
-
+	//when the lsit of games is initilized all attributyes are set to -1
+	int i = 0;
 	while(i<MAX_GAMES_SIZE){
 
-		if((game_list+i)->game_id==-1){
+		if((game_list+i)->game_id!=-1 && (game_list+i)->second_player==-1){
+
+			(game_list+i)->second_player = temporary_fd;
+			return "1|2|you have succesfuly entered a game";
+
+		}else if((game_list+i)->game_id==-1){
 
 			(game_list+i)->game_id = i;
-			(game_list+i)->first_player = temporary_fd;
-			return "1|game is being created";
+			(game_list+i)->first_player=temporary_fd;
+			//the game was succesfully added because game_list was passed as a pointer
+			return "1|1|you have succesfuly created a game";
 
 		}else{
 
 			i++;
 		}
 
+
 	}
 
-	return "0|max capacity of games arrived";
+	//we need to keeep in mind that after creating a game/entering the game, maybe the player needs to wait for a while if the game is crated and there is no second player, we need a way to communicate this.
+
+	return "1|3|All games are occupied, try again later";
 
 }
 
 
 void handle_client(int temporary_fd, game_struct_players* game_list){
+
 
 	int client_game_id = -1;
 
@@ -102,31 +132,18 @@ void handle_client(int temporary_fd, game_struct_players* game_list){
 
 
 			case 1:
+
+				//one indicates that the user wants to create/enter a game. Before creating a game, we are going to have to go through all game_list games, to see if a game has already been creatred and the created is waiting for someone to enter the game.
+				temporary_char_pointer = create_game(temporary_fd, buffer_receive, counter, game_list);
+
+				break;
+
 			case 2:
-			case 3:
-			case 4:
-
-				temporary_char_pointer = "The server is responding without protocol";
-				break;
-			case 5:
-
-				temporary_char_pointer = "This is the server, we have received your message";
-
-				break;
-
-			case 6:
-
-				temporary_char_pointer = create_game(temporary_fd,  buffer_receive, counter,  game_list);
-
-				break;
-
-			case 7:
-
-				temporary_char_pointer = "This is the server speaking, goodbye";
 
 				quit = true;
 
 				break;
+
 			default:
 
 				temporary_char_pointer ="Error, invalid option was sent over";
@@ -191,6 +208,8 @@ int main()
 	int port_number = 8080;
 
 
+	//the server needs a way to be able to represent games, in this case we are using a strucc: both players(player are integers, indicating the file descriptro for the socket connection), game name aswell as game id (for now we ar ejust going to use game name)
+
 	game_struct_players game_list[MAX_GAMES_SIZE];
 
 	socklen_t addrlen = sizeof(address);
@@ -241,6 +260,7 @@ int main()
 	listen(server_file_descriptor,2);
 
 	while(1){
+
 
 		new_socket = accept(server_file_descriptor, (struct sockaddr*)&address,(socklen_t*)&addrlen);
 
