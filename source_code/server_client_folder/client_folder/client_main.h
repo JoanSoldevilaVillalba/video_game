@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include "client_send_data.h"
+#include <errno.h>
+#include <sys/time.h>
 
 #define BUFFER_SIZE 64
 
