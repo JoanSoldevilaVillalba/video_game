@@ -141,6 +141,17 @@ void* handle_client(void* arg){
 
 						//created game
 
+						//in this particualr case, this thread is going to be put to sleep. We first need to indicate to the client that a game was created
+
+						temporary_char_pointer="game created, waiting for second player";
+
+						for(int i =0;temporary_char_pointer[i]!='\0';i++){
+
+
+							buffer_send[counter++] = temporary_char_pointer[i];
+
+						}
+
 						pthread_mutex_lock(&mutex_game_list);
 
 						while((((struct_client*)arg)->pointer_list_game + game_index)->second_player == -1){
