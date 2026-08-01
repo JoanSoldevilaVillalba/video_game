@@ -122,11 +122,7 @@ void* handle_client(void* arg){
 
 		result = buffer_receive[0] - '0';
 
-		buffer_send[counter++] = result + '0';
-
-		buffer_send[counter++] = '|';
-
-		char* temporary_char_pointer;
+		char* temporary_char_pointer= NULL;
 
 		switch(result){
 
@@ -135,24 +131,16 @@ void* handle_client(void* arg){
 
 				temporary_char_pointer = create_game(((struct_client*)arg)->socket_fd, buffer_receive,&result_function,&game_index,((struct_client*)arg)->pointer_list_game);
 
-				if(result_function!=0){
-
 					if(result_function == 1){
 
-						//created game
+						temporary_char_pointer="1|1|game created, waiting for second player";
 
-						//in this particualr case, this thread is going to be put to sleep. We first need to indicate to the client that a game was created
+						strcpy(buffer_send, temporary_char_pointer);
 
-						temporary_char_pointer="game created, waiting for second player";
-
-						for(int i =0;temporary_char_pointer[i]!='\0';i++){
-
-
-							buffer_send[counter++] = temporary_char_pointer[i];
-
-						}
+						bytes_sent = send_all(((struct_client*)arg)->socket_fd, buffer_send, BUFFER_SIZE);
 
 						pthread_mutex_lock(&mutex_game_list);
+
 
 						while((((struct_client*)arg)->pointer_list_game + game_index)->second_player == -1){
 
@@ -164,36 +152,36 @@ void* handle_client(void* arg){
 
 						pthread_mutex_unlock(&mutex_game_list);
 
-					}else{
+						strcpy(buffer_send, "1|2|Second player joined, starting game");
 
-						//enterd a game
+				                send_all(client_data->socket_fd, buffer_send, BUFFER_SIZE);
+
+						continue;
 
 					}
 
-
-				}
 
 				break;
 
 			case 2:
 
+				temporary_char_pointer = "|1|user wants to quit game";
+
 				quit = true;
 
 				break;
 
-			default:
+		}
 
-				temporary_char_pointer ="Error, invalid option was sent over";
+		if(temporary_char_pointer != NULL){
 
-				break;
+			strcpy(buffer_send, temporary_char_pointer);
+
+			send_all(client_data->socket_fd, buffer_send, BUFFER_SIZE);
+
 
 		}
 
-		for(int i =0;temporary_char_pointer[i]!='\0';i++){
-
-			buffer_send[counter++] = temporary_char_pointer[i];
-
-		}
 
 
 		bytes_sent = send_all(((struct_client*)arg)->socket_fd, buffer_send, BUFFER_SIZE);
@@ -201,6 +189,11 @@ void* handle_client(void* arg){
 	}
 
 	close(((struct_client*)arg)->socket_fd);
+
+	free((struct_client*)arg);
+
+	return NULL;
+
 
 }
 
@@ -243,14 +236,6 @@ int main()
 
 	pthread_mutex_init(&mutex_game_list,NULL);
 
-/*
-	if(server_file_descriptor<0){
-
-		printf("Error, the operating system was not able to assign us a file descriptor for the tcp ip socket that we wanted to create\n");
-
-		return 1;
-	}
-*/
 	if(setsockopt(server_file_descriptor, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))){
 
 		printf("for some reason there was an error with configuring the socket\n");

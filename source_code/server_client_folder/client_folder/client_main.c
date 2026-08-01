@@ -15,7 +15,7 @@ typedef enum{
 
 FINDING_GAME = 1,
 
-QUIT = 2
+QUIT = 2,
 
 ENTERING_GAME = 3
 
@@ -51,39 +51,17 @@ void printMenuSC(){
 
 }
 
-void handleoption(int option, int file_descriptor, int* first_number, int* second_number){
-
-	buffer_send[counter++] = option + '0';
-
-	buffer_send[counter++] = '|';
-
-	for(int i = 0;temporary_buffer[i]!='\0';i++){
-
-		buffer_send[counter++]=temporary_buffer[i];
-
-	}
-
-
-	int bytes_receive = send_data_to_server(buffer_receive, buffer_send , file_descriptor);
-	counter = 0 ;
-	*(first_number) = buffer_receive[counter++] - '0';
-
-	*(second_number) = buffer_receive[++couneter] - '0';
-
-	return return_state;
-}
-
 void handleServerCommunication(int server_port){
 
-	char buffer_send[BUFFER_SIZE]={0}, buffer_receive[BUFFER_SIZE]={0};
-
-	char* temporary_buffer;
+	char buffer_send[BUFFER_SIZE]={0}, buffer_receive[BUFFER_SIZE]={0}; char* temporary_buffer =NULL;
 
 	struct sockaddr_in server_address={0};
 
-	int bytes_receive = 0, bytes_send = 0, option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1;
+	int bytes_receive = 0, bytes_send = 0, option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1, temporal_length_recevied = 0;
 
         bool quit = false, communicate = true;
+
+
 
 	memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_send));
 
@@ -91,40 +69,44 @@ void handleServerCommunication(int server_port){
 
 	while(!quit){
 
-		printMenuSC();
 
-		scanf("%d", &option);
+		if (communicate){
 
-		switch(option){
+			printMenuSC();
 
-			case 1:
-				temporary_buffer="1|0|user wants to create/find game";
-				break;
+			scanf("%d", &option);
 
-			case 2:
-				temporary_buffer="2|0|user wants to quit game";
+			switch(option){
 
-				break;
+				case 1:
+					temporary_buffer="1|0|user wants to create/find game";
+					break;
 
-			//we will leave case three for later, not know
+				case 2:
+					temporary_buffer="2|0|user wants to quit game";
 
-//int temporary_fd, const char*  buffer, int length
+					break;
+				default:
+
+					printf("Error, invalid number\n");
+
+					continue;
+
 
 		}
-		//the message is now prepared, now we do the following:
 
-	        for(int i = 0;temporary_buffer[i]!='\0';i++){
+		strcpy(buffer_send, temporary_buffer);
 
-	                buffer_send[i]=temporary_buffer[i];
+		temporal_length_recevied = send_data_to_server(buffer_receive,buffer_send , client_file_descriptor);
 
-	        }
-
-
-		//ara nomes cal enviar les dades, despres d'enviar les dades enbtrem dins del switch case statment que nosaltres hem definit
-
-		int temporal_length_received = send_all(client_file_descriptor, buffer_send, BUFFER_SIZE); //for now we will put 64, but this is not good, we will change later.
+		}
 
 		int counter  = 0;
+
+		first_number = buffer_receive[counter++] - '0';
+		counter++;
+		second_number = buffer_receive[counter++] - '0';
+		++counter;
 
 		switch(first_number){
 
@@ -132,13 +114,15 @@ void handleServerCommunication(int server_port){
 
 				switch(second_number){
 
-					//the user does not have to know that there is a difference between creaing a game or finding a game, we can merge them
-
 					case GAME_FOUND:
+
+						first_number = ENTERING_GAME;
+
+						communicate = false;
 
 						break;
 
-					case SECOND_LAYER::WAITING_FOR_GAME:
+					case WAITING_FOR_GAME:
 
 						char wait_buffer[BUFFER_SIZE] = {0};
 
@@ -150,68 +134,73 @@ void handleServerCommunication(int server_port){
 
 						timeout.tv_usec = 0;
 
-						setsockopt(socket_fd, SOLSOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+						setsockopt(client_file_descriptor, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
-						/*
-						in this case, we have establisehd connection, the user enterd 1 to be able to get into a game or create a game so that someone else can join in.
-						After sending the corresponing info to the server inorder to find/create a game, the server checks the game list. if a game has already been created by someone else, we can direcly go into the game. Lets first do this, the user wanted to get into the game and the server was able to find one directly
-						*/
-
-						int length_recevied = read_all(client_file_descritpor, wait_buffer, int length);
-
+						int length_recevied = read_all(client_file_descriptor, wait_buffer, BUFFER_SIZE-1);
 
 						timeout.tv_sec = 0;
                                                 timeout.tv_usec = 0;
 
-                                                setsockopt(socket_Fd, SOLSOCKET; SO_RCVTIMEO, &timeout, sizeof(timeout));
-
-						//after receving the info, lets say that we got into a game, 
+                                                setsockopt(client_file_descriptor, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
 						if(length_recevied<0){
 
-							if(errno == EWOULDBLOCK || errno = EAGAIN){
+							if(errno == EWOULDBLOCK || errno == EAGAIN){
 
 
 							printf("Error, there was a timeout\n");
 
 							}
 
-							exit(0);
+							first_number = FINDING_GAME;
+
+							second_number = GAME_NOT_FOUND;
 
 						}else{
 
-
-						//this means that we have found a game
 							communicate = false;
 
+							//in case the server was able to find a game for us, now we can switch context
+							first_number = FINDING_GAME; //we are switching context to ENTERING_GAME, before switching to ENTERING_GAME; we are firstr going into 
 
-						}
+							second_number = GAME_FOUND;
+
+							}
 
 						break;
 
 
-					case SECOND_LAYER::GAME_NOT_FOUND:
+					case GAME_NOT_FOUND:
 
-						//we are not able to find a game, the player is going to have to quit and try later
+						printf("A game was not found\n");
 
+						first_number = QUIT;
 
-						temporary_option = FIRST_LAYER::QUIT;
+						communicate = false;
+
 						break;
 
 
 				}
 
-			case FIRST_LAYER::QUIT:
+			break;
+
+			case QUIT:
+
+				printf("Quitting game....\n");
 
 				quit = true;
 
-				//this is just for quitting
+				break;
+
+			case ENTERING_GAME:
 
 
-			case FIRST_LAYER::ENTERING_GAME:
+				//we have not yet done this,we are going to have to do this later probably
+
+				break;
 
 
-				//this is when we enter the game
 
 		}
 
