@@ -86,6 +86,7 @@ game_struct_players* pointer_list_game;
 
 void* handle_client(void* arg){
 
+	pthread_detach(pthread_self());
 
 	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE];
 
@@ -277,6 +278,7 @@ int main()
 		new_client->pointer_list_game = game_list;
 
 		pthread_create(&thread_clients[counter_thread_client++], NULL, &handle_client,(void*)new_client );
+
 
 	}
 
