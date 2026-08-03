@@ -13,6 +13,6 @@ void setupConnection(int* client_file_descriptor,struct sockaddr_in* server_addr
 
 void printMenuSC();
 
-int handleoption(int option, int file_descriptor);
+// the folowing function was eliminated: int handleoption(int option, int file_descriptor);
 
 void handleServerCommunication(int server_port);
