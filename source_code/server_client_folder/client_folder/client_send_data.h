@@ -7,8 +7,8 @@
 #define BUFFER_SIZE 64
 
 
-int send_all(int temporary_fd, const char*  buffer, int length);
+size_t send_all(int temporary_fd, const char*  buffer, size_t length);
 
-int read_all(int temporary_fd, char buffer[], int length);
+size_t read_all(int temporary_fd, char buffer[], size_t length);
 
-int send_data_to_server(char* buffer_r,char* buffer_s , int client_file_descriptor);
+size_t send_data_to_server(char* buffer_r,char* buffer_s , int client_file_descriptor);

@@ -6,6 +6,6 @@
 #include <stdio.h>
 
 
-int read_all(int temporary_fd, char buffer[], int length);
+size_t read_all(int temporary_fd, char buffer[], size_t length);
 
-int send_all(int temporary_fd, const char*  buffer, int length);
+size_t send_all(int temporary_fd, const char*  buffer, size_t length);

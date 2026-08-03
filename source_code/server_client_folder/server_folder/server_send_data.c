@@ -1,79 +1,81 @@
 #include "server_send_data.h"
 
-int read_all(int temporary_fd, char buffer[], int length){
+size_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
-        int total_length  = 0;
+        ssize_t total_length  = 0;
 
-        int bytes_left = length;
+	size_t n = 0;
 
-        int n = 0;
+        while(length){
 
+                n = read(temporary_fd,buffer+total_length,legnth - total_length);
 
-        while(total_length<length){
-
-                n = read(temporary_fd,buffer+total_length,bytes_left);
-
-                if(n == -1){
+		if(n<0){
 
 
-                        printf("Error,the tcp connection was lost\n");
+			if(errno == EINTR)
+				continue;
 
-                        break;
+			return -1;
 
-                }
+		}
 
-                bytes_left-=n;
+		if(n == 0)
+			break;
 
                 total_length+=n;
 
         }
 
+	if(total_length<length){
 
-        if(n == -1){
+		buffer[total_length] = '\0';
 
-                return bytes_left;
+	}else{
 
-        }
+		buffer[length-1] = '\0';
+
+	}
 
 
-        buffer[total_length] = '\0';
-
-        return total_length;
+	return total_length;
 
 }
 
 
-int send_all(int temporary_fd, const char*  buffer, int length){
+size_t send_all(int temporary_fd, const char*  buffer, size_t length){
 
         int total_length  = 0;
 
-        int bytes_left = length;
-
-        int n = 0;
+        size_t n = 0;
 
 
         while(total_length<length){
 
-                n = send(temporary_fd,buffer+total_length,bytes_left,0);
+                n = send(temporary_fd,buffer+total_length,length - total_length,0);
 
-                if(n == -1){
+		if(n<0){
 
-                        break;
+			if(errno == EINTR){
 
-                }
+				continue;
 
-                bytes_left-=n;
+			}
+
+			return -1;
+
+		}
+
+               if(n == 0){
+
+			break;
+
+		}
 
                 total_length+=n;
 
         }
 
-
-        if(n == -1){
-
-                return bytes_left;
-
-        }
 
         return total_length;
 
