@@ -11,3 +11,19 @@ the following linux terminal command is used to indicate where the dynamic libra
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/projectesMeu/programming/video_game/external_libraries/SDL/build:~/projectesMeu/programming/video_game/external_libraries/SDL_image/build
 
+
+
+
+
+Explanations between using read/write and recv/send:
+
+
+Sockets are treated as file descriptors in unix systems, meaning using read and write is very similar to using recv and send.
+
+But there are two important differences:
+
+
+->When using the call write in your program, and for some reason the system crashes because we were trying to access some restricted memory, our process is going to crash (the operating system returns a SIGPIPE terminating our program).
+ In send(), using the MSG_NOSIGNAL flag, if an error occurs, the process does not terminate but ratther the operatring system returns an error.
+-> send and recv are mor socket specific system calls. They have an extra parameter that allows for better configuration, more well suited for socket programming rather than using something generic like write and read.
+

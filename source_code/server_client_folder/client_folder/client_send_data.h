@@ -1,8 +1,13 @@
 #pragma once
 
 
-#include <sys/socket.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+
 
 #define BUFFER_SIZE 64
 

@@ -1,105 +1,163 @@
-#include "client_send_data.h"
+#include "server_send_data.h"
 
-size_t send_all(int temporary_fd, const char*  buffer, size_t length){
+ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
-        size_t total_length  = 0;
+        ssize_t total_length  = 0;
 
-        size_t n = 0;
+	ssize_t n = 0;
+
+        while(total_length < length){
+
+                n = recv(temporary_fd,buffer+total_length,legnth - total_length, 0);
+
+		if(n<0){
+
+
+			if(errno == EINTR){
+				continue;
+			}
+			return -1;
+
+		}
+
+		if(n == 0){
+			break;
+		}
+                total_length+=n;
+
+        }
+
+	if(total_length<length){
+
+		buffer[total_length] = '\0';
+
+	}else{
+
+		buffer[length-1] = '\0';
+
+	}
+
+
+	return total_length;
+
+}
+
+
+size_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
+
+        ssize_t total_length  = 0;
+
+        ssize_t n = 0;
 
 
         while(total_length<length){
 
                 n = send(temporary_fd,buffer+total_length,length - total_length,0);
 
-                if(n < 0 ){
+		if(n<0){
 
 			if(errno == EINTR){
 
 				continue;
 
 			}
+
 			return -1;
 
+		}
 
-                }
-
-		if(n == 0){
+               if(n == 0){
 
 			break;
 
 		}
 
-
                 total_length+=n;
 
         }
+
 
         return total_length;
 
 }
+ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 
-size_t read_all(int temporary_fd, char buffer[], size_t length){
+	uint32_t net_len = htonl(payload_len);
 
-        int total_length = 0;
-
-        size_t n = 0;
-
-        while(total_length<length){
-
-                n = read(temporary_fd, buffer+total_length,length-total_length);
-
-                if(n < 0){
-
-			if(errno == EINTR){
-
-				continue;
-
-			}
-
-                        break;
-                }
+	size_t result = send_all(fd, (const char *)&net_len, sizeof(net_len));
 
 
-		if(n == 0){
+	if ( result != sizeof(net_len)) {
+        	return -1;
+	}
 
-			break;
+	result = send_all(fd, payload, payload_len);
 
-		}
+	if (result != (ssize_t)payload_len) {
+	        return -1;
+	}
+
+    return sizeof(net_len) + payload_len;
+}
 
 
-                total_length+=n;
+ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
-        }
+	//primer nomes cal llegir 4 bvytes, per averiguar lo llarg que es el mmissatge que  nosaltres volem rebre realment
 
+	uint32_t net_len = 0;
 
+	ssize_t header_bytes = 0;
 
-	if(total_length<length){
+	//we are implicilty casting net_len to be treated as a const char pointer. Because we are implicilty casting it, that means that the compiler is 
+	//going to have to convert the integer into a string
 
-        buffer[total_length] = '\0';
+	header_bytes = read_exact(fd, (const char*)&net_len, sizeof(net_len));//we first receive the first 4 bytes that contain the length of the actual message that we are trying to receive
 
-	}else{
+	if(header_bytes == 0){
 
-		buffer[total_length] == '\0';
+	//zero bytes where sent, we can exit
+		return header_bytes;
 
 	}
 
-        return total_length;
+	if(header_bytes <0){
+	//somehting bad happened
+	printf("Error, connection crashed\n");
 
-}
+	}
 
+	if(header_bytes< (ssize_t)sizeof(net_len)){
 
-size_t send_data_to_server(char* buffer_r,char* buffer_s , int client_file_descriptor){
+		printf("Error, we where not able to receive the 4 bytes containing the length of the message\n");
 
-        size_t bytes_sent = 0;
+		return -1;
 
-        size_t bytes_read = 0;
-
-        bytes_sent = send_all(client_file_descriptor, buffer_s,BUFFER_SIZE);
-
-
-        bytes_read =  read_all(client_file_descriptor,buffer_r, BUFFER_SIZE-1);
+	}
 
 
-        return bytes_read;
+	uint32_t payload_len = ntohl(net_len);
+
+	if((ssize_t)payload_len >= max_buf_len){
+
+		printf("Error the message that we want to receive is larger than the max length of the buffer\n");
+
+		return -1;
+
+	}
+
+
+	ssize_t payload_bytes = read_all(fd, buf,);
+
+	if(payload_bytes < (ssize_t)payload_len){
+
+		printf("Error, the number of bytes received from the actual messages is not the same as the first 4 byte number\n");
+
+		return -1;
+	}
+
+	buf[payload_len]='\0';
+
+	return (ssize_t)load_len;
 
 }

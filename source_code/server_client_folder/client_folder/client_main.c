@@ -63,7 +63,7 @@ void handleServerCommunication(int server_port){
 
 
 
-	memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_send));
+	memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
 
 	setupConnection(&client_file_descriptor, &server_address, server_port);
 
@@ -95,7 +95,7 @@ void handleServerCommunication(int server_port){
 
 		}
 
-		strcpy(buffer_send, temporary_buffer);
+		strncpy(buffer_send, temporary_buffer);
 
 		temporal_length_recevied = send_data_to_server(buffer_receive,buffer_send , client_file_descriptor);
 

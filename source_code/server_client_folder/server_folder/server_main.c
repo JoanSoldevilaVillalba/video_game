@@ -12,6 +12,8 @@
 
 #define MAX_GAMES_SIZE 2
 
+#define MAX_CLIENT_THREADS (MAX_GAMES_SIZE*2)
+
 
 typedef struct{
 
@@ -110,6 +112,7 @@ void* handle_client(void* arg){
 
 	while(!quit){
 
+
 		counter = 0;
 
 		int result_function = -1;
@@ -151,7 +154,7 @@ void* handle_client(void* arg){
 
 						temporary_char_pointer="1|1|game created, waiting for second player";
 
-						strcpy(buffer_send, temporary_char_pointer);
+						strncpy(buffer_send, temporary_char_pointer);
 
 						bytes_sent = send_all(client->socket_fd, buffer_send, BUFFER_SIZE);
 
@@ -168,7 +171,7 @@ void* handle_client(void* arg){
 
 						pthread_mutex_unlock(&mutex_game_list);
 
-						strcpy(buffer_send, "1|2|Second player joined, starting game");
+						strncpy(buffer_send, "1|2|Second player joined, starting game");
 
 				                send_all(client->socket_fd, buffer_send, BUFFER_SIZE);
 
@@ -191,7 +194,7 @@ void* handle_client(void* arg){
 
 		if(temporary_char_pointer != NULL){
 
-			strcpy(buffer_send, temporary_char_pointer);
+			strncpy(buffer_send, temporary_char_pointer);
 
 			send_all(client->socket_fd, buffer_send, BUFFER_SIZE);
 
@@ -239,7 +242,7 @@ int main()
 
 	struct sockaddr_in address;
 
-	memset(&address, sizeof(address));
+	memset(&address,0, sizeof(address));
 
 	pthread_t thread_clients[MAX_GAMES_SIZE*2];
 
@@ -293,6 +296,18 @@ int main()
 		printf("SERVER IS WAITING\n");
 
 		new_socket = accept(server_file_descriptor, (struct sockaddr*)&address,(socklen_t*)&addrlen);
+
+		if(counter_threads_client>=MAX_CLIENT_THREADS){
+
+			printf("Error, the server is full, unable to attend more clients\n");
+
+			close(new_socket);
+
+			continue;
+
+		}
+
+		counter_threads_clients++;
 
 		struct_client* new_client = malloc(sizeof(struct_client));
 
