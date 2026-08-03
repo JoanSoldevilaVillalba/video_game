@@ -86,11 +86,15 @@ game_struct_players* pointer_list_game;
 
 void* handle_client(void* arg){
 
+	struct_client* client = (struct_client*)arg;
+
 	pthread_detach(pthread_self());
 
 	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE];
 
-	int client_game_id = -1, bytes_received = 0, bytes_sent = 0, result = 0, counter = 0, quit = false;
+	int client_game_id = -1,result = 0, counter = 0, quit = false; 
+
+	size_t bytes_received = 0, bytes_sent = 0; 
 
 
 	while(!quit){
@@ -106,7 +110,7 @@ void* handle_client(void* arg){
 		memset(buffer_send,0,sizeof(buffer_send));
 
 
-		bytes_received = read_all(((struct_client*)arg)->socket_fd, buffer_receive, BUFFER_SIZE-1);
+		bytes_received = read_all(client->socket_fd, buffer_receive, BUFFER_SIZE-1);
 
 		if(bytes_received>0){
 
@@ -130,7 +134,7 @@ void* handle_client(void* arg){
 
 			case 1:
 
-				temporary_char_pointer = create_game(((struct_client*)arg)->socket_fd, buffer_receive,&result_function,&game_index,((struct_client*)arg)->pointer_list_game);
+				temporary_char_pointer = create_game(client->socket_fd, buffer_receive,&result_function,&game_index,client->pointer_list_game);
 
 					if(result_function == 1){
 
@@ -138,15 +142,15 @@ void* handle_client(void* arg){
 
 						strcpy(buffer_send, temporary_char_pointer);
 
-						bytes_sent = send_all(((struct_client*)arg)->socket_fd, buffer_send, BUFFER_SIZE);
+						bytes_sent = send_all(client->socket_fd, buffer_send, BUFFER_SIZE);
 
 						pthread_mutex_lock(&mutex_game_list);
 
 
-						while((((struct_client*)arg)->pointer_list_game + game_index)->second_player == -1){
+						while(client->pointer_list_game + game_index)->second_player == -1){
 
 
-								pthread_cond_wait(&(((struct_client*)arg)->pointer_list_game + game_index)->game_condition, &mutex_game_list);
+								pthread_cond_wait(&client->pointer_list_game + game_index)->game_condition, &mutex_game_list);
 
 						}
 
@@ -155,7 +159,7 @@ void* handle_client(void* arg){
 
 						strcpy(buffer_send, "1|2|Second player joined, starting game");
 
-				                send_all(client_data->socket_fd, buffer_send, BUFFER_SIZE);
+				                send_all(client->socket_fd, buffer_send, BUFFER_SIZE);
 
 						continue;
 
@@ -178,20 +182,20 @@ void* handle_client(void* arg){
 
 			strcpy(buffer_send, temporary_char_pointer);
 
-			send_all(client_data->socket_fd, buffer_send, BUFFER_SIZE);
+			send_all(client->socket_fd, buffer_send, BUFFER_SIZE);
 
 
 		}
 
 
 
-		bytes_sent = send_all(((struct_client*)arg)->socket_fd, buffer_send, BUFFER_SIZE);
+		bytes_sent = send_all(client->socket_fd, buffer_send, BUFFER_SIZE);
 
 	}
 
-	close(((struct_client*)arg)->socket_fd);
+	close(client->socket_fd);
 
-	free((struct_client*)arg);
+	free(client);
 
 	return NULL;
 
