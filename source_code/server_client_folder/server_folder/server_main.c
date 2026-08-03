@@ -35,7 +35,7 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 
 	int i = 0;
 
-	while(i<MAX_GAMES_SIZE){
+	for(int i =0;i<MAX_GAME_SIZE;i++){
 
 		pthread_mutex_lock(&mutex_game_list);
 
@@ -44,9 +44,18 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 			(game_list+i)->second_player = temporary_fd;
 			*(result_function) = 2;
 			*(index_game) = i;
-			pthread_mutex_unlock(&mutex_game_list);
 			pthread_cond_signal(&(game_list + i)->game_condition);
+			pthread_mutex_unlock(&mutex_game_list);
 			return "1|2|you have succesfuly entered a game";
+
+			/*
+			reasaning behind first waiting for the signal and then unlocking the mutex
+			wrong order: first unlock mutex, then send signal. IF this is done, the following happens:
+			after unlocking the mutex, another thread that was put to sleep is woken up, locks it finishes its execution and probably destroyes the mutex or some conditional variable.
+			When the thread that receives the conditional variable signal tries to lock the mutex, if it was locked, the system crahses.
+
+			*/
+
 
 		}else if((game_list+i)->game_id==-1){
 
@@ -57,14 +66,16 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 			pthread_mutex_unlock(&mutex_game_list);
 			return "1|1|you have succesfuly created a game";
 
-		}else{
+		}
 
-			i++;
+
+
+
+
 		}
 
 
 	pthread_mutex_unlock(&mutex_game_list);
-
 
 	}
 
