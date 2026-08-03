@@ -239,6 +239,8 @@ int main()
 
 	struct sockaddr_in address;
 
+	memset(&address, sizeof(address));
+
 	pthread_t thread_clients[MAX_GAMES_SIZE*2];
 
 	game_struct_players game_list[MAX_GAMES_SIZE];
@@ -252,11 +254,17 @@ int main()
 
 	pthread_mutex_init(&mutex_game_list,NULL);
 
-	if(setsockopt(server_file_descriptor, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))){
+	if(setsockopt(server_file_descriptor, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))){
 
-		printf("for some reason there was an error with configuring the socket\n");
+		printf("for some reason there was an error with the configuration of the socket: SO_REUSEADDR\n");
 
 		return 2;
+
+	}
+
+	if(setsockopt(server_file_descriptor, SOL_SOCKET, SO_REUSEPORT), &opt, sizeof(opt)){
+
+		printf("for some reason there was an error with the configuration of the socket: SO_REUSEPORT\n");
 
 	}
 
