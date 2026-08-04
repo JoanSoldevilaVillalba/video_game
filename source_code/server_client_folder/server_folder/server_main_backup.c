@@ -113,6 +113,98 @@ void* handle_client(void* arg){
 	while(!quit){
 
 
+		counter = 0;
+
+		int result_function = -1;
+
+		int game_index = -1;
+
+		memset(buffer_receive,0,sizeof(buffer_receive));
+
+		memset(buffer_send,0,sizeof(buffer_send));
+
+
+		bytes_received = read_all(client->socket_fd, buffer_receive, BUFFER_SIZE-1);
+
+		if(bytes_received>0){
+
+			buffer_receive[bytes_received] = '\0';
+
+		}else{
+
+			printf("Error, we recevied zero bytes\n Client probably disconnected, breaking\n");
+
+			break;
+
+		}
+
+
+		result = buffer_receive[0] - '0';
+
+		char* temporary_char_pointer= NULL;
+
+		switch(result){
+
+
+			case 1:
+
+				temporary_char_pointer = create_game(client->socket_fd, buffer_receive,&result_function,&game_index,client->pointer_list_game);
+
+					if(result_function == 1){
+
+						temporary_char_pointer="1|1|game created, waiting for second player";
+
+						strncpy(buffer_send, temporary_char_pointer);
+
+						bytes_sent = send_all(client->socket_fd, buffer_send, BUFFER_SIZE);
+
+						pthread_mutex_lock(&mutex_game_list);
+
+
+						while(client->pointer_list_game + game_index)->second_player == -1){
+
+
+								pthread_cond_wait(&client->pointer_list_game + game_index)->game_condition, &mutex_game_list);
+
+						}
+
+
+						pthread_mutex_unlock(&mutex_game_list);
+
+						strncpy(buffer_send, "1|2|Second player joined, starting game");
+
+				                send_all(client->socket_fd, buffer_send, BUFFER_SIZE);
+
+						continue;
+
+					}
+
+
+				break;
+
+			case 2:
+
+				temporary_char_pointer = "|1|user wants to quit game";
+
+				quit = true;
+
+				break;
+
+		}
+
+		if(temporary_char_pointer != NULL){
+
+			strncpy(buffer_send, temporary_char_pointer);
+
+			send_all(client->socket_fd, buffer_send, BUFFER_SIZE);
+
+
+		}
+
+
+
+		bytes_sent = send_all(client->socket_fd, buffer_send, BUFFER_SIZE);
+
 	}
 
 	close(client->socket_fd);
