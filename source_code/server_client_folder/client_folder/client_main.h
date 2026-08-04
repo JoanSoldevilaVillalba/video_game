@@ -15,4 +15,4 @@ void printMenuSC();
 
 // the folowing function was eliminated: int handleoption(int option, int file_descriptor);
 
-void handleServerCommunication(int server_port);
+int handleServerCommunication(int server_port);

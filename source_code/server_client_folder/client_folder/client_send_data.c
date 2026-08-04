@@ -6,6 +6,10 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
 	ssize_t n = 0;
 
+	//length contains the size of the message that we are going to receive
+	//remmeber that first we send the length of the actual message in binary form in 4 byte format
+	//after receving this, we can receive the actual message knowing the lenght of it
+
         while(total_length < length){
 
                 n = recv(temporary_fd,buffer+total_length,length - total_length, 0);
@@ -43,7 +47,9 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 }
 
 
-size_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
+ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
+
+	//remember that the argument length only contains the first sizeof(temporary_poitner)-1 bytes, meaning no null terminator
 
         ssize_t total_length  = 0;
 
@@ -76,11 +82,12 @@ size_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
 
         }
 
-
         return total_length;
 
 }
 ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
+
+	//remember taht payload_len is just sizeof(temporary_pointer) -1; excluding the null terminator
 
 	uint32_t net_len = htonl(payload_len);
 
