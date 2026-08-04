@@ -1,4 +1,4 @@
-#include "server_send_data.h"
+#include "client_send_data.h"
 
 ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
@@ -8,7 +8,7 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
         while(total_length < length){
 
-                n = recv(temporary_fd,buffer+total_length,legnth - total_length, 0);
+                n = recv(temporary_fd,buffer+total_length,length - total_length, 0);
 
 		if(n<0){
 
@@ -84,17 +84,35 @@ ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 
 	uint32_t net_len = htonl(payload_len);
 
-	size_t result = send_all(fd, (const char *)&net_len, sizeof(net_len));
+	ssize_t result = send_all(fd, (const char *)&net_len, sizeof(net_len));
+
+	if(result == -1){
+
+		printf("Error: %s\n", strerror(errno));
+
+		return -1;
+
+	}
 
 
 	if ( result != sizeof(net_len)) {
+
         	return -1;
+
 	}
 
 	result = send_all(fd, payload, payload_len);
 
+	if(result == -1){
+
+		printf("Error: %d:", strerror(errno));
+
+	}
+
 	if (result != (ssize_t)payload_len) {
-	        return -1;
+
+		return -1;
+
 	}
 
     return sizeof(net_len) + payload_len;
@@ -116,14 +134,17 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	if(header_bytes == 0){
 
-	//zero bytes where sent, we can exit
+		printf("No bytes will be received\n");
+
 		return header_bytes;
 
 	}
 
-	if(header_bytes <0){
-	//somehting bad happened
-	printf("Error, connection crashed\n");
+	if(header_bytes == -1){
+
+		printf("Error: %s\n", strerror(errno));
+
+		return -1;
 
 	}
 
@@ -147,7 +168,15 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 	}
 
 
-	ssize_t payload_bytes = read_all(fd, buf,);
+	ssize_t payload_bytes = read_all(fd, buf,(ssize_t)payload_len);
+
+	if(payload_bytes == -1){
+
+		printf("Error: %s\n", strerror(errno));
+
+		return -1;
+
+	}
 
 	if(payload_bytes < (ssize_t)payload_len){
 

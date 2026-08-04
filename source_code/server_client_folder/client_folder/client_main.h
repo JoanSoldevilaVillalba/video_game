@@ -9,7 +9,7 @@
 #define BUFFER_SIZE 64
 
 
-void setupConnection(int* client_file_descriptor,struct sockaddr_in* server_address, int port);
+int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_address, int port);
 
 void printMenuSC();
 

@@ -8,7 +8,7 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
         while(total_length < length){
 
-                n = recv(temporary_fd,buffer+total_length,legnth - total_length, 0);
+                n = recv(temporary_fd,buffer+total_length,length - total_length, 0);
 
 		if(n<0){
 
@@ -43,7 +43,7 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 }
 
 
-size_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
+ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
 
         ssize_t total_length  = 0;
 
@@ -112,7 +112,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 	//we are implicilty casting net_len to be treated as a const char pointer. Because we are implicilty casting it, that means that the compiler is 
 	//going to have to convert the integer into a string
 
-	header_bytes = read_exact(fd, (const char*)&net_len, sizeof(net_len));//we first receive the first 4 bytes that contain the length of the actual message that we are trying to receive
+	header_bytes = read_all(fd, (const char*)&net_len, sizeof(net_len));//we first receive the first 4 bytes that contain the length of the actual message that we are trying to receive
 
 	if(header_bytes == 0){
 
@@ -147,7 +147,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 	}
 
 
-	ssize_t payload_bytes = read_all(fd, buf,);
+	ssize_t payload_bytes = read_all(fd, buf,(ssize_t)payload_len);
 
 	if(payload_bytes < (ssize_t)payload_len){
 
@@ -158,6 +158,6 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	buf[payload_len]='\0';
 
-	return (ssize_t)load_len;
+	return (ssize_t)payload_bytes;
 
 }
