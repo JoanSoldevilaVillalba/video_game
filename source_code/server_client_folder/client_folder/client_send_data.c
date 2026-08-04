@@ -6,10 +6,6 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
 	ssize_t n = 0;
 
-	//length contains the size of the message that we are going to receive
-	//remmeber that first we send the length of the actual message in binary form in 4 byte format
-	//after receving this, we can receive the actual message knowing the lenght of it
-
         while(total_length < length){
 
                 n = recv(temporary_fd,buffer+total_length,length - total_length, 0);
@@ -49,7 +45,7 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
 ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
 
-	//remember that the argument length only contains the first sizeof(temporary_poitner)-1 bytes, meaning no null terminator
+	//length is the size of the message that we want to send, excluding the null terminator the actual message that we want to send
 
         ssize_t total_length  = 0;
 
@@ -87,8 +83,6 @@ ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
 }
 ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 
-	//remember taht payload_len is just sizeof(temporary_pointer) -1; excluding the null terminator
-
 	uint32_t net_len = htonl(payload_len);
 
 	ssize_t result = send_all(fd, (const char *)&net_len, sizeof(net_len));
@@ -112,7 +106,7 @@ ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 
 	if(result == -1){
 
-		printf("Error: %d:", strerror(errno));
+		printf("Error: %s:", strerror(errno));
 
 	}
 
@@ -122,7 +116,7 @@ ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 
 	}
 
-    return sizeof(net_len) + payload_len;
+    return (ssize_t)(sizeof(net_len)) + (ssize_t)payload_len;
 }
 
 
@@ -137,7 +131,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 	//we are implicilty casting net_len to be treated as a const char pointer. Because we are implicilty casting it, that means that the compiler is 
 	//going to have to convert the integer into a string
 
-	header_bytes = read_exact(fd, (const char*)&net_len, sizeof(net_len));//we first receive the first 4 bytes that contain the length of the actual message that we are trying to receive
+	header_bytes = read_all(fd, (char*)&net_len, sizeof(net_len));//we first receive the first 4 bytes that contain the length of the actual message that we are trying to receive
 
 	if(header_bytes == 0){
 
@@ -194,6 +188,6 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	buf[payload_len]='\0';
 
-	return (ssize_t)load_len;
+	return (ssize_t)payload_len;
 
 }

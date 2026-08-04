@@ -18,9 +18,9 @@ includes (stdint.h, arpa/inet.h, sys/types.h, errno.h, unistd.h, string.h).
 #define BUFFER_SIZE 64
 
 
-ssize_t send_all(int temporary_fd, const char*  buffer, size_t length);
+ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length);
 
-ssize_t read_all(int temporary_fd, char buffer[], size_t length);
+ssize_t read_all(int temporary_fd, char buffer[], ssize_t length);
 
 
 ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len);

@@ -37,7 +37,7 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 
 	int i = 0;
 
-	for(int i =0;i<MAX_GAME_SIZE;i++){
+	for(int i =0;i<MAX_GAMES_SIZE;i++){
 
 		pthread_mutex_lock(&mutex_game_list);
 
@@ -71,15 +71,13 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 		}
 
 
-
-
-
-		}
-
-
 	pthread_mutex_unlock(&mutex_game_list);
 
+
+
 	}
+
+
 
 	*(result_function) = 0 ;
 	*(index_game) = -1;
@@ -105,12 +103,47 @@ void* handle_client(void* arg){
 
 	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE];
 
-	int client_game_id = -1,result = 0, counter = 0, quit = false; 
+	int client_game_id = -1,result = 0, counter = 0, quit = false;
 
-	size_t bytes_received = 0, bytes_sent = 0; 
+	ssize_t bytes_received = 0, bytes_sent = 0;
 
+	const char* temporary_pointer = NULL;
 
 	while(!quit){
+
+		memset(buffer_receive, 0, sizeof(buffer_receive));
+
+		memset(buffer_send, 0, sizeof(buffer_send));
+
+		temporary_pointer = NULL;
+
+		bytes_received =  receive_framed_message(client->socket_fd, buffer_receive, (ssize_t) BUFFER_SIZE - 1);
+
+		if(bytes_received == -1){
+
+			printf("Error, closing the connection with client\n");
+
+			break;
+
+		}
+
+		printf("We have received the following message from the client: %s\n", buffer_receive);
+
+		temporary_pointer ="0|1|communication is ok";
+
+		strncpy(buffer_send, temporary_pointer, strlen(temporary_pointer)); //remember thgat strlen(temporary_pointer) does not count the null terminator
+
+		bytes_sent = send_framed_message(client->socket_fd, buffer_send, strlen(temporary_pointer)-1);
+
+		if(bytes_sent == -1){
+
+			printf("Error, closing connection with client\n");
+
+			break;
+
+		}
+
+		printf("The server has succesfully sent the following message %s\n", buffer_send);
 
 
 	}
@@ -173,7 +206,7 @@ int main()
 
 	}
 
-	if(setsockopt(server_file_descriptor, SOL_SOCKET, SO_REUSEPORT), &opt, sizeof(opt)){
+	if(setsockopt(server_file_descriptor, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))){
 
 		printf("for some reason there was an error with the configuration of the socket: SO_REUSEPORT\n");
 
@@ -205,7 +238,7 @@ int main()
 
 		new_socket = accept(server_file_descriptor, (struct sockaddr*)&address,(socklen_t*)&addrlen);
 
-		if(counter_threads_client>=MAX_CLIENT_THREADS){
+		if(counter_thread_client>=MAX_CLIENT_THREADS){
 
 			printf("Error, the server is full, unable to attend more clients\n");
 
@@ -215,7 +248,7 @@ int main()
 
 		}
 
-		counter_threads_clients++;
+		counter_thread_client++;
 
 		struct_client* new_client = malloc(sizeof(struct_client));
 

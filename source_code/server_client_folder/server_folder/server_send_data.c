@@ -112,7 +112,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 	//we are implicilty casting net_len to be treated as a const char pointer. Because we are implicilty casting it, that means that the compiler is 
 	//going to have to convert the integer into a string
 
-	header_bytes = read_all(fd, (const char*)&net_len, sizeof(net_len));//we first receive the first 4 bytes that contain the length of the actual message that we are trying to receive
+	header_bytes = read_all(fd, (char*)&net_len, sizeof(net_len));//we first receive the first 4 bytes that contain the length of the actual message that we are trying to receive
 
 	if(header_bytes == 0){
 

@@ -49,7 +49,7 @@ int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_addre
 
 	if(result_translation<0){
 
-		printf("Error:",strerror(errno));
+		printf("Error: %s\n",strerror(errno));
 
 		return -1;
 
@@ -76,13 +76,15 @@ void printMenuSC(){
 
 }
 
-void handleServerCommunication(int server_port){
+int handleServerCommunication(int server_port){
 
 	char buffer_send[BUFFER_SIZE]={0}, buffer_receive[BUFFER_SIZE]={0}; char* temporary_buffer =NULL;
 
 	struct sockaddr_in server_address;
 
-	int bytes_receive = 0, bytes_send = 0, option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1, temporal_length_recevied = 0;
+	ssize_t bytes_receive = 0, bytes_send = 0; 
+
+	int option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1, temporal_length_recevied = 0;
 
         bool quit = false, communicate = true;
 
@@ -90,7 +92,7 @@ void handleServerCommunication(int server_port){
 
 	memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
 
-	memset(server_address,0,sizeof(server_address));
+	memset(&server_address,0,sizeof(server_address));
 
 	if(setupConnection(&client_file_descriptor, &server_address, server_port) == -1){
 
@@ -102,19 +104,19 @@ void handleServerCommunication(int server_port){
 
 	while(!quit){
 
-		temporary_buffer = "0|0|testisng communication";
+		temporary_buffer = NULL;
 
-		//rememebr that because temporary_buffer is a const char*, the compiler is oging to automatilclyu going to add the null terminator at the end of the string
+		memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
 
-		//we just want to send strlen(temprorary_buffer) length, not all of the 64 bytes, the actual size of the buffer
+		temporary_buffer = "0|0|testing communication";
 
-		strncpy(buffer_send, temporary_buffer, strlen(temporary_buffer)-1);
+		strncpy(buffer_send, temporary_buffer, strlen(temporary_buffer));
 
-		buffer_send[temporary_buffer] = '\0';
+		buffer_send[strlen(temporary_buffer)] = '\0';
 
-		ssize_t data_sent = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)(sizeof(temporary)-1));
+		bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
 
-		if(data_sent == -1){
+		if(bytes_send == -1){
 
 			printf("Error, unable to send the following message to the server:%s\n", temporary_buffer);
 
@@ -126,11 +128,28 @@ void handleServerCommunication(int server_port){
 
 		printf("Client has succesfuly sent the following message: %s\n", temporary_buffer);
 
-		//now we are going to read what the server sends us back
 
-		
+		bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, BUFFER_SIZE - 1);
+
+		if(bytes_receive == -1){
+
+			printf("Error, closing connection now\n");
+
+			close(client_file_descriptor);
+
+			return -1;
+
+		}
+
+
+		printf("The server has responded with the following message %s\n\n\n", buffer_receive);
+
+		sleep(5);
 
 	}
+
+
+	return 0;
 
 }
 
