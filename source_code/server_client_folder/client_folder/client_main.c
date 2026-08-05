@@ -98,7 +98,7 @@ int handleServerCommunication(int server_port){
 
 	int option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1, temporal_length_recevied = 0;
 
-        bool quit = false, communicate = true;
+        bool quit = false, communicate = false;
 
 
 
@@ -114,13 +114,114 @@ int handleServerCommunication(int server_port){
 
 	}
 
+	printf("\n----- Client Interface -----\n");
+
 	while(!quit){
 
+		/*
+when communicating with the server, we neeed to know if we need memory or not in the client side. We are going to use a boolean variable to do this.
+
+Depending on what option we have chosen, we are going to need memory or not.
+
+For now we are just going to have to cases: play game, meaning enter a game or waiting for another palyer to enter a game that we ar etyring ot creae, and quit which will close the connection.
+
+		*/
 		temporary_buffer = NULL;
 
 		memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
 
-		temporary_buffer = "0|0|testing communication";
+		if(communicate == false){
+
+			printMenuSC();
+
+			scanf("%d", &option);
+
+			switch(option){
+
+				case 0:
+
+					temporary_buffer = "0|0|client wants game";
+
+					//for playing the game
+
+					printf("client sending the following message: %s\n", temporary_buffer);
+
+					bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
+
+//					bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
+
+					communicate = true;
+
+					break;
+
+				case 1:
+
+					temporary_buffer ="0|0|client wants to quit";
+
+					printf("client sending the following message: %s\n", temporary_buffer);
+
+					strncpy(buffer_send, temporary_buffer, strlen(temporary_buffer));
+
+					buffer_send[strlen(temporary_buffer)] = '\0';
+
+					//now we are going to have to send the quitting message to the server
+
+					bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
+
+					bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
+
+					printf("server has responded with the following message: %s\n", buffer_receive);
+
+					//for quitting the game
+
+					communicate = false;
+
+					quit = true;
+
+					continue;
+
+					break;
+
+				case 2:
+
+					//this is just for sending a random message to the server
+
+
+			}
+
+
+
+		}
+
+
+		memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
+
+		temporary_buffer = NULL;
+
+		switch(option){
+
+
+			case 0:
+
+				//trying to create/find a game
+				//we have already sent a petition to the server for finding/creating a game. Now the server is going to have to reposnd with wether it found a game or not. DEpending on this we are going to do differentr things
+
+				bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZEE);
+
+				
+
+//				temporary_buffer ="0|"
+
+
+				break;
+
+
+
+
+
+
+
+		}
 
 		strncpy(buffer_send, temporary_buffer, strlen(temporary_buffer));
 
@@ -154,14 +255,14 @@ int handleServerCommunication(int server_port){
 
 	}
 
+	close(client_file_descriptor);
+
 
 	return 0;
 
 }
 
 int main(){
-
-	printf("This is the client interface\n");
 
 	int port = 8080;
 
