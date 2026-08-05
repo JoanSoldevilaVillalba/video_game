@@ -150,6 +150,8 @@ For now we are just going to have to cases: play game, meaning enter a game or w
 
 //					bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
 
+					first_number = option;
+
 					communicate = true;
 
 					break;
@@ -178,6 +180,8 @@ For now we are just going to have to cases: play game, meaning enter a game or w
 
 					quit = true;
 
+					first_number = 1;
+
 					continue;
 
 					break;
@@ -198,22 +202,50 @@ For now we are just going to have to cases: play game, meaning enter a game or w
 
 		temporary_buffer = NULL;
 
-		switch(option){
+		switch(first_number){
 
 
 			case 0:
 
 				//trying to create/find a game
 				//we have already sent a petition to the server for finding/creating a game. Now the server is going to have to reposnd with wether it found a game or not. DEpending on this we are going to do differentr things
+				//After asking the server for finding a game, the server first chekcs if there is enoughe space and if we are going to have to create a game, or we are able to enter a game (after execyuting create_game function)
 
-				bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZEE);
+				switch(second_number){
 
-				
+					case 0:
 
-//				temporary_buffer ="0|"
+						//first communication with server after sending informatino for creating/finding a game
+
+						bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZEE);
+
+						communicate = false;
+
+						first_number = 0;
+
+						counter = counter + 4; //we are accessing the second numnber of the protocol message that the server has sent us
+
+						second_number = buffer_receive[counter];
+
+						break;
+
+					case 1:
+
+						//in this case the server was not able to find a game, the server was forced to create a a game, and now we need to wait
 
 
-				break;
+						break;
+
+					case 2:
+					//in this case the server was able to find a game, so in a few moments we are going to be able to play the game.
+
+
+						break;
+
+
+
+
+				}
 
 
 
