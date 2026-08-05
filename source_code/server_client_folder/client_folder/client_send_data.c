@@ -27,17 +27,6 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
         }
 
-	if(total_length<length){
-
-		buffer[total_length] = '\0';
-
-	}else{
-
-		buffer[length-1] = '\0';
-
-	}
-
-
 	return total_length;
 
 }
@@ -89,12 +78,11 @@ ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 
 	if(result == -1){
 
-		printf("Error: %s\n", strerror(errno));
+		printf("Error, send_framed_message: %s\n", strerror(errno));
 
 		return -1;
 
 	}
-
 
 	if ( result != sizeof(net_len)) {
 
@@ -102,11 +90,13 @@ ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 
 	}
 
-	result = send_all(fd, payload, payload_len);
+	result = send_all(fd, payload, payload_len);//remember that payload_len exlcude the null terminator, beacuse payload_len is equal to strlen(pointer), indexed to one.
 
 	if(result == -1){
 
-		printf("Error: %s:", strerror(errno));
+		printf("Error, send_framed_message: %s:", strerror(errno));
+
+		return -1;
 
 	}
 
@@ -122,20 +112,16 @@ ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 
 ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
-	//primer nomes cal llegir 4 bvytes, per averiguar lo llarg que es el mmissatge que  nosaltres volem rebre realment
 
 	uint32_t net_len = 0;
 
 	ssize_t header_bytes = 0;
 
-	//we are implicilty casting net_len to be treated as a const char pointer. Because we are implicilty casting it, that means that the compiler is 
-	//going to have to convert the integer into a string
-
 	header_bytes = read_all(fd, (char*)&net_len, sizeof(net_len));//we first receive the first 4 bytes that contain the length of the actual message that we are trying to receive
 
 	if(header_bytes == 0){
 
-		printf("No bytes will be received\n");
+		printf("receive_framed_message: No bytes will be received\n");
 
 		return header_bytes;
 
@@ -143,7 +129,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	if(header_bytes == -1){
 
-		printf("Error: %s\n", strerror(errno));
+		printf("Error, receive_framed_message: %s\n", strerror(errno));
 
 		return -1;
 
@@ -151,7 +137,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	if(header_bytes< (ssize_t)sizeof(net_len)){
 
-		printf("Error, we where not able to receive the 4 bytes containing the length of the message\n");
+		printf("Error,receive_framed_message:  we where not able to receive the 4 bytes containing the length of the message\n");
 
 		return -1;
 
@@ -162,7 +148,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	if((ssize_t)payload_len >= max_buf_len){
 
-		printf("Error the message that we want to receive is larger than the max length of the buffer\n");
+		printf("Error, receive_framed_message:  the message that we want to receive is larger than the max length of the buffer\n");
 
 		return -1;
 
@@ -173,7 +159,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	if(payload_bytes == -1){
 
-		printf("Error: %s\n", strerror(errno));
+		printf("Error, receive_framed_message: %s\n", strerror(errno));
 
 		return -1;
 
@@ -181,7 +167,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	if(payload_bytes < (ssize_t)payload_len){
 
-		printf("Error, the number of bytes received from the actual messages is not the same as the first 4 byte number\n");
+		printf("Error, receive_framed_message: the number of bytes received from the actual messages is not the same as the first 4 byte number\n");
 
 		return -1;
 	}

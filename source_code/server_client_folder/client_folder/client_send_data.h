@@ -13,7 +13,7 @@ includes (stdint.h, arpa/inet.h, sys/types.h, errno.h, unistd.h, string.h).
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-
+#include <inttypes.h>
 
 #define BUFFER_SIZE 64
 

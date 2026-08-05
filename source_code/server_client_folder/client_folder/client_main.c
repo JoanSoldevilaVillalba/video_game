@@ -28,7 +28,7 @@ int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_addre
 
 	if(*(client_file_descriptor)<0){
 
-		printf("Error: %s\n",strerror( errno));
+		printf("Error, setupConnection: %s\n",strerror( errno));
 
 		return -1;
 
@@ -47,9 +47,18 @@ int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_addre
 
 	result_translation =  inet_pton(AF_INET, "127.0.0.1", &server_address->sin_addr);
 
+	if(result_translation <=0){
+
+		printf("Error, setupConnection, inet_pton(possible incorrect format): %c\n", strerror(errno));
+
+		return -1;
+
+	}
+
+
 	if(result_translation<0){
 
-		printf("Error: %s\n",strerror(errno));
+		printf("Error, setupConnection: %s\n",strerror(errno));
 
 		return -1;
 
@@ -59,11 +68,14 @@ int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_addre
 
 	if(status<0){
 
-		printf("Error: %s\n",strerror(errno));
+		printf("Error, setupConnection: %s\n",strerror(errno));
 
 		return -1;
 
 	}
+
+
+	return 0;
 
 }
 
@@ -78,11 +90,11 @@ void printMenuSC(){
 
 int handleServerCommunication(int server_port){
 
-	char buffer_send[BUFFER_SIZE]={0}, buffer_receive[BUFFER_SIZE]={0}; char* temporary_buffer =NULL;
+	char buffer_send[BUFFER_SIZE]={0}, buffer_receive[BUFFER_SIZE]={0}; const char* temporary_buffer =NULL;
 
 	struct sockaddr_in server_address;
 
-	ssize_t bytes_receive = 0, bytes_send = 0; 
+	ssize_t bytes_receive = 0, bytes_send = 0;
 
 	int option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1, temporal_length_recevied = 0;
 
@@ -96,7 +108,7 @@ int handleServerCommunication(int server_port){
 
 	if(setupConnection(&client_file_descriptor, &server_address, server_port) == -1){
 
-		printf("Error: unable to establish connection with the server\nExiting...");
+		printf("Error, handleServerCommmunication: unable to establish connection with the server\nExiting...");
 
 		return -1;
 
@@ -118,7 +130,7 @@ int handleServerCommunication(int server_port){
 
 		if(bytes_send == -1){
 
-			printf("Error, unable to send the following message to the server:%s\n", temporary_buffer);
+			printf("Error, handleServerCommmunication: unable to send the following message to the server:%s\n", temporary_buffer);
 
 			close(client_file_descriptor);
 
@@ -126,23 +138,17 @@ int handleServerCommunication(int server_port){
 
 		}
 
-		printf("Client has succesfuly sent the following message: %s\n", temporary_buffer);
-
-
-		bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, BUFFER_SIZE - 1);
+		bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, BUFFER_SIZE);
 
 		if(bytes_receive == -1){
 
-			printf("Error, closing connection now\n");
+			printf("Error, handleServerCommmunication: closing connection now\n");
 
 			close(client_file_descriptor);
 
 			return -1;
 
 		}
-
-
-		printf("The server has responded with the following message %s\n\n\n", buffer_receive);
 
 		sleep(5);
 

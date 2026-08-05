@@ -117,11 +117,11 @@ void* handle_client(void* arg){
 
 		temporary_pointer = NULL;
 
-		bytes_received =  receive_framed_message(client->socket_fd, buffer_receive, (ssize_t) BUFFER_SIZE - 1);
+		bytes_received =  receive_framed_message(client->socket_fd, buffer_receive, (ssize_t) BUFFER_SIZE);
 
 		if(bytes_received == -1){
 
-			printf("Error, closing the connection with client\n");
+			printf("Error,handle_client: closing the connection with client\n");
 
 			break;
 
@@ -133,11 +133,13 @@ void* handle_client(void* arg){
 
 		strncpy(buffer_send, temporary_pointer, strlen(temporary_pointer)); //remember thgat strlen(temporary_pointer) does not count the null terminator
 
-		bytes_sent = send_framed_message(client->socket_fd, buffer_send, strlen(temporary_pointer)-1);
+		buffer_send[strlen(temporary_pointer)] = '\0';
+
+		bytes_sent = send_framed_message(client->socket_fd, buffer_send, strlen(temporary_pointer));
 
 		if(bytes_sent == -1){
 
-			printf("Error, closing connection with client\n");
+			printf("Error,handle_client: closing connection with client\n");
 
 			break;
 
@@ -248,15 +250,19 @@ int main()
 
 		}
 
-		counter_thread_client++;
-
 		struct_client* new_client = malloc(sizeof(struct_client));
 
 		new_client->socket_fd = new_socket;
 
 		new_client->pointer_list_game = game_list;
 
-		pthread_create(&thread_clients[counter_thread_client++], NULL, &handle_client,(void*)new_client );
+		if(pthread_create(&thread_clients[counter_thread_client++], NULL, &handle_client,(void*)new_client ) !=0){
+
+			printf("Error on creating the thread\n");
+
+			//i do not know if there is an error, the operating system automatilcyu cleans up the thread or if i have to call pthread_join to free up the memory allocated for the thread 
+
+		}
 
 
 	}
