@@ -13,11 +13,11 @@ GAME_NOT_FOUND = 3
 
 typedef enum{
 
-FINDING_GAME = 1,
+ENTERING_CREATING_GAME = 0,
 
-QUIT = 2,
+QUIT = 1,
 
-ENTERING_GAME = 3
+RANDOM_MESSAGE = 2
 
 }FIRST_LAYER;
 
@@ -118,14 +118,6 @@ int handleServerCommunication(int server_port){
 
 	while(!quit){
 
-		/*
-when communicating with the server, we neeed to know if we need memory or not in the client side. We are going to use a boolean variable to do this.
-
-Depending on what option we have chosen, we are going to need memory or not.
-
-For now we are just going to have to cases: play game, meaning enter a game or waiting for another palyer to enter a game that we ar etyring ot creae, and quit which will close the connection.
-
-		*/
 		temporary_buffer = NULL;
 
 		memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
@@ -138,27 +130,51 @@ For now we are just going to have to cases: play game, meaning enter a game or w
 
 			switch(option){
 
-				case 0:
+				case ENTERING_CREATING_GAME:
+
+					/*
+typedef enum{
+
+GAME_FOUND = 1,
+
+WAITING_FOR_GAME = 2,
+
+GAME_NOT_FOUND = 3
+
+}SECOND_LAYER_PLAY;
+
+typedef enum{
+
+ENTERING_CREATING_GAME = 0,
+
+QUIT = 1
+
+}FIRST_LAYER;
+				*/
 
 					temporary_buffer = "0|0|client wants game";
-
-					//for playing the game
 
 					printf("client sending the following message: %s\n", temporary_buffer);
 
 					bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
 
-//					bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
+					bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
 
-					first_number = option;
+					first_number = option; //first option is ENTERING_CREATING_GAME
+
+					counter = 0;
+
+					counter = counter + 3;
+
+					second_number = buffer_receive[counter] - '0'; //conveting char to int for second_number
 
 					communicate = true;
 
 					break;
 
-				case 1:
+				case QUIT:
 
-					temporary_buffer ="0|0|client wants to quit";
+					temporary_buffer ="1|0|client wants to quit";
 
 					printf("client sending the following message: %s\n", temporary_buffer);
 
@@ -166,15 +182,11 @@ For now we are just going to have to cases: play game, meaning enter a game or w
 
 					buffer_send[strlen(temporary_buffer)] = '\0';
 
-					//now we are going to have to send the quitting message to the server
-
 					bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
 
 					bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
 
 					printf("server has responded with the following message: %s\n", buffer_receive);
-
-					//for quitting the game
 
 					communicate = false;
 
@@ -186,9 +198,21 @@ For now we are just going to have to cases: play game, meaning enter a game or w
 
 					break;
 
-				case 2:
+				case RANDOM_MESSAGE:
 
-					//this is just for sending a random message to the server
+					temporary_buffer = "2|0|This is a random message";
+
+					strncpy(buffer_send, temporary_buffer,strlen(temporary_buffer));
+
+					bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
+
+					bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
+
+					printf("The server has responded with the following: %s\n", buffer_receive);
+
+					continue;//continue , becauyse this message does not really follow the main protocol. THis is just an extra feature that we  wiill probably use for debuging or for other things not yet implemeented
+
+					break;
 
 
 			}
@@ -205,17 +229,16 @@ For now we are just going to have to cases: play game, meaning enter a game or w
 		switch(first_number){
 
 
-			case 0:
-
-				//trying to create/find a game
-				//we have already sent a petition to the server for finding/creating a game. Now the server is going to have to reposnd with wether it found a game or not. DEpending on this we are going to do differentr things
-				//After asking the server for finding a game, the server first chekcs if there is enoughe space and if we are going to have to create a game, or we are able to enter a game (after execyuting create_game function)
+			case ENTERING_CREATING_GAME:
 
 				switch(second_number){
 
-					case 0:
+					case WAITING_FOR_GAME:
 
-						//first communication with server after sending informatino for creating/finding a game
+
+						printf("We are waiting for a second player to enter our game\n");
+
+						printf("Waiting for servers response ...\n");
 
 						bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZEE);
 
@@ -223,21 +246,23 @@ For now we are just going to have to cases: play game, meaning enter a game or w
 
 						first_number = 0;
 
-						counter = counter + 4; //we are accessing the second numnber of the protocol message that the server has sent us
+						counter = counter + 3; //we are accessing the second numnber of the protocol message that the server has sent us
 
 						second_number = buffer_receive[counter];
 
 						break;
 
-					case 1:
+					case GAME_NOT_FOUND :
 
-						//in this case the server was not able to find a game, the server was forced to create a a game, and now we need to wait
+						printf("The server was not able to find a game for us\n");
 
+						first_number = QUIT;
+
+						communicate = true; //no need for  memory.
 
 						break;
 
-					case 2:
-					//in this case the server was able to find a game, so in a few moments we are going to be able to play the game.
+					case GAME_FOUND:
 
 
 						break;
