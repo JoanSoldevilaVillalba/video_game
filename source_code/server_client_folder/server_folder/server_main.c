@@ -345,6 +345,14 @@ int main()
 
 		new_socket = accept(server_file_descriptor, (struct sockaddr*)&address,(socklen_t*)&addrlen);
 
+		if(new_socket == -1){
+
+			printf("Error: server was not able to accept the incoming client: %s\n", strerror(errno));
+
+			continue;
+
+		}
+
 		if(counter_thread_client>=MAX_CLIENT_THREADS){
 
 			printf("Error, the server is full, unable to attend more clients\n");
