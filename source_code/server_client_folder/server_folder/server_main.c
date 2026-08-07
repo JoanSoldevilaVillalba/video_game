@@ -60,7 +60,7 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 			*(index_game) = i;
 			pthread_cond_signal(&(game_list + i)->game_condition);
 			pthread_mutex_unlock(&mutex_game_list);
-			return "1|2|you have succesfuly entered a game";
+			return "0|1|you have succesfuly entered a game";
 
 			/*
 			reasaning behind first waiting for the signal and then unlocking the mutex
@@ -78,7 +78,7 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 			*(result_function) = 1;
 			*(index_game) = i;
 			pthread_mutex_unlock(&mutex_game_list);
-			return "1|1|you have succesfuly created a game";
+			return "0|2|you have succesfuly created a game";
 
 		}
 
@@ -94,7 +94,7 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 	*(result_function) = 0 ;
 	*(index_game) = -1;
 
-	return "1|3|All games are occupied, try again later";
+	return "0|3|All games are occupied, try again later";
 
 }
 
