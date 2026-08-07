@@ -98,7 +98,7 @@ int handleServerCommunication(int server_port){
 
 	int option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1, temporal_length_recevied = 0;
 
-        bool quit = false, communicate = false;
+        bool quit = false, communicate = false, already_received = false;
 
 
 
@@ -120,7 +120,12 @@ int handleServerCommunication(int server_port){
 
 		temporary_buffer = NULL;
 
-		memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
+		if(already_received == false){
+
+			memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
+
+		}
+//		already_recevied = false;
 
 		if(communicate == false){
 
@@ -131,26 +136,6 @@ int handleServerCommunication(int server_port){
 			switch(option){
 
 				case ENTERING_CREATING_GAME:
-
-					/*
-typedef enum{
-
-GAME_FOUND = 1,
-
-WAITING_FOR_GAME = 2,
-
-GAME_NOT_FOUND = 3
-
-}SECOND_LAYER_PLAY;
-
-typedef enum{
-
-ENTERING_CREATING_GAME = 0,
-
-QUIT = 1
-
-}FIRST_LAYER;
-				*/
 
 					temporary_buffer = "0|0|client wants game";
 
@@ -164,7 +149,7 @@ QUIT = 1
 
 					counter = 0;
 
-					counter = counter + 3;
+					counter = counter + 2;
 
 					second_number = buffer_receive[counter] - '0'; //conveting char to int for second_number
 
@@ -196,8 +181,6 @@ QUIT = 1
 
 					continue;
 
-					break;
-
 				case RANDOM_MESSAGE:
 
 					temporary_buffer = "2|0|This is a random message";
@@ -210,9 +193,7 @@ QUIT = 1
 
 					printf("The server has responded with the following: %s\n", buffer_receive);
 
-					continue;//continue , becauyse this message does not really follow the main protocol. THis is just an extra feature that we  wiill probably use for debuging or for other things not yet implemeented
-
-					break;
+					continue;//continue , becauyse this message does not really follow the main protocol. THis is just an extra feature that we  wiill probably use for debuging or for other things not yet implemented
 
 
 			}
@@ -222,7 +203,12 @@ QUIT = 1
 		}
 
 
-		memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
+
+		if(already_recevied == false){
+
+			memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
+
+		}
 
 		temporary_buffer = NULL;
 
@@ -242,11 +228,13 @@ QUIT = 1
 
 						bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZEE);
 
-						communicate = false;
+						communicate = true;
 
 						first_number = 0;
 
-						counter = counter + 3; //we are accessing the second numnber of the protocol message that the server has sent us
+						counter = counter + 2; //we are accessing the second numnber of the protocol message that the server has sent us
+
+						already_received = true;
 
 						second_number = buffer_receive[counter];
 
@@ -254,22 +242,54 @@ QUIT = 1
 
 					case GAME_NOT_FOUND :
 
-						printf("The server was not able to find a game for us\n");
+						if(already_received == false){
+
+							bytes_Receive = recevie_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
+
+						}
+
+						printf("The server was not able to find a game for us, server response: %s\n", buffer_receive);
+
+						already_received = false;
 
 						first_number = QUIT;
 
-						communicate = true; //no need for  memory.
+						communicate = false; //no need for memory.
 
 						break;
 
 					case GAME_FOUND:
 
 
+						memset(bytes_receive, 0, sizeof(bytes_receive));
+
+						bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
+
+						printf("Server responded with the following message: %s\n", buffer_receive);
+
+						first_number = GAME_PLAY;
+
+						second_number = 0;//not yet defined
+
+						communicate = false;
+
 						break;
 
 
+			case GAME_PLAY:
+
+					//we are going to have to develope some type of menu aswell as a way to actually enter the actual game loop, and wait until the other player is ready aswell
+
+					//we are probobably going to have to switch to using udp instead of tcp, this is usual practice for videogame
 
 
+
+
+			case QUIT:
+
+
+
+					break;
 				}
 
 

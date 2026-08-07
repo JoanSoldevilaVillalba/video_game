@@ -15,6 +15,18 @@
 #define MAX_CLIENT_THREADS (MAX_GAMES_SIZE*2)
 
 
+typedef enum{
+
+ENTERING_CREATING_GAME = 0,
+
+QUIT = 1,
+
+RANDOM_MESSAGE = 2,
+
+
+}FIRST_LAYER;
+//we are going to make ssure that the server only has one layer , because the server is a memoryless server
+
 typedef struct{
 
 int first_player;
@@ -103,7 +115,9 @@ void* handle_client(void* arg){
 
 	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE];
 
-	int client_game_id = -1,result = 0, counter = 0, quit = false;
+	int client_game_id = -1,result = 0, counter = 0, first_number = 0, second_number = 0, index_game;
+
+	bool quit = false;
 
 	ssize_t bytes_received = 0, bytes_sent = 0;
 
@@ -111,11 +125,7 @@ void* handle_client(void* arg){
 
 	while(!quit){
 
-		memset(buffer_receive, 0, sizeof(buffer_receive));
-
-		memset(buffer_send, 0, sizeof(buffer_send));
-
-		temporary_pointer = NULL;
+		memset(buffer_receive, 0, sizeof(buffer_receive)); memset(buffer_send, 0, sizeof(buffer_send)); temporary_pointer = NULL; counter = 0 ;
 
 		bytes_received =  receive_framed_message(client->socket_fd, buffer_receive, (ssize_t) BUFFER_SIZE);
 
@@ -129,7 +139,102 @@ void* handle_client(void* arg){
 
 		printf("We have received the following message from the client: %s\n", buffer_receive);
 
-		temporary_pointer ="0|1|communication is ok";
+		//after receiven a message from the client, we need to parse it to udnersatnd what the client wants to do
+
+		//0|1|
+
+		counter = 0;
+
+		first_number = buffer_receive[counter];
+
+		switch(first_number){
+
+
+			case ENTERING_CREATING_GAME:
+
+				struct timespec ts;
+
+				ts.tv_sec +=30;
+
+				int timed_out = 0;
+
+				memset(buffer_send, 0, sizeof(buffer_send));
+
+				temporary_pointer = create_game(temporary_fd, buffer_receive, result, index_game, game_list);
+
+				strncpy(buffer_send, temporary_pointer, strlen(temporary_pointer));
+
+				buffer_send[strlen(temporary_poitner)]='\0';
+
+				bytes_send = send_framed_message(client->socket_fd, buffer_send, strlen(temporary_pointer));
+
+				//depending onthe result of create_game, we are going to have to wait or not
+
+				memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive, 0, sizeof(buffer_receive));
+
+				if(result == 2){
+
+					//a game was found
+
+					temporary_pointer = "0|1|game found";
+
+				}else if(result == 1){
+
+					//creating a game, meaning that the client is going to have to wait until someone enters the game that he or she created
+
+					pthread_mutex_lock(&mutex_game_list);
+
+	                                while(client->pointer_list_game + game_index)->second_player == -1 && !timed_out){
+
+                	                        int rc = thread_cond_timedwait(&client->pointer_list_game + game_index)->game_condition, &mutex_game_list, &ts);
+
+                        	                if(rc == ETIMEDOUT){
+
+                                	                timed_out = 1;
+
+                                        	}
+
+        	                        }
+
+	                                pthread_mutex_unlock(&mutex_game_list);
+
+	                                if(timed_out == 1 || (client->pointer_list_game + game_index)->second_player == -1){
+
+		                                //game not found
+
+						temporary_pointer = "0|3|Game not found: time expired";
+
+	                                }else{
+
+						//a game was found
+
+						temporary_pointer = "0|1|Game was found";
+
+	                                }
+
+
+				}else if(result == 0){
+
+					//not able to enter a game, the user is going to have to quit.
+
+					temporary_poitner = "0|1|game not found";
+
+				}
+
+				break;
+
+
+			case QUIT:
+
+				temporary_pointer = "1|0|Closing the connection, goodbye";
+
+				quit = true;
+
+				break;
+
+
+		}
+
 
 		strncpy(buffer_send, temporary_pointer, strlen(temporary_pointer)); //remember thgat strlen(temporary_pointer) does not count the null terminator
 
