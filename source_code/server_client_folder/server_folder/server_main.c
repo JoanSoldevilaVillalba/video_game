@@ -56,7 +56,7 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 		if((game_list+i)->game_id!=-1 && (game_list+i)->second_player==-1){
 
 			(game_list+i)->second_player = temporary_fd;
-			*(result_function) = 2;
+			*(result_function) = 1;
 			*(index_game) = i;
 			pthread_cond_signal(&(game_list + i)->game_condition);
 			pthread_mutex_unlock(&mutex_game_list);
@@ -75,7 +75,7 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 
 			(game_list+i)->game_id = i;
 			(game_list+i)->first_player = temporary_fd;
-			*(result_function) = 1;
+			*(result_function) = 2;
 			*(index_game) = i;
 			pthread_mutex_unlock(&mutex_game_list);
 			return "0|2|you have succesfuly created a game";
@@ -91,7 +91,7 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 
 
 
-	*(result_function) = 0 ;
+	*(result_function) = 3 ;
 	*(index_game) = -1;
 
 	return "0|3|All games are occupied, try again later";
@@ -147,7 +147,7 @@ void* handle_client(void* arg){
 
 		counter = 0;
 
-		first_number = buffer_receive[counter];
+		first_number = buffer_receive[counter] - '0';
 
 		switch(first_number){
 
@@ -172,15 +172,23 @@ void* handle_client(void* arg){
 
 				//depending onthe result of create_game, we are going to have to wait or not
 
+				if(bytes_send == -1){
+
+					printf("Error, borken connection: unable to send information to client. Closing connection\n");
+
+					quit = true;
+
+				}
+
 				memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive, 0, sizeof(buffer_receive));
 
-				if(result == 2){
+				if(result == 1){
 
 					//a game was found
 
 					temporary_pointer = "0|1|game found";
 
-				}else if(result == 1){
+				}else if(result == 2){
 
 					//creating a game, meaning that the client is going to have to wait until someone enters the game that he or she created
 
@@ -215,7 +223,7 @@ void* handle_client(void* arg){
 	                                }
 
 
-				}else if(result == 0){
+				}else if(result == 3){
 
 					//not able to enter a game, the user is going to have to quit.
 
