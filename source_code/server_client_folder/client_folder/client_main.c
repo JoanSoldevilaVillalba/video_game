@@ -83,7 +83,7 @@ int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_addre
 
 	if(result_translation <=0){
 
-		printf("Error, setupConnection, inet_pton(possible incorrect format): %c\n", strerror(errno));
+		printf("Error, setupConnection, inet_pton(possible incorrect format): %s\n", strerror(errno));
 
 		return -1;
 
@@ -363,8 +363,6 @@ int handleServerCommunication(int server_port){
 
 			}
 
-
-		}
 
 		//we might need this in the future, the following code is dead code for now, but do not erase the following
 
