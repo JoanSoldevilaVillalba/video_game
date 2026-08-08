@@ -133,6 +133,8 @@ void* handle_client(void* arg){
 
 			printf("Error,handle_client: closing the connection with client\n");
 
+			quit = true;
+
 			break;
 
 		}
@@ -226,7 +228,7 @@ void* handle_client(void* arg){
 
 			case QUIT:
 
-				temporary_pointer = "1|0|Closing the connection, goodbye";
+				temporary_pointer = "1|0|Server received quit statement, goodbye";
 
 				quit = true;
 

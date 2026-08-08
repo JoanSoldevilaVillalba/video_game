@@ -3,11 +3,21 @@
 
 typedef enum{
 
+//the following are options when the user wants to play the game and either has to: wait for another player to enter, needs to close the connection because nobody wants to play or games are full and when a game has been found and the client side has to switch context
+
 GAME_FOUND = 1,
 
 WAITING_FOR_GAME = 2,
 
-GAME_NOT_FOUND = 3
+GAME_NOT_FOUND = 3,
+
+//the following are options for quitting. There are differnt types of quitting: when the connection is broken, when the server decided to quit, when the client decided to quit (server deciding to quit is redundant because the client always initiates, but we are still going to add it)
+
+CLIENT_QUIT = 4,
+
+SERVER_QUIT = 5,
+
+BORKEN_QUIT = 6
 
 }SECOND_LAYER_PLAY;
 
@@ -139,20 +149,6 @@ int handleServerCommunication(int server_port){
 
 					temporary_buffer = "0|0|client wants game";
 
-					printf("client sending the following message: %s\n", temporary_buffer);
-
-					bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
-
-					bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
-
-					first_number = option; //first option is ENTERING_CREATING_GAME
-
-					counter = 0;
-
-					counter = counter + 2;
-
-					second_number = buffer_receive[counter] - '0'; //conveting char to int for second_number
-
 					communicate = true;
 
 					break;
@@ -161,42 +157,59 @@ int handleServerCommunication(int server_port){
 
 					temporary_buffer ="1|0|client wants to quit";
 
-					printf("client sending the following message: %s\n", temporary_buffer);
-
-					strncpy(buffer_send, temporary_buffer, strlen(temporary_buffer));
-
-					buffer_send[strlen(temporary_buffer)] = '\0';
-
-					bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
-
-					bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
-
-					printf("server has responded with the following message: %s\n", buffer_receive);
-
 					communicate = false;
 
 					quit = true;
 
-					first_number = 1;
+					first_number = QUIT;
 
-					continue;
+					second_number = CLIENT_QUIT;
+
+					break;;
 
 				case RANDOM_MESSAGE:
 
 					temporary_buffer = "2|0|This is a random message";
 
-					strncpy(buffer_send, temporary_buffer,strlen(temporary_buffer));
-
-					bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
-
-					bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
-
-					printf("The server has responded with the following: %s\n", buffer_receive);
-
-					continue;//continue , becauyse this message does not really follow the main protocol. THis is just an extra feature that we  wiill probably use for debuging or for other things not yet implemented
-
+					break;
 
 			}
+
+			strncpy(buffer_send, temporary_buffer, strlen(temporary_buffer));
+
+			buffer_send[strlen(temporary_buffer)] = '\0';
+
+			bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
+
+			if(bytes_send == -1){
+
+				second_number = BROKEN_QUIT;
+				quit = true;
+
+			}
+
+
+                        bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
+
+			if(bytes_receive == -1){
+
+				//the connection is also broken,  we need to close the connection
+
+				second_number = BROKEN_QUIT;
+
+				quit = true;
+
+			}
+
+                        first_number = option; //first option is ENTERING_CREATING_GAME, PLAY_GAME or QUIT
+
+                        counter = 0;
+
+                        counter = counter + 2;
+
+                        second_number = buffer_receive[counter] - '0'; //conveting char to int for second_number
+
+
 
 
 
@@ -278,16 +291,40 @@ int handleServerCommunication(int server_port){
 
 			case GAME_PLAY:
 
-					//we are going to have to develope some type of menu aswell as a way to actually enter the actual game loop, and wait until the other player is ready aswell
-
-					//we are probobably going to have to switch to using udp instead of tcp, this is usual practice for videogame
-
-
-
 
 			case QUIT:
 
+					switch(second_number){
 
+
+						case CLIENT_QUIT:
+
+							printf("Client wants to quit. Closing connection. Goodbye ...\n");
+
+							break;
+
+
+						case SERVER_QUIT:
+
+							printf("Server wants to quit for the following reason:; %s\n", buffer_receive);
+
+							printf("Closing connection. Goodbye ...\n");
+
+
+							break;
+
+
+
+						case BROKEN_QUIT:
+
+							printf("Broken connection: unable to receive or send information to server. Closing connection. Goodbye ...\n");
+
+							break;
+
+
+
+
+					}
 
 					break;
 				}
