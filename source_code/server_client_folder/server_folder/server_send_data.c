@@ -5,8 +5,6 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
         ssize_t total_length  = 0;
 
 	ssize_t n = 0;
-	printf("server read_all function\n lengthj: %zu", length);
-
 
         while(total_length < length){
 
@@ -96,8 +94,6 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	//primer nomes cal llegir 4 bvytes, per averiguar lo llarg que es el mmissatge que  nosaltres volem rebre realment
 
-	printf("we are in server recevie_framed_message\n");
-
 	uint32_t net_len = 0;
 
 	ssize_t header_bytes = 0;
@@ -106,8 +102,6 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 	//going to have to convert the integer into a string
 
 	header_bytes = read_all(fd, (char*)&net_len, sizeof(net_len));//we first receive the first 4 bytes that contain the length of the actual message that we are trying to receive
-
-	printf("The number of bytes that we have recieved: %zd", header_bytes);
 
 	if(header_bytes == 0){
 
@@ -118,9 +112,9 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	if(header_bytes <0){
 	//somehting bad happened
-	printf("Error,receive_framed_message: connection crashed:%s\n", strerror(errno));
+		printf("Error,receive_framed_message: connection crashed:%s\n", strerror(errno));
 
-	return -1;
+		return -1;
 
 	}
 
@@ -132,9 +126,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	}
 
-	printf("\n net_len: %" PRIu32 "\n", net_len );
 	uint32_t payload_len = ntohl(net_len);
- printf("\n payload_len: %" PRIu32 "\n", payload_len);
 
 	if((ssize_t)payload_len >= max_buf_len){
 

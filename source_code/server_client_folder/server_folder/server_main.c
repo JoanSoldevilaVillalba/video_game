@@ -147,10 +147,6 @@ void* handle_client(void* arg){
 
 		printf("We have received the following message from the client: %s\n", buffer_receive);
 
-		//after receiven a message from the client, we need to parse it to udnersatnd what the client wants to do
-
-		//0|1|
-
 		counter = 0;
 
 		first_number = buffer_receive[counter] - '0';

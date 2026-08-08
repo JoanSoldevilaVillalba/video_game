@@ -117,8 +117,8 @@ int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_addre
 void printMenuSC(){
 
 	printf("---- CLIENT MENU ----\n");
-	printf("1. PLAY GAME\n");
-	printf("2. QUIT GAME\n");
+	printf("0. PLAY GAME\n");
+	printf("1. QUIT GAME\n");
 
 }
 
@@ -160,6 +160,8 @@ int handleServerCommunication(int server_port){
 
 
 			printMenuSC();
+
+			printf("Enter a number down below:\n");
 
 			scanf("%d", &option);
 
@@ -270,7 +272,9 @@ int handleServerCommunication(int server_port){
 
 						printf("The server was not able to find a game for us, server response: %s\n", buffer_receive);
 
-						first_number = DEFAULT;
+						first_number = -1;
+
+						second_neumber = -1;
 
 						communicate = false;
 
@@ -282,9 +286,9 @@ int handleServerCommunication(int server_port){
 
 						//when a game is found, within the server side, the server saves the index of the game that we are playing 
 
-						first_number = GAME_PLAY;
+						first_number = -1;
 
-						second_number = MENU;
+						second_number = -1;
 
 						communicate = false;
 
