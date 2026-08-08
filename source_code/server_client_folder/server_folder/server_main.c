@@ -23,6 +23,7 @@ QUIT = 1,
 
 RANDOM_MESSAGE = 2,
 
+GAME_TIME = 3
 
 }FIRST_LAYER;
 //we are going to make ssure that the server only has one layer , because the server is a memoryless server
@@ -44,7 +45,12 @@ pthread_cond_t game_condition;
 
 
 pthread_mutex_t mutex_game_list;
+
+pthread_mutex_t mutex_thread_counter;
+
 pthread_cond_t conditional_variable;
+
+int counter_thread; //automaticlyh it is goingto be initilized to zero
 char* create_game(int temporary_fd, char* buffer_receive, int* result_function, int* index_game, game_struct_players* game_list){
 
 	int i = 0;
@@ -156,23 +162,25 @@ void* handle_client(void* arg){
 
 				struct timespec ts;
 
+				clock_gettime(CLOCK_REALTIME, &ts);
+
 				ts.tv_sec +=30;
 
 				int timed_out = 0;
 
 				memset(buffer_send, 0, sizeof(buffer_send));
 
-				temporary_pointer = create_game(temporary_fd, buffer_receive, result, index_game, game_list);
+				temporary_pointer = create_game(client->socket_fd, buffer_receive, &result, &index_game, client->pointer_list_game);
 
 				strncpy(buffer_send, temporary_pointer, strlen(temporary_pointer));
 
-				buffer_send[strlen(temporary_poitner)]='\0';
+				buffer_send[strlen(temporary_pointer)]='\0';
 
-				bytes_send = send_framed_message(client->socket_fd, buffer_send, strlen(temporary_pointer));
+				bytes_sent = send_framed_message(client->socket_fd, buffer_send, strlen(temporary_pointer));
 
 				//depending onthe result of create_game, we are going to have to wait or not
 
-				if(bytes_send == -1){
+				if(bytes_sent == -1){
 
 					printf("Error, borken connection: unable to send information to client. Closing connection\n");
 
@@ -188,23 +196,21 @@ void* handle_client(void* arg){
 
 					pthread_mutex_lock(&mutex_game_list);
 
-	                                while(client->pointer_list_game + game_index)->second_player == -1 && !timed_out){
+		                                while((client->pointer_list_game + index_game)->second_player == -1 && !timed_out){
 
-                	                        int rc = thread_cond_timedwait(&client->pointer_list_game + game_index)->game_condition, &mutex_game_list, &ts);
+                		                        int rc = pthread_cond_timedwait(&((client->pointer_list_game + index_game)->game_condition), &mutex_game_list, &ts);
 
-                        	                if(rc == ETIMEDOUT){
+	                        	                if(rc == ETIMEDOUT){
 
-                                	                timed_out = 1;
+	                                	                timed_out = 1;
 
-                                        	}
+	                                        	}
 
-        	                        }
+	        	                        }
 
 	                                pthread_mutex_unlock(&mutex_game_list);
 
-	                                if(timed_out == 1 || (client->pointer_list_game + game_index)->second_player == -1){
-
-		                                //game not found
+	                                if(timed_out == 1 || (client->pointer_list_game + index_game)->second_player == -1){
 
 						temporary_pointer = "0|3|Game not found: time expired";
 
@@ -238,6 +244,12 @@ void* handle_client(void* arg){
 
 			case GAME_TIME:
 
+				//not yet implemented: future
+				//for now we are just going to send back a quit statment
+
+				temporary_pointer = "1|0|Server wants to quit, Goodbye";
+
+				quit = true;
 
 				break;
 
@@ -264,7 +276,14 @@ void* handle_client(void* arg){
 
 	}
 
+	pthread_mutex_lock(&mutex_thread_counter);
+
+		counter_thread --;
+
+	pthread_mutex_unlock(&mutex_thread_counter);
+
 	close(client->socket_fd);
+
 
 	free(client);
 
@@ -295,7 +314,7 @@ void initilizeGames(game_struct_players* game_list){
 int main()
 {
 
-	int server_file_descriptor = 0, new_socket = 0, opt = 1, port_number = 8080, counter_thread_client = 0;
+	int server_file_descriptor = 0, new_socket = 0, opt = 1, port_number = 8080;
 
 	struct sockaddr_in address;
 
@@ -313,6 +332,8 @@ int main()
 	initilizeGames(game_list);
 
 	pthread_mutex_init(&mutex_game_list,NULL);
+
+	pthread_mutex_init(&mutex_thread_counter,NULL);
 
 	if(setsockopt(server_file_descriptor, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))){
 
@@ -362,7 +383,7 @@ int main()
 
 		}
 
-		if(counter_thread_client>=MAX_CLIENT_THREADS){
+		if(counter_thread>=MAX_CLIENT_THREADS){
 
 			printf("Error, the server is full, unable to attend more clients\n");
 
@@ -378,7 +399,7 @@ int main()
 
 		new_client->pointer_list_game = game_list;
 
-		if(pthread_create(&thread_clients[counter_thread_client++], NULL, &handle_client,(void*)new_client ) !=0){
+		if(pthread_create(&thread_clients[counter_thread++], NULL, &handle_client,(void*)new_client ) !=0){
 
 			printf("Error on creating the thread\n");
 
@@ -386,13 +407,14 @@ int main()
 
 		}
 
+		//after the thread is done executing for whatever reason, we decrement the counter_trehad_client variable
 
 	}
 
 
 	pthread_mutex_destroy(&mutex_game_list);
 
-
+	pthread_mutex_destroy(&mutex_thread_counter);
 
 
 	close(server_file_descriptor);

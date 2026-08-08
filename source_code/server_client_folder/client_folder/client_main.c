@@ -11,8 +11,6 @@ WAITING_FOR_GAME = 2,
 
 GAME_NOT_FOUND = 3,
 
-
-
 }SECOND_LAYER_WAITING;
 
 typedef enum{
@@ -23,7 +21,7 @@ CLIENT_QUIT = 4,
 
 SERVER_QUIT = 5,
 
-BORKEN_QUIT = 6
+BROKEN_QUIT = 6
 
 }SECOND_LAYER_QUIT;
 
@@ -49,9 +47,11 @@ ENTERING_CREATING_GAME = 0,
 
 QUIT = 1,
 
-RANDOM_MESSAGE = 2
+RANDOM_MESSAGE = 2,
 
-DEFAULT = 3
+GAME_PLAY = 3,
+
+DEFAULT = 4
 
 }FIRST_LAYER;
 
@@ -130,9 +130,9 @@ int handleServerCommunication(int server_port){
 
 	ssize_t bytes_receive = 0, bytes_send = 0;
 
-	int option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1, temporal_length_recevied = 0, game_id_server = -1;
+	int option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1, temporal_length_recevied = 0, game_id_server = -1, counter = 0;
 
-        bool quit = false, communicate = false, already_received = false;
+        bool quit = false, communicate = false, sending = false;
 
 
 
@@ -154,12 +154,7 @@ int handleServerCommunication(int server_port){
 
 		temporary_buffer = NULL;
 
-		if(already_received == false){
-
-			memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
-
-		}
-//		already_recevied = false;
+		counter = 0 ;
 
 		if(communicate == false){
 
@@ -255,9 +250,9 @@ int handleServerCommunication(int server_port){
 
 						printf("Waiting for servers response ...\n");
 
-						bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZEE);
+						bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
 
-						printf("Server responded with the following message: %s\n", buffere_receive);
+						printf("Server responded with the following message: %s\n", buffer_receive);
 
 						communicate = true;
 
@@ -265,9 +260,9 @@ int handleServerCommunication(int server_port){
 
 						counter = counter + 2; //we are accessing the second number of the protocol message that the server has sent us
 
-						already_received = true;
-
 						second_number = buffer_receive[counter];
+
+						sending = false;
 
 						break;
 
@@ -275,11 +270,11 @@ int handleServerCommunication(int server_port){
 
 						printf("The server was not able to find a game for us, server response: %s\n", buffer_receive);
 
-						//when a game is not found, we will leave it up to the client to do what he or she wants to do.
-
 						first_number = DEFAULT;
 
 						communicate = false;
+
+						sending = false;
 
 						break;
 
@@ -293,7 +288,11 @@ int handleServerCommunication(int server_port){
 
 						communicate = false;
 
+						sending = false;
+
 						break;
+
+				}
 
 
 				break;
@@ -318,6 +317,8 @@ int handleServerCommunication(int server_port){
 
 					}
 
+				break;
+
 
 			case QUIT:
 
@@ -328,6 +329,8 @@ int handleServerCommunication(int server_port){
 
 							printf("Client wants to quit. Servers response: %s. Client is closing connection. Goodbye ...\n", buffer_receive);
 
+							sending = false;
+
 							break;
 
 
@@ -336,6 +339,8 @@ int handleServerCommunication(int server_port){
 							printf("Server wants to quit for the following reason:; %s\n", buffer_receive);
 
 							printf("Closing connection. Goodbye ...\n");
+
+							sending = false;
 
 
 							break;
@@ -346,54 +351,59 @@ int handleServerCommunication(int server_port){
 
 							printf("Broken connection: unable to receive or send information to server. Closing connection. Goodbye ...\n");
 
+							sending = false;
+
 							break;
-
-
-
 
 					}
 
-					break;
-				}
+					quit = true;
 
+				break;
 
-
-
-
+			}
 
 
 		}
 
-		strncpy(buffer_send, temporary_buffer, strlen(temporary_buffer));
+		//we might need this in the future, the following code is dead code for now, but do not erase the following
 
-		buffer_send[strlen(temporary_buffer)] = '\0';
+		if(sending == true){
+			strncpy(buffer_send, temporary_buffer, strlen(temporary_buffer));
 
-		bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
+			buffer_send[strlen(temporary_buffer)] = '\0';
 
-		if(bytes_send == -1){
+			bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
 
-			printf("Error, handleServerCommmunication: unable to send the following message to the server:%s\n", temporary_buffer);
+			if(bytes_send == -1){
 
-			close(client_file_descriptor);
+				printf("Error, handleServerCommmunication: unable to send the following message to the server:%s\n", temporary_buffer);
 
-			return -1;
+				printf("We have a broken connection\n");
 
-		}
+				quit = true;
 
-		bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, BUFFER_SIZE);
+				return -1;
 
-		if(bytes_receive == -1){
+			}
 
-			printf("Error, handleServerCommmunication: closing connection now\n");
 
-			close(client_file_descriptor);
+			bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, BUFFER_SIZE);
 
-			return -1;
+			if(bytes_receive == -1){
+
+				printf("Error, handleServerCommmunication: closing connection now\n");
+
+				close(client_file_descriptor);
+
+				return -1;
+
+			}
+
 
 		}
 
 		sleep(5);
-
 	}
 
 	close(client_file_descriptor);
