@@ -11,6 +11,12 @@ WAITING_FOR_GAME = 2,
 
 GAME_NOT_FOUND = 3,
 
+
+
+}SECOND_LAYER_WAITING;
+
+typedef enum{
+
 //the following are options for quitting. There are differnt types of quitting: when the connection is broken, when the server decided to quit, when the client decided to quit (server deciding to quit is redundant because the client always initiates, but we are still going to add it)
 
 CLIENT_QUIT = 4,
@@ -19,7 +25,23 @@ SERVER_QUIT = 5,
 
 BORKEN_QUIT = 6
 
+}SECOND_LAYER_QUIT;
+
+
+
+
+typedef enum{ 
+//this typedef enumerator is used for when the server has found a game, and now the client is able to start playing the game
+
+MENU = 7,
+
+PLAY_TIME = 8
+
+
 }SECOND_LAYER_PLAY;
+
+
+
 
 typedef enum{
 
@@ -28,6 +50,8 @@ ENTERING_CREATING_GAME = 0,
 QUIT = 1,
 
 RANDOM_MESSAGE = 2
+
+DEFAULT = 3
 
 }FIRST_LAYER;
 
@@ -106,7 +130,7 @@ int handleServerCommunication(int server_port){
 
 	ssize_t bytes_receive = 0, bytes_send = 0;
 
-	int option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1, temporal_length_recevied = 0;
+	int option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1, temporal_length_recevied = 0, game_id_server = -1;
 
         bool quit = false, communicate = false, already_received = false;
 
@@ -139,6 +163,7 @@ int handleServerCommunication(int server_port){
 
 		if(communicate == false){
 
+
 			printMenuSC();
 
 			scanf("%d", &option);
@@ -150,6 +175,8 @@ int handleServerCommunication(int server_port){
 					temporary_buffer = "0|0|client wants game";
 
 					communicate = true;
+
+					first_number = ENTERING_CREATING_GAME;
 
 					break;
 
@@ -209,19 +236,8 @@ int handleServerCommunication(int server_port){
 
                         second_number = buffer_receive[counter] - '0'; //conveting char to int for second_number
 
-
-
-
-
 		}
 
-
-
-		if(already_recevied == false){
-
-			memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
-
-		}
 
 		temporary_buffer = NULL;
 
@@ -241,11 +257,13 @@ int handleServerCommunication(int server_port){
 
 						bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZEE);
 
+						printf("Server responded with the following message: %s\n", buffere_receive);
+
 						communicate = true;
 
 						first_number = 0;
 
-						counter = counter + 2; //we are accessing the second numnber of the protocol message that the server has sent us
+						counter = counter + 2; //we are accessing the second number of the protocol message that the server has sent us
 
 						already_received = true;
 
@@ -255,41 +273,50 @@ int handleServerCommunication(int server_port){
 
 					case GAME_NOT_FOUND :
 
-						if(already_received == false){
-
-							bytes_Receive = recevie_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
-
-						}
-
 						printf("The server was not able to find a game for us, server response: %s\n", buffer_receive);
 
-						already_received = false;
+						//when a game is not found, we will leave it up to the client to do what he or she wants to do.
 
-						first_number = QUIT;
+						first_number = DEFAULT;
 
-						communicate = false; //no need for memory.
+						communicate = false;
 
 						break;
 
 					case GAME_FOUND:
 
-
-						memset(bytes_receive, 0, sizeof(bytes_receive));
-
-						bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
-
-						printf("Server responded with the following message: %s\n", buffer_receive);
+						//when a game is found, within the server side, the server saves the index of the game that we are playing 
 
 						first_number = GAME_PLAY;
 
-						second_number = 0;//not yet defined
+						second_number = MENU;
 
 						communicate = false;
 
 						break;
 
 
+				break;
+
 			case GAME_PLAY:
+
+					switch(second_number){
+
+						case MENU:
+
+
+							break;
+
+
+						case PLAY_TIME:
+
+
+
+							break;
+
+
+
+					}
 
 
 			case QUIT:
@@ -299,7 +326,7 @@ int handleServerCommunication(int server_port){
 
 						case CLIENT_QUIT:
 
-							printf("Client wants to quit. Closing connection. Goodbye ...\n");
+							printf("Client wants to quit. Servers response: %s. Client is closing connection. Goodbye ...\n", buffer_receive);
 
 							break;
 

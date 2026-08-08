@@ -182,13 +182,7 @@ void* handle_client(void* arg){
 
 				memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive, 0, sizeof(buffer_receive));
 
-				if(result == 1){
-
-					//a game was found
-
-					temporary_pointer = "0|1|game found";
-
-				}else if(result == 2){
+				if(result == 2){
 
 					//creating a game, meaning that the client is going to have to wait until someone enters the game that he or she created
 
@@ -223,11 +217,11 @@ void* handle_client(void* arg){
 	                                }
 
 
-				}else if(result == 3){
+				}else{
 
-					//not able to enter a game, the user is going to have to quit.
-
-					temporary_poitner = "0|1|game not found";
+					//in the other cases, we have already sent a message at the beginning, because the return string of create_game is already sent to the client and has already followed its own internal protocol game logic.
+					//this is for specific cases, when no games were found or a game was found  and now the client is able to play the game.
+					continue;
 
 				}
 
@@ -239,6 +233,11 @@ void* handle_client(void* arg){
 				temporary_pointer = "1|0|Server received quit statement, goodbye";
 
 				quit = true;
+
+				break;
+
+			case GAME_TIME:
+
 
 				break;
 
