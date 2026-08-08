@@ -51,6 +51,10 @@ ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
 
 				continue;
 
+			}else if(errno == EWOULDBLOCK || errno == EAGAIN){
+
+				//the buffer used for sending inforamtion is full, we need to wait for a while here
+
 			}
 
 			return -1;
