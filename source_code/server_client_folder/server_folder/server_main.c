@@ -230,6 +230,13 @@ void* handle_client(void* arg){
 				break;
 
 
+			case RANDOM_MESSAGE:
+
+
+				temporary_pointer = "2|0|Server has recevied random";
+
+				break;
+
 			case QUIT:
 
 				temporary_pointer = "1|0|Server received quit statement, goodbye";
@@ -247,6 +254,12 @@ void* handle_client(void* arg){
 
 				quit = true;
 
+				break;
+
+			default:
+
+
+				temporary_pointer = "4|0|error, option not valid";
 				break;
 
 
@@ -403,9 +416,9 @@ int main()
 
 		}
 
-		pthread_mutex_unlock(&mutex_thread_counter);
+		int current_index = counter_thread;
 
-		int current_index = counter_thread++;
+		counter_thread = counter_thread + 1;
 
 		pthread_mutex_unlock(&mutex_thread_counter);
 
@@ -417,7 +430,7 @@ int main()
 
 			pthread_mutex_lock(&mutex_thread_counter);
 
-			counter_thread--;
+			counter_thread = counter_thread - 1;
 
 			pthread_mutex_unlock(&mutex_thread_counter);
 
@@ -428,6 +441,12 @@ int main()
 
 
 
+
+	}
+
+	for(int i = 0;i<MAX_GAMES_SIZE;i++){
+
+		pthread_cond_destroy(&(game_list[i].game_condition));
 
 	}
 
