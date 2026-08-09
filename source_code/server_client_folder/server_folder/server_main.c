@@ -411,7 +411,7 @@ int main()
 
 		int current_index = counter_thread++;
 
-		phtread_mutex_unlock(&mutex_thread_counter);
+		pthread_mutex_unlock(&mutex_thread_counter);
 
 		if(pthread_create(&thread_clients[current_index], NULL, &handle_client,(void*)new_client ) !=0){
 
