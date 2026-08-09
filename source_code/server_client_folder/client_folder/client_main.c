@@ -290,7 +290,7 @@ int handleServerCommunication(int server_port){
 
 						//when a game is found, within the server side, the server saves the index of the game that we are playing 
 
-						printf("Game was not found\n");
+						printf("Game was found\n");
 
 						first_number = -1;
 
