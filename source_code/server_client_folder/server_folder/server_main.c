@@ -379,16 +379,6 @@ int main()
 
 		}
 
-		if(counter_thread>=MAX_CLIENT_THREADS){
-
-			printf("Error, the server is full, unable to attend more clients\n");
-
-			close(new_socket);
-
-			continue;
-
-		}
-
 		struct_client* new_client = malloc(sizeof(struct_client));
 
 		new_client->socket_fd = new_socket;
@@ -404,10 +394,14 @@ int main()
 
 			close(new_socket);
 
+			pthread_mutex_unlock(&mutex_thread_counter);
+
 			continue;
 
 
 		}
+
+		pthread_mutex_unlock(&mutex_thread_counter);
 
 		int current_index = counter_thread++;
 
