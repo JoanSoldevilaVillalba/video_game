@@ -256,7 +256,9 @@ int handleServerCommunication(int server_port){
 
 						printf("Server responded with the following message: %s\n", buffer_receive);
 
-						communicate = true;
+						//for now, there is just one player: the person who is testing the videogame, therefore we are going to set communciate to false 
+
+						communicate = false;
 
 						first_number = 0;
 
