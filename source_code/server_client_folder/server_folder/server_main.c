@@ -55,7 +55,7 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 
 	int i = 0;
 
-	for(int i =0;i<MAX_GAMES_SIZE;i++){
+	for(i;i<MAX_GAMES_SIZE;i++){
 
 		pthread_mutex_lock(&mutex_game_list);
 
@@ -396,6 +396,8 @@ int main()
 
 			pthread_mutex_unlock(&mutex_thread_counter);
 
+			free (new_client);
+
 			continue;
 
 
@@ -418,6 +420,8 @@ int main()
 			counter_thread--;
 
 			pthread_mutex_unlock(&mutex_thread_counter);
+
+			free(new_client);
 
 
 		}
