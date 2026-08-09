@@ -395,15 +395,41 @@ int main()
 
 		new_client->pointer_list_game = game_list;
 
-		if(pthread_create(&thread_clients[counter_thread++], NULL, &handle_client,(void*)new_client ) !=0){
+		pthread_mutex_lock(&mutex_thread_counter);
 
-			printf("Error on creating the thread\n");
+		if(counter_thread>=MAX_CLIENT_THREADS){
 
-			//i do not know if there is an error, the operating system automatilcyu cleans up the thread or if i have to call pthread_join to free up the memory allocated for the thread 
+
+			printf("The server is full\n");
+
+			close(new_socket);
+
+			continue;
+
 
 		}
 
-		//after the thread is done executing for whatever reason, we decrement the counter_trehad_client variable
+		int current_index = counter_thread++;
+
+		phtread_mutex_unlock(&mutex_thread_counter);
+
+		if(pthread_create(&thread_clients[current_index], NULL, &handle_client,(void*)new_client ) !=0){
+
+			printf("Error on creating the thread\n");
+
+			close(new_socket);
+
+			pthread_mutex_lock(&mutex_thread_counter);
+
+			counter_thread--;
+
+			pthread_mutex_unlock(&mutex_thread_counter);
+
+
+		}
+
+
+
 
 	}
 
