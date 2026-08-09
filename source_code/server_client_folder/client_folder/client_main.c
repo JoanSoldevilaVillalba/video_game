@@ -35,7 +35,9 @@ typedef enum{
 
 MENU = 7,
 
-PLAY_TIME = 8
+PLAY_TIME = 8,
+
+PROLOGUE = 9
 
 
 }SECOND_LAYER_PLAY;
@@ -292,11 +294,11 @@ int handleServerCommunication(int server_port){
 
 						printf("Game was found\n");
 
-						first_number = -1;
+						first_number = GAME_PLAY;
 
-						second_number = -1;
+						second_number = PROLOGUE;
 
-						communicate = false;
+						communicate = true;
 
 						sending = false;
 
@@ -309,9 +311,57 @@ int handleServerCommunication(int server_port){
 
 			case GAME_PLAY:
 
+
+      //after a game is found the player enters this specific case
+                                                        //in the menu the client is going to be able to see his name on the screen,the other player on screen and a play button, which when clicked will send a tcp message to the server. The other player also has to press the button in order 
+                                                        //for the game to start and execute the main game loop that we have already defined
+
+                                                        //for now, we are just going to print the file descriptor of each player as their name. LAter on we will add more ui freindly settings
+
+                                                        //here we can n
+
+
+
 					switch(second_number){
 
+						case PROLOGUE:
+
+							printf("Client is now waiting for the menu ....");
+
+							temporary_buffer = "3|0|client waiting for menu";
+
+							sending = true;
+
+							communicate = true;
+
+							first_number = GAME_PLAY;
+
+							second_number = MENU;
+
+
+							break;
+
 						case MENU:
+
+							//inside buffer_receive, we have both names that the server has assigned to use: remember that for now the names are the server side file descriptors of both players that enterd the same game
+
+							//we are going to supose that both file descriptors are separated by the following charcter: '|'
+
+							counter = 4;
+
+							int client_1 = buffer_receive[counter++] - '0';
+
+							int clinet_2 = buffer_receive[++counter] - '0';
+
+							printf("----- GAME MENU -----");
+
+							printf("---------------------");
+
+							printf("First player: %d\n", client_1);
+
+							printf("Second pllayer: %d\n", client_2);
+
+							//we are going to have to continue the development, stopping for now
 
 
 							break;
@@ -387,6 +437,8 @@ int handleServerCommunication(int server_port){
 
 				printf("Error, handleServerCommmunication: unable to send the following message to the server:%s\n", temporary_buffer);
 
+				printf("The error that occurred is the following: %s\n", strerror(errno));
+
 				printf("We have a broken connection\n");
 
 				quit = true;
@@ -400,7 +452,7 @@ int handleServerCommunication(int server_port){
 
 			if(bytes_receive == -1){
 
-				printf("Error, handleServerCommmunication: closing connection now\n");
+				printf("Error, handleServerCommmunication: closing connection now: %s\n", strerror(errno));
 
 				close(client_file_descriptor);
 
