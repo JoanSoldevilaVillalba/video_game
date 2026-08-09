@@ -274,7 +274,7 @@ int handleServerCommunication(int server_port){
 
 						first_number = -1;
 
-						second_neumber = -1;
+						second_number = -1;
 
 						communicate = false;
 
@@ -285,6 +285,8 @@ int handleServerCommunication(int server_port){
 					case GAME_FOUND:
 
 						//when a game is found, within the server side, the server saves the index of the game that we are playing 
+
+						printf("Game was not found\n");
 
 						first_number = -1;
 
