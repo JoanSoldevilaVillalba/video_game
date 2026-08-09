@@ -264,9 +264,9 @@ int handleServerCommunication(int server_port){
 
 						first_number = 0;
 
-						counter = counter + 2; //we are accessing the second number of the protocol message that the server has sent us
+						counter = 2; 
 
-						second_number = buffer_receive[counter]-'\0';
+						second_number = buffer_receive[counter]-'0';
 
 						sending = false;
 
