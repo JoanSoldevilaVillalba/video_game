@@ -13,6 +13,8 @@ GAME_NOT_FOUND = 3,
 
 }SECOND_LAYER_WAITING;
 
+
+
 typedef enum{
 
 //the following are options for quitting. There are differnt types of quitting: when the connection is broken, when the server decided to quit, when the client decided to quit (server deciding to quit is redundant because the client always initiates, but we are still going to add it)
@@ -264,7 +266,7 @@ int handleServerCommunication(int server_port){
 
 						counter = counter + 2; //we are accessing the second number of the protocol message that the server has sent us
 
-						second_number = buffer_receive[counter];
+						second_number = buffer_receive[counter]-'\0';
 
 						sending = false;
 
