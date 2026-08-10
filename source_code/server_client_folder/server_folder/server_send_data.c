@@ -15,6 +15,12 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
 			if(errno == EINTR){
 				continue;
+			}else if(errno = EAGAIN || errno == EWOULDBLOCK){
+
+				sleep(1);
+
+				continue;
+
 			}
 			return -1;
 
