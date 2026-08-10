@@ -154,11 +154,11 @@ ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER
 
 	if(correct_length == true){
 
-		strncpy(buffer, buffer, strlen(temporay_pointer))
+		strncpy(buffer, buffer, strlen(temporary_pointer));
 
 		buffer[strlen(temporary_pointer)] = '\0';
 
-		result = send_framed_message(client_file_descriptor, buffer, (uint32_t)strlen(temporary_pointer))
+		result = send_framed_message(client_file_descriptor, buffer, (uint32_t)strlen(temporary_pointer));
 
 		if(result == -1){
 
@@ -262,9 +262,9 @@ int handleServerCommunication(int server_port){
 
 			}
 
-			bytes_send = send_validated_message(temporary_buffer, buffer_send,client_file_descriptor);
+			result_send_receive = send_validated_message(temporary_buffer, buffer_send,client_file_descriptor);
 
-			if(bytes_send == -1){
+			if(result_send_receive == -1){
 
 				first_number = QUIT;
 
@@ -276,7 +276,7 @@ int handleServerCommunication(int server_port){
 
 				sending = false;
 
-			}else if(bytes_send == -2){
+			}else if(result_send_receive == -2){
 
 				communicate = false;
 
@@ -286,9 +286,9 @@ int handleServerCommunication(int server_port){
 
 			if(second_number !=BROKEN_QUIT){
 
-	                        bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
+	                        result_send_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
 
-				if(bytes_receive == -1){
+				if(result_send_receive == -1){
 
 					second_number = BROKEN_QUIT;
 
@@ -325,7 +325,14 @@ int handleServerCommunication(int server_port){
 
 						printf("Waiting for servers response ...\n");
 
-						bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
+						result_send_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
+
+						if(result_send_receive == -1){
+
+
+
+						}
+
 
 						printf("Server responded with the following message: %s\n", buffer_receive);
 
@@ -409,7 +416,7 @@ int handleServerCommunication(int server_port){
 
 							int client_1 = buffer_receive[counter++] - '0';
 
-							int clinet_2 = buffer_receive[++counter] - '0';
+							int client_2 = buffer_receive[++counter] - '0';
 
 							printf("----- GAME MENU -----");
 
