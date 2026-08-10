@@ -139,8 +139,8 @@ void* handle_client(void* arg){
 
 			printf("Error,handle_client: closing the connection with client\n");
 
-			quit = true;
-
+//			quit = true;
+//if we are already breaking from the while strucutre, we do not need to set the quit, at least in this case: broken connection means no connection with the client
 			break;
 
 		}
@@ -232,7 +232,6 @@ void* handle_client(void* arg){
 
 			case RANDOM_MESSAGE:
 
-
 				temporary_pointer = "2|0|Server has recevied random";
 
 				break;
@@ -265,6 +264,21 @@ void* handle_client(void* arg){
 
 		}
 
+		//we need to validate the length of the message that we are going to be returning
+
+		//in the future we probably should also validate the length of the incoming message, especially in c, sense array sreally do not have any boundries
+
+		//for now when the server  has to big of a message, we are going to change it so that the client can initiate quit statement
+
+		if(strlen(temporary_pointer)>BUFFER_SIZE){
+
+			printf("Error, server was trying to send a message that exceeded the limit\n");
+
+			temporary_pointer = "1|0|Server wants to quit, Goodbye";
+
+			printf("Server is sending back the following message:%s\n", temporary_pointer);
+
+		}
 
 		strncpy(buffer_send, temporary_pointer, strlen(temporary_pointer)); //remember thgat strlen(temporary_pointer) does not count the null terminator
 

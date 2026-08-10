@@ -126,23 +126,82 @@ void printMenuSC(){
 
 }
 
+//before sending information, we need to first validate that the length of the message is not bigger than BUFFER_SIZE, we need to validate this.
+
+bool validate_message_length(const char* temporary_pointer){
+
+        if(BUFFER_SIZE < strlen(temporary_pointer)){
+
+                return false;
+
+        }else{
+
+                return true;
+
+        }
+
+        //rememeber that strlen is indexed to one,
+
+}
+
+
+
+ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER_SIZE], int client_file_descriptor){
+
+	bool correct_length = validate_message_length(temporary_pointer);
+
+	ssize_t result = 0;
+
+	if(correct_length == true){
+
+		strncpy(buffer, buffer, strlen(temporay_pointer))
+
+		buffer[strlen(temporary_pointer)] = '\0';
+
+		result = send_framed_message(client_file_descriptor, buffer, (uint32_t)strlen(temporary_pointer))
+
+		if(result == -1){
+
+			printf("Error, connection was broken: %s\n", strerror(errno));
+
+			result = -1;
+
+		}
+
+	}else{
+
+		printf("Error, the following message exceeds the BUFFER_SIZE limit: %s\n", temporary_pointer);
+
+		result = -2;
+
+	}
+
+
+
+	return result;
+
+
+
+
+
+}
+
+
 int handleServerCommunication(int server_port){
 
 	char buffer_send[BUFFER_SIZE]={0}, buffer_receive[BUFFER_SIZE]={0}; const char* temporary_buffer =NULL;
 
 	struct sockaddr_in server_address;
 
-	ssize_t bytes_receive = 0, bytes_send = 0;
+	ssize_t result_send_receive = 0;
 
-	int option = 0, client_file_descriptor = 0, first_number = -1, second_number = -1, temporal_length_recevied = 0, game_id_server = -1, counter = 0;
+	int option = 0, client_file_descriptor = -1, first_number = -1, second_number = -1, counter = 0;
 
         bool quit = false, communicate = false, sending = false;
 
 
+	memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive)); memset(&server_address,0,sizeof(server_address));
 
-	memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive));
-
-	memset(&server_address,0,sizeof(server_address));
 
 	if(setupConnection(&client_file_descriptor, &server_address, server_port) == -1){
 
@@ -203,41 +262,51 @@ int handleServerCommunication(int server_port){
 
 			}
 
-			strncpy(buffer_send, temporary_buffer, strlen(temporary_buffer));
-
-			buffer_send[strlen(temporary_buffer)] = '\0';
-
-			bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
+			bytes_send = send_validated_message(temporary_buffer, buffer_send,client_file_descriptor);
 
 			if(bytes_send == -1){
 
-				second_number = BROKEN_QUIT;
-				quit = true;
-
-			}
-
-
-                        bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
-
-			if(bytes_receive == -1){
-
-				//the connection is also broken,  we need to close the connection
+				first_number = QUIT;
 
 				second_number = BROKEN_QUIT;
 
 				quit = true;
 
+				communicate = true; //this does not really matter
+
+				sending = false;
+
+			}else if(bytes_send == -2){
+
+				communicate = false;
+
+				continue;
+
 			}
 
-                        first_number = option; //first option is ENTERING_CREATING_GAME, PLAY_GAME or QUIT
+			if(second_number !=BROKEN_QUIT){
 
-                        counter = 0;
+	                        bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, (ssize_t)BUFFER_SIZE);
 
-                        counter = counter + 2;
+				if(bytes_receive == -1){
 
-                        second_number = buffer_receive[counter] - '0'; //conveting char to int for second_number
+					second_number = BROKEN_QUIT;
 
-		}
+					quit = true;
+
+				}else{
+
+		                        first_number = option; //first option is ENTERING_CREATING_GAME, PLAY_GAME or QUIT
+
+                		        counter = 0;
+
+		                        counter = counter + 2;
+
+		                        second_number = buffer_receive[counter] - '0'; //conveting char to int for second_number
+
+				}
+
+			}
 
 
 		temporary_buffer = NULL;
@@ -311,17 +380,6 @@ int handleServerCommunication(int server_port){
 
 			case GAME_PLAY:
 
-
-      //after a game is found the player enters this specific case
-                                                        //in the menu the client is going to be able to see his name on the screen,the other player on screen and a play button, which when clicked will send a tcp message to the server. The other player also has to press the button in order 
-                                                        //for the game to start and execute the main game loop that we have already defined
-
-                                                        //for now, we are just going to print the file descriptor of each player as their name. LAter on we will add more ui freindly settings
-
-                                                        //here we can n
-
-
-
 					switch(second_number){
 
 						case PROLOGUE:
@@ -373,8 +431,6 @@ int handleServerCommunication(int server_port){
 
 							break;
 
-
-
 					}
 
 				break;
@@ -420,43 +476,6 @@ int handleServerCommunication(int server_port){
 					quit = true;
 
 				break;
-
-			}
-
-
-		//we might need this in the future, the following code is dead code for now, but do not erase the following
-
-		if(sending == true){
-			strncpy(buffer_send, temporary_buffer, strlen(temporary_buffer));
-
-			buffer_send[strlen(temporary_buffer)] = '\0';
-
-			bytes_send = send_framed_message(client_file_descriptor, buffer_send, (uint32_t)strlen(temporary_buffer));
-
-			if(bytes_send == -1){
-
-				printf("Error, handleServerCommmunication: unable to send the following message to the server:%s\n", temporary_buffer);
-
-				printf("The error that occurred is the following: %s\n", strerror(errno));
-
-				printf("We have a broken connection\n");
-
-				quit = true;
-
-				return -1;
-
-			}
-
-
-			bytes_receive = receive_framed_message(client_file_descriptor, buffer_receive, BUFFER_SIZE);
-
-			if(bytes_receive == -1){
-
-				printf("Error, handleServerCommmunication: closing connection now: %s\n", strerror(errno));
-
-				close(client_file_descriptor);
-
-				return -1;
 
 			}
 
