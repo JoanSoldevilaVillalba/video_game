@@ -15,6 +15,16 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
 			if(errno == EINTR){
 				continue;
+			}else if(errno == EWOULDBLOCK || errno == EAGAIN){
+
+				//EWOULDBLOCK: resource temporary unavailable
+
+				//EAGAIN: resource temporary unavailable
+
+				sleep(1);
+
+				continue;
+
 			}
 			return -1;
 
@@ -54,6 +64,12 @@ ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
 			}else if(errno == EWOULDBLOCK || errno == EAGAIN){
 
 				//the buffer used for sending inforamtion is full, we need to wait for a while here
+
+				//we are just going to call sleep 
+
+				sleep(1);
+
+				continue;
 
 			}
 
