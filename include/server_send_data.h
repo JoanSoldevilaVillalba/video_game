@@ -10,7 +10,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <inttypes.h>
-
+#include <poll.h>
 
 ssize_t read_all(int temporary_fd, char buffer[], ssize_t length);
 
