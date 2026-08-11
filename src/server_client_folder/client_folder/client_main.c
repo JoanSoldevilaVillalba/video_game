@@ -152,7 +152,7 @@ ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER
 
 		if(result == -1){
 
-			printf("Unable to send message to server", strerror(errno));
+			printf("Unable to send message to server: %s\n", strerror(errno));
 
 			result = -1;
 

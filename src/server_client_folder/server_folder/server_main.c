@@ -68,15 +68,6 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 			pthread_mutex_unlock(&mutex_game_list);
 			return "0|1|you have succesfuly entered a game";
 
-			/*
-			reasaning behind first waiting for the signal and then unlocking the mutex
-			wrong order: first unlock mutex, then send signal. IF this is done, the following happens:
-			after unlocking the mutex, another thread that was put to sleep is woken up, locks it finishes its execution and probably destroyes the mutex or some conditional variable.
-			When the thread that receives the conditional variable signal tries to lock the mutex, if it was locked, the system crahses.
-
-			*/
-
-
 		}else if((game_list+i)->game_id==-1){
 
 			(game_list+i)->game_id = i;
@@ -139,8 +130,10 @@ void* handle_client(void* arg){
 
 			printf("Error,handle_client: closing the connection with client\n");
 
-//			quit = true;
-//if we are already breaking from the while strucutre, we do not need to set the quit, at least in this case: broken connection means no connection with the client
+			//instead of seting quit to true, we are simply going to break here to exit the while loop
+
+			//this is due to where we are calling receive-framed_message from, beacuse after this we enter the switch case, and quit set to true still implies having to send a message to the client
+
 			break;
 
 		}
@@ -174,7 +167,6 @@ void* handle_client(void* arg){
 
 				bytes_sent = send_framed_message(client->socket_fd, buffer_send, strlen(temporary_pointer));
 
-				//depending onthe result of create_game, we are going to have to wait or not
 
 				if(bytes_sent == -1){
 
@@ -290,7 +282,7 @@ void* handle_client(void* arg){
 
 			printf("Error,handle_client: closing connection with client\n");
 
-			break;
+			quit = true;
 
 		}
 

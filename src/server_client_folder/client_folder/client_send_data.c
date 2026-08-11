@@ -145,13 +145,13 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	ssize_t header_bytes = 0;
 
-	struct timeval timout;
+	struct timeval timeout;
 
 	timeout.tv_sec = 5;
 
 	timeout.tv_usec = 0;
 
-	if(setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout))==-1){
+	if(setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout))==-1){
 
 		printf("Error on setting the timer on client socket: %s\n", strerror(errno));
 
