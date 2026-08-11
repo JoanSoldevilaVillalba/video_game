@@ -64,7 +64,7 @@ int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_addre
 
 	if(*(client_file_descriptor)<0){
 
-		printf("Error, setupConnection: %s\n",strerror( errno));
+		printf("Error, no file descriptor was assigned to client: %s\n",strerror( errno));
 
 		return -1;
 
@@ -85,26 +85,18 @@ int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_addre
 
 	if(result_translation <=0){
 
-		printf("Error, setupConnection, inet_pton(possible incorrect format): %s\n", strerror(errno));
+		printf("Error, possible incorrect format: %s\n", strerror(errno));
 
 		return -1;
 
 	}
 
-
-	if(result_translation<0){
-
-		printf("Error, setupConnection: %s\n",strerror(errno));
-
-		return -1;
-
-	}
 
 	status = connect(*(client_file_descriptor), (struct sockaddr*)server_address, sizeof(*(server_address)));
 
 	if(status<0){
 
-		printf("Error, setupConnection: %s\n",strerror(errno));
+		printf("Error, connection with server was not possible: %s\n",strerror(errno));
 
 		return -1;
 
@@ -160,7 +152,7 @@ ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER
 
 		if(result == -1){
 
-			printf("Error, connection was broken: %s\n", strerror(errno));
+			printf("Unable to send message to server", strerror(errno));
 
 			result = -1;
 
@@ -177,10 +169,6 @@ ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER
 
 
 	return result;
-
-
-
-
 
 }
 
@@ -203,7 +191,7 @@ int handleServerCommunication(int server_port){
 
 	if(setupConnection(&client_file_descriptor, &server_address, server_port) == -1){
 
-		printf("Error, handleServerCommmunication: unable to establish connection with the server\nExiting...");
+		printf("Error, unable to establish connection with the server\nExiting...");
 
 		return -1;
 
@@ -337,14 +325,17 @@ int handleServerCommunication(int server_port){
 
 						if(result_send_receive == -1){
 
+		                                        second_number = BROKEN_QUIT;
 
+							first_number = QUIT;
 
-						}
+							communicate = true;
 
+							break;
+
+		                                }
 
 						printf("Server responded with the following message: %s\n", buffer_receive);
-
-						//for now, there is just one player: the person who is testing the videogame, therefore we are going to set communciate to false 
 
 						communicate = false;
 
@@ -460,8 +451,6 @@ int handleServerCommunication(int server_port){
 
 							printf("Client wants to quit. Servers response: %s. Client is closing connection. Goodbye ...\n", buffer_receive);
 
-							sending = false;
-
 							break;
 
 
@@ -471,9 +460,6 @@ int handleServerCommunication(int server_port){
 
 							printf("Closing connection. Goodbye ...\n");
 
-							sending = false;
-
-
 							break;
 
 
@@ -481,8 +467,6 @@ int handleServerCommunication(int server_port){
 						case BROKEN_QUIT:
 
 							printf("Broken connection: unable to receive or send information to server. Closing connection. Goodbye ...\n");
-
-							sending = false;
 
 							break;
 
