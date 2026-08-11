@@ -55,8 +55,6 @@ RANDOM_MESSAGE = 2,
 
 GAME_PLAY = 3,
 
-DEFAULT = 4
-
 }FIRST_LAYER;
 
 
@@ -226,8 +224,17 @@ int handleServerCommunication(int server_port){
 
 			printf("Enter a number down below:\n");
 
-			scanf("%d", &option);
+			do{
 
+				scanf("%d", &option);
+
+				if(option<0 || option>3){
+
+					printf("Error, the number that you have enterd is invalid. Try again (look at the menu).\n");
+
+				}
+
+			}while(option<0 || option>3);
 			switch(option){
 
 				case ENTERING_CREATING_GAME:
@@ -259,6 +266,7 @@ int handleServerCommunication(int server_port){
 					temporary_buffer = "2|0|This is a random message";
 
 					break;
+
 
 			}
 
