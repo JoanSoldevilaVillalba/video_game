@@ -17,7 +17,7 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
 	int ret = -1;
 
-	int time_out = 10000;
+	int time_out = 20000;
 
         while(total_length < length){
 
@@ -81,7 +81,7 @@ ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
 
 	int ret  =-1;
 
-	int time_out = 10000;
+	int time_out = 15000;
 
         while(total_length<length){
 

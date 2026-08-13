@@ -120,7 +120,7 @@ void printMenuSC(){
 
 bool validate_message_length(const char* temporary_pointer){
 
-        if(BUFFER_SIZE < strlen(temporary_pointer)){
+        if(BUFFER_SIZE <= strlen(temporary_pointer)){
 
                 return false;
 
@@ -144,7 +144,7 @@ ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER
 
 	if(correct_length == true){
 
-		strncpy(buffer, buffer, strlen(temporary_pointer));
+		strncpy(buffer, temporary_pointer, strlen(temporary_pointer));
 
 		buffer[strlen(temporary_pointer)] = '\0';
 
@@ -270,9 +270,9 @@ int handleServerCommunication(int server_port){
 
 				communicate = true; //this does not really matter
 
-				sending = false;
-
 			}else if(result_send_receive == -2){
+
+				//when string exceeds buffer limit that we have defined (BUFFER_SIZE)
 
 				communicate = false;
 
@@ -359,8 +359,6 @@ int handleServerCommunication(int server_port){
 
 						communicate = false;
 
-						sending = false;
-
 						break;
 
 					case GAME_FOUND:
@@ -374,8 +372,6 @@ int handleServerCommunication(int server_port){
 						second_number = PROLOGUE;
 
 						communicate = true;
-
-						sending = false;
 
 						break;
 
@@ -393,8 +389,6 @@ int handleServerCommunication(int server_port){
 							printf("Client is now waiting for the menu ....");
 
 							temporary_buffer = "3|0|client waiting for menu";
-
-							sending = true;
 
 							communicate = true;
 

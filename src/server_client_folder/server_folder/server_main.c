@@ -153,7 +153,7 @@ void* handle_client(void* arg){
 
 				clock_gettime(CLOCK_REALTIME, &ts);
 
-				ts.tv_sec +=30;
+				ts.tv_sec +=5;
 
 				int timed_out = 0;
 
