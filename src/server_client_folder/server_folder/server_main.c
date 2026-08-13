@@ -291,6 +291,41 @@ void* handle_client(void* arg){
 
 	}
 
+	//when closing the connection, we need to check wether this client has created a game or not
+
+	/*
+
+
+typedef struct{
+
+int first_player;
+
+int second_player;
+
+char name[62];
+
+int game_id;
+
+pthread_cond_t game_condition;
+
+}game_struct_players;
+
+client->pointer_list_game + index_game
+
+	*/
+
+	if(((client->pointer_list_game) + index_game)->first_player !=-1){
+
+		//we need to set this to -1 so that other players can use this slot in order to play/create a game
+
+              ((client->pointer_list_game) + index_game)->first_player = -1;
+
+		//we have not done menu or access to gamepay yet to the client-server model, so second_plkayer will be untouched for now
+
+
+	}
+
+
 	pthread_mutex_lock(&mutex_thread_counter);
 
 		counter_thread --;
