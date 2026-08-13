@@ -83,7 +83,7 @@ int number_to_char(char* pointer, int temporary){
 		temporary = temporary/10;
 
 
-		*(pointer + i + counter) = residual +'0';
+		*(pointer + i) = residual +'0';
 
 		i++;
 
@@ -310,7 +310,7 @@ void* handle_client(void* arg){
 				counter = number_to_char((temporary_buffer + counter), client->socket_fd);
 
 
-				counter = number_to_char((temporary_buffer + counter), ((client->pointer_list_game) + game_index)->second_player);
+				counter = number_to_char((temporary_buffer + counter), ((client->pointer_list_game) + index_game)->second_player);
 
 				counter = 0;
 
