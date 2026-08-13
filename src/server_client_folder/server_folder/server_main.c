@@ -214,7 +214,7 @@ void* handle_client(void* arg){
 				}else{
 
 					//in the other cases, we have already sent a message at the beginning, because the return string of create_game is already sent to the client and has already followed its own internal protocol game logic.
-					//this is for specific cases, when no games were found or a game was found  and now the client is able to play the game.
+					//this is for specific cases, when no games were found or a game was found and now the client is able to play the game.
 					continue;
 
 				}
@@ -262,7 +262,7 @@ void* handle_client(void* arg){
 
 		//for now when the server  has to big of a message, we are going to change it so that the client can initiate quit statement
 
-		if(strlen(temporary_pointer)>BUFFER_SIZE){
+		if(strlen(temporary_pointer)>=BUFFER_SIZE){
 
 			printf("Error, server was trying to send a message that exceeded the limit\n");
 
