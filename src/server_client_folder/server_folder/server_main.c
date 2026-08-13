@@ -23,7 +23,7 @@ QUIT = 1,
 
 RANDOM_MESSAGE = 2,
 
-GAME_TIME = 3
+MENU_PREPERATION = 3
 
 }FIRST_LAYER;
 //we are going to make ssure that the server only has one layer , because the server is a memoryless server
@@ -51,6 +51,59 @@ pthread_mutex_t mutex_thread_counter;
 pthread_cond_t conditional_variable;
 
 int counter_thread; //automaticlyh it is goingto be initilized to zero
+
+void reverse(char* pointer){
+
+	int length = sizeof(pointer);
+
+	for(int i = 0;i<length;i++){
+
+		char temp = *(pointer + i);
+
+		*(pointer + i) = *(pointer + length - 1 - i);
+
+		*(pointer + length - 1 - i) = temp;
+
+	}
+
+}
+
+int number_to_char(char* pointer, int temporary){
+
+	int i = 0;
+
+	int residual = 0;
+
+
+	while(temporary>=10){
+
+		residual = temporary % 10;
+		//residual is the first number that we are receving
+
+		temporary = temporary/10;
+
+
+		*(pointer + i + counter) = residual +'0';
+
+		i++;
+
+	}
+
+	*(pointer + i) = temporary + '0';
+
+	++i;
+
+	*(pointer + i)  = '\0';
+
+	reverse(pointer);
+
+	i = i - 1;
+
+	return i;
+
+}
+
+
 char* create_game(int temporary_fd, char* buffer_receive, int* result_function, int* index_game, game_struct_players* game_list){
 
 	int i = 0;
@@ -236,14 +289,34 @@ void* handle_client(void* arg){
 
 				break;
 
-			case GAME_TIME:
+			case MENU_PREPERATION:
 
-				//not yet implemented: future
-				//for now we are just going to send back a quit statment
+				//we are going to send the file descriptor of the current client aswell as the second player that has decided to enter the game
 
-				temporary_pointer = "1|0|Server wants to quit, Goodbye";
+				//we are going to have to perform some trype of concatination
 
-				quit = true;
+				//first number is 3 (GAME_PLAY)
+
+				//sense we want to shoe the menu to the client, we are going to have to send 7: MENU
+
+				temporary_pointer = "3|7|";
+
+				char temporary_buffer[BUFFER_SIZE] = "3|7|";
+
+				counter = 4;
+
+				//by setting counter to four, we are bypasing 3|7|, which is needed becuase it is part of the client-server model protocol
+
+				counter = number_to_char((temporary_buffer + counter), client->socket_fd);
+
+
+				counter = number_to_char((temporary_buffer + counter), ((client->pointer_list_game) + game_index)->second_player);
+
+				counter = 0;
+
+				//quit = true;
+
+				temporary_pointer = temporary_buffer;
 
 				break;
 

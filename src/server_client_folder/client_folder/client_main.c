@@ -183,7 +183,7 @@ int handleServerCommunication(int server_port){
 
 	int option = 0, client_file_descriptor = -1, first_number = -1, second_number = -1, counter = 0;
 
-        bool quit = false, communicate = false, sending = false;
+        bool quit = false, memory = false, input = true;
 
 
 	memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive,0,sizeof(buffer_receive)); memset(&server_address,0,sizeof(server_address));
@@ -203,10 +203,9 @@ int handleServerCommunication(int server_port){
 
 		temporary_buffer = NULL;
 
-		counter = 0 ;
+		counter = 0;
 
-		if(communicate == false){
-
+		if(input == true){
 
 			printMenuSC();
 
@@ -223,13 +222,20 @@ int handleServerCommunication(int server_port){
 				}
 
 			}while(option<0 || option>3);
+
+			memory = false;
+
+		}
+
+		if(memory == false){
+
 			switch(option){
 
 				case ENTERING_CREATING_GAME:
 
 					temporary_buffer = "0|0|client wants game";
 
-					communicate = true;
+					memory = true;
 
 					first_number = ENTERING_CREATING_GAME;
 
@@ -239,7 +245,7 @@ int handleServerCommunication(int server_port){
 
 					temporary_buffer ="1|0|client wants to quit";
 
-					communicate = false;
+					memory = false;
 
 					quit = true;
 
@@ -268,13 +274,13 @@ int handleServerCommunication(int server_port){
 
 				quit = true;
 
-				communicate = true; //this does not really matter
+				memory = true; //this does not really matter
 
 			}else if(result_send_receive == -2){
 
 				//when string exceeds buffer limit that we have defined (BUFFER_SIZE)
 
-				communicate = false;
+				memory = false;
 
 				continue;
 
@@ -304,6 +310,8 @@ int handleServerCommunication(int server_port){
 
 			}
 
+		}
+
 
 		temporary_buffer = NULL;
 
@@ -329,7 +337,9 @@ int handleServerCommunication(int server_port){
 
 							first_number = QUIT;
 
-							communicate = true;
+							memory = true;
+
+							input = false;
 
 							break;
 
@@ -337,15 +347,28 @@ int handleServerCommunication(int server_port){
 
 						printf("Server responded with the following message: %s\n", buffer_receive);
 
-						communicate = false;
+						//the server can only respond with two possible messages if the server is trying to find a gamne for us:
 
-						first_number = 0;
+						//0|3: game not found, time expired
+
+						//0|1: game was found
+
+						/*
+						For the purpose of testing on how our client-server model behaves we are going to do the folloiwng:
+
+						if the response is gmae was found, we are going just simply quit
+
+						if a game was found, we are just going to go to the pro
+
+						*/
+
+						memory = true;
+
+						first_number = ENTERING_CREATING_GAME;
 
 						counter = 2; 
 
 						second_number = buffer_receive[counter]-'0';
-
-						sending = false;
 
 						break;
 
@@ -353,11 +376,17 @@ int handleServerCommunication(int server_port){
 
 						printf("The server was not able to find a game for us, server response: %s\n", buffer_receive);
 
-						first_number = -1;
+						//we are just going to let the client decide what he or she wants to do once a game is not found
 
-						second_number = -1;
+						counter = 0;
 
-						communicate = false;
+						first_number = QUIT;
+
+						second_number = CLIENT_QUIT;
+
+						memory = false; //here we do want to send a quit statment to the server
+
+						input = false;
 
 						break;
 
@@ -371,7 +400,9 @@ int handleServerCommunication(int server_port){
 
 						second_number = PROLOGUE;
 
-						communicate = true;
+						memory = true;
+
+						input = false;
 
 						break;
 
@@ -390,11 +421,13 @@ int handleServerCommunication(int server_port){
 
 							temporary_buffer = "3|0|client waiting for menu";
 
-							communicate = true;
-
 							first_number = GAME_PLAY;
 
 							second_number = MENU;
+
+							memory = false;
+
+							input = false;
 
 
 							break;
@@ -475,8 +508,7 @@ int handleServerCommunication(int server_port){
 
 		}
 
-		sleep(5);
-	}
+	
 
 	close(client_file_descriptor);
 
