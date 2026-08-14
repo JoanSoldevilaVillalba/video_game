@@ -5,11 +5,11 @@ typedef enum{
 
 //the following are options when the user wants to play the game and either has to: wait for another player to enter, needs to close the connection because nobody wants to play or games are full and when a game has been found and the client side has to switch context
 
-GAME_FOUND = 1,
+	GAME_FOUND = 1,
 
-WAITING_FOR_GAME = 2,
+	WAITING_FOR_GAME = 2,
 
-GAME_NOT_FOUND = 3,
+	GAME_NOT_FOUND = 3,
 
 }SECOND_LAYER_WAITING;
 
@@ -19,11 +19,12 @@ typedef enum{
 
 //the following are options for quitting. There are differnt types of quitting: when the connection is broken, when the server decided to quit, when the client decided to quit (server deciding to quit is redundant because the client always initiates, but we are still going to add it)
 
-CLIENT_QUIT = 4,
+	CLIENT_QUIT = 4,
 
-SERVER_QUIT = 5,
+	SERVER_QUIT = 5,
 
-BROKEN_QUIT = 6
+	BROKEN_QUIT = 6
+
 
 }SECOND_LAYER_QUIT;
 
@@ -33,11 +34,11 @@ BROKEN_QUIT = 6
 typedef enum{ 
 //this typedef enumerator is used for when the server has found a game, and now the client is able to start playing the game
 
-MENU = 7,
+	MENU = 7,
 
-PLAY_TIME = 8,
+	PLAY_TIME = 8,
 
-PROLOGUE = 9
+	PROLOGUE = 9
 
 
 }SECOND_LAYER_PLAY;
@@ -47,15 +48,47 @@ PROLOGUE = 9
 
 typedef enum{
 
-ENTERING_CREATING_GAME = 0,
+	ENTERING_CREATING_GAME = 0,
 
-QUIT = 1,
+	QUIT = 1,
 
-RANDOM_MESSAGE = 2,
+	RANDOM_MESSAGE = 2,
 
-GAME_PLAY = 3,
+	GAME_PLAY = 3,
+
 
 }FIRST_LAYER;
+
+int menu_fd_parser(char* pointer_string, int* counter, char* end_terminator){
+
+
+// inside of pointer_string, there is going to be something like the following message: 3|7|132|21321
+//first two numbers are just for protocol, last to integers are the actual integers that we want to receive in order to display this in menu
+//we use memset in every iteratrion of the while loop, meaning that at the end of the stirng, we know there is a null terminator
+	int i = *(counter);
+
+	int current = 0;
+
+	int temporary = 0;
+
+	while(*(pointer_string + i) !=*(end_terminator)){
+
+		temporary = *(pointer_string + i) - '0';
+
+		current = current * 10;
+
+		current = current + temporary;
+
+		i++;
+
+	}
+
+	*(counter) = ++i; //i always points to the correct next character
+
+	return current;
+
+}
+
 
 
 int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_address, int port){
@@ -440,9 +473,15 @@ int handleServerCommunication(int server_port){
 
 							counter = 4;
 
-							int client_1 = buffer_receive[counter++] - '0';
+							//current implementation wil not work if there are multiple numberss for each file descriptor/client that is  connected to the game
 
-							int client_2 = buffer_receive[++counter] - '0';
+							char* null_terminator_temp = "|";
+
+							client_1 =  menu_fd_parser(buffer_receive, &counter, null_terminator_temp);
+
+							null_terminator_temp=="\0";
+
+							client_2 = menu_fd_parser(buffer_receive + counter, &counter,null_terminator_temp );
 
 							printf("----- GAME MENU -----");
 
