@@ -54,7 +54,7 @@ int counter_thread; //automaticlyh it is goingto be initilized to zero
 
 void reverse(char* pointer){
 
-	int length = sizeof(pointer);
+	int length = strlen(pointer);
 
 	for(int i = 0;i<length;i++){
 
@@ -313,7 +313,7 @@ void* handle_client(void* arg){
 
 				counter++;
 
-				temporary_buffer + counter = "|"; //in number_to_char, this position is set to null terminator
+				temporary_buffer[counter] = '|'; //in number_to_char, this position is set to null terminator
 
 				counter++;
 
