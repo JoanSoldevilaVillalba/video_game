@@ -214,7 +214,7 @@ int handleServerCommunication(int server_port){
 
 	ssize_t result_send_receive = 0;
 
-	int option = 0, client_file_descriptor = -1, first_number = -1, second_number = -1, counter = 0;
+	int option = 0, client_file_descriptor = -1, first_number = -1, second_number = -1, counter = 0, client_1 = -1, client_2 = -1;
 
         bool quit = false, memory = false, input = true;
 
