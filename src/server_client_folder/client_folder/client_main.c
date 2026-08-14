@@ -399,7 +399,7 @@ int handleServerCommunication(int server_port){
 
 						first_number = ENTERING_CREATING_GAME;
 
-						counter = 2; 
+						counter = 2;
 
 						second_number = buffer_receive[counter]-'0';
 
