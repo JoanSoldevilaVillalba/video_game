@@ -309,6 +309,13 @@ void* handle_client(void* arg){
 
 				counter = number_to_char((temporary_buffer + counter), client->socket_fd);
 
+				//we need to add some type of seperator between both file descriptors
+
+				counter++;
+
+				temporary_buffer + counter = "|"; //in number_to_char, this position is set to null terminator
+
+				counter++;
 
 				counter = number_to_char((temporary_buffer + counter), ((client->pointer_list_game) + index_game)->second_player);
 
