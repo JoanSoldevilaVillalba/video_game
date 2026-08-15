@@ -157,6 +157,80 @@ game_struct_players* pointer_list_game;
 
 }struct_client;
 
+bool validate_message_length(const char* temporary_pointer){
+
+        if(BUFFER_SIZE <= strlen(temporary_pointer)){
+
+                return false;
+
+        }else{
+
+                return true;
+
+        }
+
+}
+
+
+
+ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER_SIZE], int client_file_descriptor){
+
+        bool correct_length = validate_message_length(temporary_pointer);
+
+        ssize_t result = 0;
+
+        if(correct_length == true){
+
+                strncpy(buffer, temporary_pointer, strlen(temporary_pointer));
+
+                buffer[strlen(temporary_pointer)] = '\0';
+
+                result = send_framed_message(client_file_descriptor, buffer, (uint32_t)strlen(temporary_pointer));
+
+                if(result == -1){
+
+                        printf("Unable to send message to server: %s\n", strerror(errno));
+
+                        result = -1;
+
+                }
+
+        }else{
+
+                printf("Error, the following message exceeds the BUFFER_SIZE limit: %s\n", temporary_pointer);
+
+                result = -2;
+
+        }
+
+
+
+        return result;
+
+}
+
+ssize_t receive_validated_message(char buffer[BUFFER_SIZE], int client_file_descriptor){
+
+	//we first need to receive the information
+
+	ssize_t result_bytes_receive = receive_framed_message(client_file_descriptor, buffer, (ssize_t) BUFFER_SIZE);
+
+	const char* temporary_pointer = buffer;
+
+	bool validated = validate_message_length = (temporary_pointer);
+
+	if(result_bytes_receive == -1 || !validated){
+
+	//possible broken connection, all bytes where not received (initial length is not equal to message received) ...
+
+		return -1;
+
+	}
+
+	return result_bytes_receive;
+
+}
+
 void* handle_client(void* arg){
 
 	struct_client* client = (struct_client*)arg;
@@ -165,11 +239,11 @@ void* handle_client(void* arg){
 
 	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE];
 
-	int client_game_id = -1,result = 0, counter = 0, first_number = 0, second_number = 0, index_game;
+	int client_game_id = -1,result = 0, counter = 0, first_number = 0, second_number = 0, index_game = -1;
 
 	bool quit = false;
 
-	ssize_t bytes_received = 0, bytes_sent = 0;
+	ssize_t bytes_result = 0;
 
 	const char* temporary_pointer = NULL;
 
@@ -177,17 +251,17 @@ void* handle_client(void* arg){
 
 		memset(buffer_receive, 0, sizeof(buffer_receive)); memset(buffer_send, 0, sizeof(buffer_send)); temporary_pointer = NULL; counter = 0 ;
 
-		bytes_received =  receive_framed_message(client->socket_fd, buffer_receive, (ssize_t) BUFFER_SIZE);
+		//we need a way to check what  we are receving does not exceed the limit of BUFFER_SIZE
 
-		if(bytes_received == -1){
+		bytes_result = receive_validated_message(buffer_receive, client->socket_fd);
 
-			printf("Error,handle_client: closing the connection with client\n");
+		if(bytes_result == -1){
 
-			//instead of seting quit to true, we are simply going to break here to exit the while loop
+			printf("Error, closing the connection with client, %s\n", strerror(errno));
 
-			//this is due to where we are calling receive-framed_message from, beacuse after this we enter the switch case, and quit set to true still implies having to send a message to the client
+			quit = true;
 
-			break;
+			break; //we are simply breaking because the connection is already broken, no need for more main while loop code
 
 		}
 
@@ -214,14 +288,10 @@ void* handle_client(void* arg){
 
 				temporary_pointer = create_game(client->socket_fd, buffer_receive, &result, &index_game, client->pointer_list_game);
 
-				strncpy(buffer_send, temporary_pointer, strlen(temporary_pointer));
-
-				buffer_send[strlen(temporary_pointer)]='\0';
-
-				bytes_sent = send_framed_message(client->socket_fd, buffer_send, strlen(temporary_pointer));
+					bytes_result = send_validated_message(temporary_pointer, buffer_send, client->socket_fd);
 
 
-				if(bytes_sent == -1){
+				if(bytes_result == -1){
 
 					printf("Error, borken connection: unable to send information to client. Closing connection\n");
 
@@ -231,7 +301,7 @@ void* handle_client(void* arg){
 
 				memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive, 0, sizeof(buffer_receive));
 
-				if(result == 2){
+				if(result == 2){ //we need to change this, this is a magical number
 
 					//creating a game, meaning that the client is going to have to wait until someone enters the game that he or she created
 
@@ -305,23 +375,17 @@ void* handle_client(void* arg){
 
 				counter = 4;
 
-				//by setting counter to four, we are bypasing 3|7|, which is needed becuase it is part of the client-server model protocol
-
 				counter = number_to_char((temporary_buffer + counter), client->socket_fd);
-
-				//we need to add some type of seperator between both file descriptors
 
 				counter++;
 
-				temporary_buffer[counter] = '|'; //in number_to_char, this position is set to null terminator
+				temporary_buffer[counter] = '|';
 
 				counter++;
 
 				counter = number_to_char((temporary_buffer + counter), ((client->pointer_list_game) + index_game)->second_player);
 
 				counter = 0;
-
-				//quit = true;
 
 				temporary_pointer = temporary_buffer;
 
@@ -336,31 +400,12 @@ void* handle_client(void* arg){
 
 		}
 
-		//we need to validate the length of the message that we are going to be returning
 
-		//in the future we probably should also validate the length of the incoming message, especially in c, sense array sreally do not have any boundries
+		bytes_result = send_validated_message(temporary_pointer, buffer_send, client->socket_fd);
 
-		//for now when the server  has to big of a message, we are going to change it so that the client can initiate quit statement
+		if(bytes_result == -1){
 
-		if(strlen(temporary_pointer)>=BUFFER_SIZE){
-
-			printf("Error, server was trying to send a message that exceeded the limit\n");
-
-			temporary_pointer = "1|0|Server wants to quit, Goodbye";
-
-			printf("Server is sending back the following message:%s\n", temporary_pointer);
-
-		}
-
-		strncpy(buffer_send, temporary_pointer, strlen(temporary_pointer)); //remember thgat strlen(temporary_pointer) does not count the null terminator
-
-		buffer_send[strlen(temporary_pointer)] = '\0';
-
-		bytes_sent = send_framed_message(client->socket_fd, buffer_send, strlen(temporary_pointer));
-
-		if(bytes_sent == -1){
-
-			printf("Error,handle_client: closing connection with client\n");
+			printf("Error: closing connection with client\n");
 
 			quit = true;
 
@@ -446,13 +491,15 @@ int main()
 
 		printf("for some reason there was an error with the configuration of the socket: SO_REUSEADDR\n");
 
-		return 2;
+		return -1;
 
 	}
 
 	if(setsockopt(server_file_descriptor, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))){
 
 		printf("for some reason there was an error with the configuration of the socket: SO_REUSEPORT\n");
+
+		return -1;
 
 	}
 
@@ -468,7 +515,8 @@ int main()
 
 	        perror("bind failed");
 
-	        exit(EXIT_FAILURE);
+		return -1;//i do not really know what exit(EXIT_FAILURE) really does, yes it makes the main thread finish execution, but does it behave the same as a return statement
+
 	}
 
 	listen(server_file_descriptor,2);
@@ -507,10 +555,9 @@ int main()
 
 			pthread_mutex_unlock(&mutex_thread_counter);
 
-			free (new_client);
+			free(new_client);
 
 			continue;
-
 
 		}
 
