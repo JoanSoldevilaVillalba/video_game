@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <netinet/in.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -5,6 +6,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/types.h>
 
 #define BUFFER_SIZE 64
 
@@ -21,22 +23,24 @@ typedef enum{
 
 	RANDOM_MESSAGE = 2,
 
-	MENU_PREPERATION = 3
+	MENU_PREPERATION = 3,
+
+	WAITING_INIT = 4
 
 }FIRST_LAYER;
 
 
 typedef struct{
 
-int first_player;
-
-int second_player;
+int player_id[2];
 
 char name[62];
 
 int game_id;
 
 pthread_cond_t game_condition;
+
+bool player_ready[2];
 
 }game_struct_players;
 
@@ -56,11 +60,6 @@ pthread_mutex_t mutex_thread_counter;
 pthread_cond_t conditional_variable;
 
 int counter_thread;
-
-#include "server_send_data.h"
-
-#include "server_logic.h"
-
 
 void* handle_client(void* arg);
 
