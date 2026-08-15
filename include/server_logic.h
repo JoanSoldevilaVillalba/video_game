@@ -1,9 +1,13 @@
 #pragma once
 
+#include <sys/types.h>
 
+#include <stdbool.h>
 
 struct game_struct_players;
+
 typedef struct game_struct_players game_struct_players;
+
 void reverse(char* pointer);
 
 int number_to_char(char* pointer, int temporary);

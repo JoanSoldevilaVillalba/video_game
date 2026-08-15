@@ -1,5 +1,5 @@
 #include "server_logic.h"
-
+#include "server.h"
 void reverse(char* pointer){
 
         int length = strlen(pointer);
