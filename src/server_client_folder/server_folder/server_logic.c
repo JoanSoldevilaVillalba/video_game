@@ -27,10 +27,8 @@ int number_to_char(char* pointer, int temporary){
         while(temporary>=10){
 
                 residual = temporary % 10;
-                //residual is the first number that we are receving
 
                 temporary = temporary/10;
-
 
                 *(pointer + i) = residual +'0';
 
@@ -80,10 +78,7 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 
                 }
 
-
         pthread_mutex_unlock(&mutex_game_list);
-
-
 
         }
 

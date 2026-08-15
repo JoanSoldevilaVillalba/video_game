@@ -185,8 +185,6 @@ void* handle_client(void* arg){
 
 			case MENU_PREPERATION:
 
-				temporary_pointer = "3|7|";
-
 				char temporary_buffer[BUFFER_SIZE] = "3|7|";
 
 				counter = 4;
@@ -204,6 +202,10 @@ void* handle_client(void* arg){
 				counter = 0;
 
 				temporary_pointer = temporary_buffer;
+
+				strncpy(buffer_send, temporary_buffer, BUFFER_SIZE);
+
+				temporary_poitner = buffer_send;
 
 				break;
 
