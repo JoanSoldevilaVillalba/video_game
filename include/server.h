@@ -6,10 +6,6 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include "server_send_data.h"
-
-#include "server_logic.h"
-
 #define BUFFER_SIZE 64
 
 #define MAX_GAMES_SIZE 2
@@ -67,6 +63,5 @@ int counter_thread;
 
 
 void* handle_client(void* arg);
-void initilizeGames(game_struct_players* game_list);
 
-void* handle_client(void* arg);
+void initilizeGames(game_struct_players* game_list);
