@@ -1,11 +1,12 @@
 #pragma once
-
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <string.h>
+#include <errno.h>
 
 ssize_t read_all(int temporary_fd, char buffer[], ssize_t length);
 

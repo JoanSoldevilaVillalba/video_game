@@ -1,5 +1,14 @@
 #include "server.h"
 
+#include "server_send_data.h"
+
+#include "server_logic.h"
+
+pthread_mutex_t mutex_game_list;
+pthread_mutex_t mutex_thread_counter;
+pthread_cond_t conditional_variable;
+int counter_thread;
+
 void* handle_client(void* arg){
 
 	struct_client* client = (struct_client*)arg;
@@ -41,7 +50,7 @@ void* handle_client(void* arg){
 		switch(first_number){
 
 
-			case ENTERING_CREATING_GAME:
+			case ENTERING_CREATING_GAME:{
 
 				struct timespec ts;
 
@@ -77,7 +86,7 @@ void* handle_client(void* arg){
 
 					pthread_mutex_lock(&mutex_game_list);
 
-		                                while((client->pointer_list_game + index_game)->second_player == -1 && !timed_out){
+		                                while((client->pointer_list_game + index_game)->player_id[1] == -1 && !timed_out){
 
                 		                        int rc = pthread_cond_timedwait(&((client->pointer_list_game + index_game)->game_condition), &mutex_game_list, &ts);
 
@@ -111,7 +120,7 @@ void* handle_client(void* arg){
 				}
 
 				break;
-
+				}
 
 			case RANDOM_MESSAGE:
 
@@ -153,7 +162,7 @@ void* handle_client(void* arg){
 
 				break;
 
-			case WAITING_INIT:
+			case WAITING_INIT:{
 
 				struct timespec ts;
 
@@ -169,9 +178,9 @@ void* handle_client(void* arg){
 
 				pthread_mutex_lock(&mutex_game_list);
 
-					(client->pointer_list_game + index_game)->player_ready[index_game ^ 1] = (bool)play;
+					(client->pointer_list_game + index_game)->ready_player[index_game ^ 1] = (bool)play;
 
-					pthread_cond_signal(&(game_list + i)->game_condition);
+					pthread_cond_signal(&(client->pointer_list_game + index_game)->game_condition);
 
 				pthread_mutex_unlock(&mutex_game_list);
 
@@ -189,11 +198,11 @@ void* handle_client(void* arg){
 
 					pthread_mutex_lock(&mutex_game_list);
 
-						while((client->pointer_list_game + index_game)->player_ready[index_game ^ 1] == false && !timed_out){
+						while((client->pointer_list_game + index_game)->ready_player[index_game ^ 1] == false && !timed_out){
 
 							int rc = pthread_cond_timedwait(&((client->pointer_list_game + index_game)->game_condition), &mutex_game_list, &ts);
 
-							if(rc == ETIMEOUT){
+							if(rc == ETIMEDOUT){
 
 								timed_out = 1;
 
@@ -203,7 +212,7 @@ void* handle_client(void* arg){
 
 					pthread_mutex_unlock(&mutex_game_list);
 
-					if(timed_out == 1 || (client-> pointer_list_game + index_game)->player_ready[index_game ^ 1] == false){
+					if(timed_out == 1 || (client-> pointer_list_game + index_game)->ready_player[index_game ^ 1] == false){
 
 						temporary_pointer = "1|7|other player quit game";
 
@@ -213,7 +222,10 @@ void* handle_client(void* arg){
 
 					}
 
+				}
+
 				break;
+				}
 
 			default:
 
@@ -360,10 +372,6 @@ int main()
 		new_client->socket_fd = new_socket;
 
 		new_client->pointer_list_game = game_list;
-
-		//initizliang new variable for client thread, this is specific for the followign case: client has enterd a game (created or found game) and now the thread is going to be put to sleep unbtil the client send a message indicating after receving menu ifnormatino that he or shee wants to play or quit the game
-
- 		pthread_cond_init(&client->conditional_init_game,NULL);
 
 		pthread_mutex_lock(&mutex_thread_counter);
 

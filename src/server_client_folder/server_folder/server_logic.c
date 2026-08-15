@@ -1,5 +1,6 @@
 #include "server_logic.h"
-#include "server.h"
+#include "server_send_data.h"
+
 void reverse(char* pointer){
 
         int length = strlen(pointer);
@@ -58,9 +59,9 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
 
                 pthread_mutex_lock(&mutex_game_list);
 
-                if((game_list+i)->game_id!=-1 && (game_list+i)->second_player==-1){
+                if((game_list+i)->game_id!=-1 && (game_list+i)->player_id[1]==-1){
 
-                        (game_list+i)->second_player = temporary_fd;
+                        (game_list+i)->player_id[1] = temporary_fd;
                         *(result_function) = 1;
                         *(index_game) = i;
                         pthread_cond_signal(&(game_list + i)->game_condition);
@@ -70,7 +71,7 @@ char* create_game(int temporary_fd, char* buffer_receive, int* result_function, 
                 }else if((game_list+i)->game_id==-1){
 
                         (game_list+i)->game_id = i;
-                        (game_list+i)->first_player = temporary_fd;
+                        (game_list+i)->player_id[0] = temporary_fd;
                         *(result_function) = 2;
                         *(index_game) = i;
                         pthread_mutex_unlock(&mutex_game_list);
