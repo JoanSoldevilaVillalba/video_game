@@ -1,7 +1,9 @@
 #pragma once
 
-typedef struct game_struct_players;
 
+
+struct game_struct_players;
+typedef struct game_struct_players game_struct_players;
 void reverse(char* pointer);
 
 int number_to_char(char* pointer, int temporary);
