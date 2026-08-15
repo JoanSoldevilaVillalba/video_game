@@ -23,7 +23,11 @@ typedef enum{
 
 	SERVER_QUIT = 5,
 
-	BROKEN_QUIT = 6
+	BROKEN_QUIT = 6,
+
+	OTHER_PLAYER_QUIT = 7,
+
+	YOU_PLAYER_QUIT = 8
 
 
 }SECOND_LAYER_QUIT;
@@ -38,7 +42,9 @@ typedef enum{
 
 	PLAY_TIME = 8,
 
-	PROLOGUE = 9
+	PROLOGUE = 9,
+
+	SETUP = 10
 
 
 }SECOND_LAYER_PLAY;
@@ -476,6 +482,36 @@ int handleServerCommunication(int server_port){
 							printf("First player: %d\n", client_1);
 
 							printf("Second pllayer: %d\n", client_2);
+
+							printf("Do you want to play (1) or quit (0)?");
+							printf("Enter your option down below\n");
+
+							do{
+
+								scnaf("%d", &option);
+
+								if(option<0 || option>1){
+
+									printf("Error, invalid input, must enter zero or one\n");
+
+								}
+
+							}while(option<0 || option>1);
+
+
+							memset(buffer_receive,0,sizeof(buffer_receive));
+
+							//we are going to have to fix the second number
+
+							temporary_buffer = "4|i|";
+
+							buffer_receive = "4|i|";
+
+							buffer_receive[4] = option + '0';
+
+							temporary_buffer = buffer_receive;
+
+							memset(buffer_receive, 0, sizeof(buffer_receive));
 
 							break;
 
