@@ -1,4 +1,4 @@
-#include "server_logic.h"
+#pragma once
 
 void reverse(char* pointer);
 
