@@ -52,30 +52,6 @@ int number_to_char(char* pointer, int temporary){
 
 }
 
-void eliminate_game_slot(){
-
-//after a client has finished its session with the server, it needs to eliminate its status within game_list, indicating to the other player that he has quit aswell as letting other poeple enter the slot that has been liberated
-
-//we need to send some type of signal to the other player, maybe using conditional variable, but the other thread is not sleeping, i do not know how
-   if(((client->pointer_list_game) + index_game)->first_player !=-1){
-
-                //we need to set this to -1 so that other players can use this slot in order to play/create a game
-
-              ((client->pointer_list_game) + index_game)->first_player = -1;
-
-                //we have not done menu or access to gamepay yet to the client-server model, so second_plkayer will be untouched for now
-
-
-        }
-
-
-
-}
-
-
-
-
-
 char* create_game(int temporary_fd, char* buffer_receive, int* result_function, int* index_game, game_struct_players* game_list){
 
         int i = 0;
