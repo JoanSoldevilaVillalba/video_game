@@ -59,7 +59,7 @@ typedef enum{
 
 }FIRST_LAYER;
 
-int menu_fd_parser(char* pointer_string, int* counter, char* end_terminator){
+int menu_fd_parser(char* pointer_string, int* counter, char end_terminator){
 
 
 // inside of pointer_string, there is going to be something like the following message: 3|7|132|21321
@@ -475,13 +475,13 @@ int handleServerCommunication(int server_port){
 
 							//current implementation wil not work if there are multiple numberss for each file descriptor/client that is  connected to the game
 
-							char* null_terminator_temp = '|';
+							//char* null_terminator_temp = '|';
 
-							client_1 =  menu_fd_parser(buffer_receive, &counter, null_terminator_temp);
+							client_1 =  menu_fd_parser(buffer_receive, &counter, '|');
 
-							null_terminator_temp='\0';
+//							null_terminator_temp='\0';
 
-							client_2 = menu_fd_parser(buffer_receive + counter, &counter,null_terminator_temp );
+							client_2 = menu_fd_parser(buffer_receive + counter, &counter,'\0');
 
 							printf("----- GAME MENU -----");
 
