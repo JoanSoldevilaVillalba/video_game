@@ -61,17 +61,13 @@ typedef enum{
 
 int menu_fd_parser(char* pointer_string, int* counter, char end_terminator){
 
-
-// inside of pointer_string, there is going to be something like the following message: 3|7|132|21321
-//first two numbers are just for protocol, last to integers are the actual integers that we want to receive in order to display this in menu
-//we use memset in every iteratrion of the while loop, meaning that at the end of the stirng, we know there is a null terminator
 	int i = *(counter);
 
 	int current = 0;
 
 	int temporary = 0;
 
-	while(*(pointer_string + i) !=*(end_terminator)){
+	while(*(pointer_string + i) != end_terminator){
 
 		temporary = *(pointer_string + i) - '0';
 
@@ -83,7 +79,7 @@ int menu_fd_parser(char* pointer_string, int* counter, char end_terminator){
 
 	}
 
-	*(counter) = ++i; //i always points to the correct next character
+	*(counter) = ++i;
 
 	return current;
 
@@ -467,19 +463,9 @@ int handleServerCommunication(int server_port){
 
 						case MENU:
 
-							//inside buffer_receive, we have both names that the server has assigned to use: remember that for now the names are the server side file descriptors of both players that enterd the same game
-
-							//we are going to supose that both file descriptors are separated by the following charcter: '|'
-
 							counter = 4;
 
-							//current implementation wil not work if there are multiple numberss for each file descriptor/client that is  connected to the game
-
-							//char* null_terminator_temp = '|';
-
 							client_1 =  menu_fd_parser(buffer_receive, &counter, '|');
-
-//							null_terminator_temp='\0';
 
 							client_2 = menu_fd_parser(buffer_receive + counter, &counter,'\0');
 
@@ -490,9 +476,6 @@ int handleServerCommunication(int server_port){
 							printf("First player: %d\n", client_1);
 
 							printf("Second pllayer: %d\n", client_2);
-
-							//we are going to have to continue the development, stopping for now
-
 
 							break;
 
