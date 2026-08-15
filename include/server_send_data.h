@@ -1,15 +1,11 @@
 #pragma once
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <errno.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <inttypes.h>
 #include <poll.h>
 
 #define BUFFER_SIZE 64
