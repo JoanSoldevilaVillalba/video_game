@@ -8,6 +8,8 @@
 
 #include "server_send_data.h"
 
+#include "server_logic.h"
+
 #define BUFFER_SIZE 64
 
 #define MAX_GAMES_SIZE 2
