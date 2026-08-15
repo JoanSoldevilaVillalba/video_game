@@ -374,24 +374,15 @@ int main()
 
 		pthread_mutex_unlock(&mutex_thread_counter);
 
-		if(pthread_create(&thread_clients[current_index], NULL, &handle_client,(void*)new_client ) !=0){
-
+		pthread_t temp_thread;
+		if(pthread_create(&temp_thread, NULL, &handle_client, (void*)new_client ) != 0){
 			printf("Error on creating the thread\n");
-
 			close(new_socket);
-
 			pthread_mutex_lock(&mutex_thread_counter);
-
 			counter_thread = counter_thread - 1;
-
 			pthread_mutex_unlock(&mutex_thread_counter);
-
 			free(new_client);
-
-
 		}
-
-
 
 
 	}
