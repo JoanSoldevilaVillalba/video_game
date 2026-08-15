@@ -7,8 +7,6 @@
 #include <arpa/inet.h>
 #include <poll.h>
 
-#define BUFFER_SIZE 64
-
 ssize_t read_all(int temporary_fd, char buffer[], ssize_t length);
 
 ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length);
