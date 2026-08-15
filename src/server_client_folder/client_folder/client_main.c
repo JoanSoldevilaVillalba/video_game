@@ -555,6 +555,18 @@ int handleServerCommunication(int server_port){
 
 							break;
 
+						case OTHER_PLAYER_QUIT:
+
+							printf("The other player has decided to quit unforunatly. We are exeting the game. Closing connection\n");
+
+							break;
+
+						case YOU_PLAYER_QUIT:
+
+							printf("You have decided to quit. Other player has received the new. Closing the connection");
+
+							break;
+
 					}
 
 					quit = true;
