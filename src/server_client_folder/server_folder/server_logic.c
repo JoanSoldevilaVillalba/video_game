@@ -157,7 +157,7 @@ ssize_t receive_validated_message(char buffer[BUFFER_SIZE], int client_file_desc
 
         const char* temporary_pointer = buffer;
 
-        bool validated = validate_message_length = (temporary_pointer);
+        bool validated = validate_message_length(temporary_pointer);
 
         if(result_bytes_receive == -1 || !validated){
 
