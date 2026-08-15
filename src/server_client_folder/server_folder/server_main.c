@@ -84,8 +84,6 @@ void* handle_client(void* arg){
 
 		memset(buffer_receive, 0, sizeof(buffer_receive)); memset(buffer_send, 0, sizeof(buffer_send)); temporary_pointer = NULL; counter = 0 ;
 
-		//we need a way to check what  we are receving does not exceed the limit of BUFFER_SIZE
-
 		bytes_result = receive_validated_message(buffer_receive, client->socket_fd);
 
 		if(bytes_result == -1){
@@ -94,7 +92,7 @@ void* handle_client(void* arg){
 
 			quit = true;
 
-			break; //we are simply breaking because the connection is already broken, no need for more main while loop code
+			break;
 
 		}
 
@@ -133,9 +131,7 @@ void* handle_client(void* arg){
 
 				memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive, 0, sizeof(buffer_receive));
 
-				if(result == 2){ //we need to change this, this is a magical number
-
-					//creating a game, meaning that the client is going to have to wait until someone enters the game that he or she created
+				if(result == 2){
 
 					pthread_mutex_lock(&mutex_game_list);
 
@@ -159,8 +155,6 @@ void* handle_client(void* arg){
 
 	                                }else{
 
-						//a game was found
-
 						temporary_pointer = "0|1|Game was found";
 
 	                                }
@@ -168,8 +162,6 @@ void* handle_client(void* arg){
 
 				}else{
 
-					//in the other cases, we have already sent a message at the beginning, because the return string of create_game is already sent to the client and has already followed its own internal protocol game logic.
-					//this is for specific cases, when no games were found or a game was found and now the client is able to play the game.
 					continue;
 
 				}
@@ -192,14 +184,6 @@ void* handle_client(void* arg){
 				break;
 
 			case MENU_PREPERATION:
-
-				//we are going to send the file descriptor of the current client aswell as the second player that has decided to enter the game
-
-				//we are going to have to perform some trype of concatination
-
-				//first number is 3 (GAME_PLAY)
-
-				//sense we want to shoe the menu to the client, we are going to have to send 7: MENU
 
 				temporary_pointer = "3|7|";
 
@@ -244,17 +228,6 @@ void* handle_client(void* arg){
 		}
 
 		printf("The server has succesfully sent the following message %s\n", buffer_send);
-
-
-	}
-
-	if(((client->pointer_list_game) + index_game)->first_player !=-1){
-
-		//we need to set this to -1 so that other players can use this slot in order to play/create a game
-
-              ((client->pointer_list_game) + index_game)->first_player = -1;
-
-		//we have not done menu or access to gamepay yet to the client-server model, so second_plkayer will be untouched for now
 
 
 	}
@@ -347,7 +320,7 @@ int main()
 
 	        perror("bind failed");
 
-		return -1;//i do not really know what exit(EXIT_FAILURE) really does, yes it makes the main thread finish execution, but does it behave the same as a return statement
+		return -1;
 
 	}
 
