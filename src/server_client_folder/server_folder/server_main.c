@@ -138,29 +138,26 @@ void* handle_client(void* arg){
 
 			case MENU_PREPERATION:
 
-				char temporary_buffer[BUFFER_SIZE] = "3|7|";
+			    char temporary_buffer[BUFFER_SIZE];
 
-				counter = 4;
-
-				counter = number_to_char((temporary_buffer+counter), ((client->pointer_list_game) + index_game)->player_id[0]);
-
-				counter++;
-
-				temporary_buffer[counter] = '|';
-
-				counter++;
-
-				counter = number_to_char((temporary_buffer + counter), ((client->pointer_list_game) + index_game)->player_id[1]);
-
-				counter = 0;
-
-				temporary_pointer = temporary_buffer;
-
-				strncpy(buffer_send, temporary_buffer, BUFFER_SIZE);
-
-				temporary_pointer = buffer_send;
-
-				break;
+			    if (index_game < 0 || index_game >= MAX_GAMES_SIZE) {
+				        strncpy(temporary_buffer, "4|0|error, invalid game index", BUFFER_SIZE);
+				        temporary_buffer[BUFFER_SIZE-1] = '\0';
+			    }else {
+				        int p0 = client->pointer_list_game[index_game].player_id[0];
+				        int p1 = client->pointer_list_game[index_game].player_id[1];
+				        int n = snprintf(temporary_buffer, sizeof temporary_buffer, "3|7|%d|%d", p0, p1);
+				        if (n < 0 || n >= (int)sizeof temporary_buffer) {
+				            strncpy(temporary_buffer, "1|0|Server wants to quit, Goodbye", BUFFER_SIZE);
+				            temporary_buffer[BUFFER_SIZE-1] = '\0';
+				        }
+			    }
+			    ssize_t sent = send_validated_message(temporary_buffer, buffer_send, client->socket_fd);
+			    if (sent == -1) {
+			        printf("Error sending MENU_PREPERATION to client %d\n", client->socket_fd);
+			        quit = true;
+			    }
+			    break;
 
 			case WAITING_INIT:{
 
