@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/types.h>
-
+#include <signal.h>
 #define BUFFER_SIZE 64
 #define MAX_GAMES_SIZE 2
 #define MAX_CLIENT_THREADS (MAX_GAMES_SIZE*2)
@@ -19,7 +19,9 @@ typedef enum {
 	QUIT = 1,
 	RANDOM_MESSAGE = 2,
 	MENU_PREPERATION = 3,
-	WAITING_INIT = 4
+	WAITING_INIT = 4,
+	KEEP_WAITING =5,
+	PLAY_TIME = 6
 } FIRST_LAYER;
 
 typedef struct {

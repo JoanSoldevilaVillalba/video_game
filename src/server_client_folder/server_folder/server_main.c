@@ -15,9 +15,9 @@ void* handle_client(void* arg){
 
 	pthread_detach(pthread_self());
 
-	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE];
+	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE], temporary_buffer[BUFFER_SIZE];
 
-	int client_game_id = -1,result = 0, counter = 0, first_number = -1, second_number = 0, index_game = -1, index_player = -1;
+	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1;
 
 	bool quit = false;
 
@@ -62,7 +62,7 @@ void* handle_client(void* arg){
 
 				memset(buffer_send, 0, sizeof(buffer_send));
 
-				temporary_pointer = create_game(client->socket_fd, buffer_receive, &result, &index_game, client->pointer_list_game);
+				temporary_pointer = create_game(client->socket_fd,&result, &index_game, client->pointer_list_game);
 
 				bytes_result = send_validated_message(temporary_pointer, buffer_send, client->socket_fd);
 
@@ -138,29 +138,21 @@ void* handle_client(void* arg){
 
 			case MENU_PREPERATION:
 
-				char temporary_buffer[BUFFER_SIZE] = "3|7|";
+			    if (index_game < 0 || index_game >= MAX_GAMES_SIZE) {
+				        strncpy(temporary_buffer, "4|0|error, invalid game index", BUFFER_SIZE);
+				        temporary_buffer[BUFFER_SIZE-1] = '\0';
+			    }else {
+				        int p0 = client->pointer_list_game[index_game].player_id[0];
+				        int p1 = client->pointer_list_game[index_game].player_id[1];
+				        int n = snprintf(temporary_buffer, sizeof temporary_buffer, "3|7|%d|%d", p0, p1);
+				        if (n < 0 || n >= (int)sizeof temporary_buffer) {
+				            strncpy(temporary_buffer, "1|0|Server wants to quit, Goodbye", BUFFER_SIZE);
+				            temporary_buffer[BUFFER_SIZE-1] = '\0';
+				        }
+			    }
+				temporary_pointer=temporary_buffer;
 
-				counter = 4;
-
-				counter = number_to_char((temporary_buffer+counter), ((client->pointer_list_game) + index_game)->player_id[0]);
-
-				counter++;
-
-				temporary_buffer[counter] = '|';
-
-				counter++;
-
-				counter = number_to_char((temporary_buffer + counter), ((client->pointer_list_game) + index_game)->player_id[1]);
-
-				counter = 0;
-
-				temporary_pointer = temporary_buffer;
-
-				strncpy(buffer_send, temporary_buffer, BUFFER_SIZE);
-
-				temporary_pointer = buffer_send;
-
-				break;
+			    break;
 
 			case WAITING_INIT:{
 
@@ -168,7 +160,7 @@ void* handle_client(void* arg){
 
 				clock_gettime(CLOCK_REALTIME, &ts);
 
-				ts.tv_sec +=120;//max is 2 minuts, if the other client does not respon, we are oging to have to close the connection
+				ts.tv_sec +=120;
 
 				int timed_out = 0;
 
@@ -178,7 +170,13 @@ void* handle_client(void* arg){
 
 				pthread_mutex_lock(&mutex_game_list);
 
-					(client->pointer_list_game + index_game)->ready_player[index_game ^ 1] = (bool)play;
+					(client->pointer_list_game + index_game)->ready_player[index_player & 1] = (bool)play;
+
+					if(!play){
+
+						(client->pointer_list_game + index_game)->player_id[index_player & 1] = -1;
+
+					}
 
 					pthread_cond_signal(&(client->pointer_list_game + index_game)->game_condition);
 
@@ -188,19 +186,21 @@ void* handle_client(void* arg){
 
 					temporary_pointer = "1|8|player is quitting";
 
-					pthread_mutex_lock(&mutex_game_list);
-
-						(client->pointer_list_game + index_game)->player_id[index_game ^ 1] = -1;
-
-					pthread_mutex_unlock(&mutex_game_list);
+					eliminate_game_slot(client, index_game, index_player);
 
 				}else{
 
 					pthread_mutex_lock(&mutex_game_list);
 
-						while((client->pointer_list_game + index_game)->ready_player[index_game ^ 1] == false && !timed_out){
+						while((client->pointer_list_game + index_game)->ready_player[index_player ^ 1] == false && !timed_out){
 
 							int rc = pthread_cond_timedwait(&((client->pointer_list_game + index_game)->game_condition), &mutex_game_list, &ts);
+
+							if((client->pointer_list_game + index_game)->player_id[index_player ^ 1] == -1){
+
+								timed_out = 1;
+
+							}
 
 							if(rc == ETIMEDOUT){
 
@@ -212,13 +212,17 @@ void* handle_client(void* arg){
 
 					pthread_mutex_unlock(&mutex_game_list);
 
-					if(timed_out == 1 || (client-> pointer_list_game + index_game)->ready_player[index_game ^ 1] == false){
+					if(timed_out == 1 || (client-> pointer_list_game + index_game)->ready_player[index_player ^ 1] == false){
 
 						temporary_pointer = "1|7|other player quit game";
 
+						//if the other player quit, we are going to have to switch the currents clients poisition within the curretn game slot, only if the he or she found the game (index_player = 1), not when he or she created the game
+
+						switch_game_player_position(client,index_game, &index_player);
+
 					}else{
 
-						temporary_pointer = "3|10|other player ready"; //other player ready, next step is switching from tcp to udp once main gameplay loop starts
+						temporary_pointer = "3|10|other player ready";
 
 					}
 
@@ -226,6 +230,19 @@ void* handle_client(void* arg){
 
 				break;
 				}
+
+			case KEEP_WAITING:
+
+				//after the game was created, menu information was sent, but the other player still decided to quit at the end, this curretn client has the possiblity to continue to wait until someone else deicdes to enter its game
+
+				break;
+
+			case PLAYTIME:
+
+				//after both players have accepted, we are going to have to switch from TCP to UDP, define another protocol that the client is going to have to send to the server indicating waht movements the player is doing (left, right, shooting ...)
+
+				break;
+
 
 			default:
 
@@ -255,9 +272,19 @@ void* handle_client(void* arg){
 
 	pthread_mutex_lock(&mutex_thread_counter);
 
-		counter_thread --;
+		if(counter_thread>0){
+
+			counter_thread --;
+
+		}
 
 	pthread_mutex_unlock(&mutex_thread_counter);
+
+	if(index_game != -1 && index_player != -1){
+
+		eliminate_game_slot(client,index_game, index_player);
+
+	}
 
 	close(client->socket_fd);
 
@@ -294,14 +321,13 @@ void initilizeGames(game_struct_players* game_list){
 
 int main()
 {
+	signal(SIGPIPE, SIG_IGN);
 
 	int server_file_descriptor = 0, new_socket = 0, opt = 1, port_number = 8080;
 
 	struct sockaddr_in address;
 
 	memset(&address,0, sizeof(address));
-
-	pthread_t thread_clients[MAX_GAMES_SIZE*2];
 
 	game_struct_players game_list[MAX_GAMES_SIZE];
 
@@ -375,7 +401,7 @@ int main()
 
 		pthread_mutex_lock(&mutex_thread_counter);
 
-		if(counter_thread>=MAX_CLIENT_THREADS){
+		if(counter_thread + 1>=MAX_CLIENT_THREADS){
 
 
 			printf("The server is full\n");
@@ -389,8 +415,6 @@ int main()
 			continue;
 
 		}
-
-		int current_index = counter_thread;
 
 		counter_thread = counter_thread + 1;
 

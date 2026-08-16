@@ -488,7 +488,7 @@ int handleServerCommunication(int server_port){
 
 							do{
 
-								scnaf("%d", &option);
+								scanf("%d", &option);
 
 								if(option<0 || option>1){
 
@@ -505,13 +505,16 @@ int handleServerCommunication(int server_port){
 
 							temporary_buffer = "4|i|";
 
-							buffer_receive = "4|i|";
+							//buffer_receive = "4|i|";
 
 							buffer_receive[4] = option + '0';
 
 							temporary_buffer = buffer_receive;
 
 							memset(buffer_receive, 0, sizeof(buffer_receive));
+
+							memory = false;
+							input = false;
 
 							break;
 
