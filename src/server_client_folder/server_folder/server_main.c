@@ -230,6 +230,20 @@ void* handle_client(void* arg){
 				break;
 				}
 
+			case KEEP_WAITING:
+
+				//after the game was created, menu information was sent, but the other player still decided to quit at the end, this curretn client has the possiblity to continue to wait until someone else deicdes to enter its game
+
+				break;
+
+			case PLAYTIME:
+
+				//after both players have accepted, we are going to have to switch from TCP to UDP, define another protocol that the client is going to have to send to the server indicating waht movements the player is doing (left, right, shooting ...)
+
+				break;
+
+
+
 			default:
 
 

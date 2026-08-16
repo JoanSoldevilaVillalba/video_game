@@ -19,7 +19,9 @@ typedef enum {
 	QUIT = 1,
 	RANDOM_MESSAGE = 2,
 	MENU_PREPERATION = 3,
-	WAITING_INIT = 4
+	WAITING_INIT = 4,
+	KEEP_WAITING =5,
+	PLAY_TIME = 6
 } FIRST_LAYER;
 
 typedef struct {
