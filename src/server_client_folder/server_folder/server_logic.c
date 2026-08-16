@@ -196,11 +196,9 @@ void eliminate_game_slot(void* arg, int index_game, int index_player){
 
 	}
 
-	if(index_game < 0 || index_game >= MAX_GAMES_SIZE)[
-
-		return;
-
-	}
+	if (!client->pointer_list_game) return;
+	if (index_game < 0 || index_game >= MAX_GAMES_SIZE) return;
+	if (index_player < 0 || index_player > 1) return;
 
 	pthread_mutex_lock(&mutex_game_list);
 
