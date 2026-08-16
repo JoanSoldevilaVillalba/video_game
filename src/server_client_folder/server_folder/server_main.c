@@ -15,9 +15,9 @@ void* handle_client(void* arg){
 
 	pthread_detach(pthread_self());
 
-	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE];
+	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE], temporary_buffer[BUFFER_SIZE];
 
-	int client_game_id = -1,result = 0, counter = 0, first_number = -1, second_number = 0, index_game = -1, index_player = -1;
+	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1;
 
 	bool quit = false;
 
@@ -62,7 +62,7 @@ void* handle_client(void* arg){
 
 				memset(buffer_send, 0, sizeof(buffer_send));
 
-				temporary_pointer = create_game(client->socket_fd, buffer_receive, &result, &index_game, client->pointer_list_game);
+				temporary_pointer = create_game(client->socket_fd,&result, &index_game, client->pointer_list_game);
 
 				bytes_result = send_validated_message(temporary_pointer, buffer_send, client->socket_fd);
 
@@ -137,8 +137,6 @@ void* handle_client(void* arg){
 				break;
 
 			case MENU_PREPERATION:
-
-			    char temporary_buffer[BUFFER_SIZE];
 
 			    if (index_game < 0 || index_game >= MAX_GAMES_SIZE) {
 				        strncpy(temporary_buffer, "4|0|error, invalid game index", BUFFER_SIZE);
@@ -310,7 +308,7 @@ void initilizeGames(game_struct_players* game_list){
 
 int main()
 {
-	signal(SIGPIPE, SIG_IGN)
+	signal(SIGPIPE, SIG_IGN);
 
 	int server_file_descriptor = 0, new_socket = 0, opt = 1, port_number = 8080;
 
@@ -390,7 +388,7 @@ int main()
 
 		pthread_mutex_lock(&mutex_thread_counter);
 
-		if(counter_thread>=MAX_CLIENT_THREADS){
+		if(counter_thread + 1>=MAX_CLIENT_THREADS){
 
 
 			printf("The server is full\n");
@@ -404,8 +402,6 @@ int main()
 			continue;
 
 		}
-
-		int current_index = counter_thread;
 
 		counter_thread = counter_thread + 1;
 

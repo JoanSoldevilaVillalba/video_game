@@ -60,7 +60,7 @@ int int_to_str(char *dst, ssize_t dst_size, int value){
 
 	int n = snprintf(dst, dst_size, "%d", value);
 
-	if(n<0 || (size_t)n>=dst_size){
+	if(n<0 || (ssize_t)n>=dst_size){
 
 		return -1;
 
@@ -71,11 +71,9 @@ int int_to_str(char *dst, ssize_t dst_size, int value){
 }
 
 
-char* create_game(int temporary_fd, char* buffer_receive, int* result_function, int* index_game, game_struct_players* game_list){
+char* create_game(int temporary_fd, int* result_function, int* index_game, game_struct_players* game_list){
 
-        int i = 0;
-
-        for(i;i<MAX_GAMES_SIZE;i++){
+        for(int i = 0;i<MAX_GAMES_SIZE;i++){
 
                 pthread_mutex_lock(&mutex_game_list);
 
@@ -188,7 +186,7 @@ ssize_t receive_validated_message(char buffer[BUFFER_SIZE], int client_file_desc
 
 void eliminate_game_slot(void* arg, int index_game, int index_player){
 
-	struct_client fast_pointer =(struct_client*)arg;
+	struct_client* fast_pointer =(struct_client*)arg;
 
 	if(!fast_pointer){
 
@@ -196,24 +194,24 @@ void eliminate_game_slot(void* arg, int index_game, int index_player){
 
 	}
 
-	if (!client->pointer_list_game) return;
+	if (!fast_pointer->pointer_list_game) return;
 	if (index_game < 0 || index_game >= MAX_GAMES_SIZE) return;
 	if (index_player < 0 || index_player > 1) return;
 
 	pthread_mutex_lock(&mutex_game_list);
 
-	((fast_pointer->game_struct_players->pointer_list_game) + index_game)->player_id[index_player & 1] = -1;
+	((fast_pointer->pointer_list_game) + index_game)->player_id[index_player & 1] = -1;
 
-	((fast_pointer->game_struct_players->pointer_list_game) + index_game)->player_ready[index_player & 1] = false;
+	((fast_pointer->pointer_list_game) + index_game)->ready_player[index_player & 1] = false;
 
-	if(((fast_pointer->game_struct_players->pointer_list_game) + index_game)->player_id[index_player ^ 1] == -1){
+	if(((fast_pointer->pointer_list_game) + index_game)->player_id[index_player ^ 1] == -1){
 
-		((fast_pointer->game_struct_players->pointer_list_game) + index_game)->game_id = -1;
+		((fast_pointer->pointer_list_game) + index_game)->game_id = -1;
 
 
 	}
 
-	pthread_cond_signal(&gl[index_game].game_condition);
+	pthread_cond_signal(&(fast_pointer->pointer_list_game)[index_game].game_condition);
 
 	pthread_mutex_unlock(&mutex_game_list);
 

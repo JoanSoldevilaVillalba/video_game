@@ -79,7 +79,7 @@ ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
 
 	pfd.revents = 0;
 
-	int ret  =-1;
+	ssize_t ret  =-1;
 
 	int time_out = 15000;
 
@@ -138,7 +138,7 @@ ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 
 	size_t result = send_all(fd, (const char *)&net_len, sizeof(net_len));
 
-	if(result == -1){
+	if((int)result == -1){
 
 		printf("Error, possible broken connection\n");
 
@@ -153,13 +153,13 @@ ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 
 	result = send_all(fd, payload, payload_len);
 
-	if(result == -1){
+	if((int)result == -1){
 
 		printf("Error, possible broken connection\n");
 
 	}
 
-	if (result != (ssize_t)payload_len) {
+	if ((int)result != (ssize_t)payload_len) {
 	        return -1;
 	}
 
@@ -175,7 +175,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	header_bytes = read_all(fd, (char*)&net_len, sizeof(net_len));
 
-	if(header_bytes == 0){
+	if((int)header_bytes == 0){
 
 		printf("Error, no bytes will be received\n");
 
@@ -183,7 +183,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
 
 	}
 
-	if(header_bytes == -1){
+	if((int)header_bytes == -1){
 
 		printf("Error, borken connection possible: %s\n", strerror(errno));
 
