@@ -153,6 +153,8 @@ void* handle_client(void* arg){
 				        }
 			    }
 			    ssize_t sent = send_validated_message(temporary_buffer, buffer_send, client->socket_fd);
+
+				temporary_pointer=temporary_buffer;
 			    if (sent == -1) {
 			        printf("Error sending MENU_PREPERATION to client %d\n", client->socket_fd);
 			        quit = true;
