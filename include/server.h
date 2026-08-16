@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/types.h>
-
+#include <signal.h>
 #define BUFFER_SIZE 64
 #define MAX_GAMES_SIZE 2
 #define MAX_CLIENT_THREADS (MAX_GAMES_SIZE*2)

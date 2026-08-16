@@ -303,6 +303,7 @@ void initilizeGames(game_struct_players* game_list){
 
 int main()
 {
+	signal(SIGPIPE, SIG_IGN)
 
 	int server_file_descriptor = 0, new_socket = 0, opt = 1, port_number = 8080;
 
