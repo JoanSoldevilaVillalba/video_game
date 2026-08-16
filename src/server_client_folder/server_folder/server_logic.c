@@ -3,9 +3,9 @@
 
 void reverse(char* pointer){
 
-        int length = strlen(pointer);
+        ssize_t length = strlen(pointer);
 
-        for(int i = 0;i<length/2;i++){
+        for(ssize_t i = 0;i<length/2;i++){
 
                 char temp = *(pointer + i);
 
@@ -17,7 +17,7 @@ void reverse(char* pointer){
 
 }
 
-
+//number_to_char is going to be obslete for now, ai has given us a better and safer version of the smae thing, int_to_str function
 int number_to_char(char* pointer, int temporary){
 
         int i = 0;
@@ -50,6 +50,26 @@ int number_to_char(char* pointer, int temporary){
         return i;
 
 }
+
+int int_to_str(char *dst, ssize_t dst_size, int value){
+
+	if(!dst||dst_size == 0){
+
+		 return -1;
+	}
+
+	int n = snprintf(dst, dst_size, "%d", value);
+
+	if(n<0 || (size_t)n>=dst_size){
+
+		return -1;
+
+	}
+
+	return n;
+
+}
+
 
 char* create_game(int temporary_fd, char* buffer_receive, int* result_function, int* index_game, game_struct_players* game_list){
 
