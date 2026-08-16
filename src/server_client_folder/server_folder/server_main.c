@@ -168,7 +168,7 @@ void* handle_client(void* arg){
 
 				clock_gettime(CLOCK_REALTIME, &ts);
 
-				ts.tv_sec +=120;//max is 2 minuts, if the other client does not respon, we are oging to have to close the connection
+				ts.tv_sec +=120;
 
 				int timed_out = 0;
 
@@ -178,8 +178,13 @@ void* handle_client(void* arg){
 
 				pthread_mutex_lock(&mutex_game_list);
 
-					(client->pointer_list_game + index_game)->ready_player[index_game ^ 1] = (bool)play;
+					(client->pointer_list_game + index_game)->ready_player[index_player & 1] = (bool)play;//for now lets assume that when player wants to quit, 
 
+					if(!play){
+
+						(client->pointer_list_game + index_game)->ready_player[index_player & 1] = -1; //we are setting the current client player_i
+
+					}
 					pthread_cond_signal(&(client->pointer_list_game + index_game)->game_condition);
 
 				pthread_mutex_unlock(&mutex_game_list);
@@ -188,11 +193,7 @@ void* handle_client(void* arg){
 
 					temporary_pointer = "1|8|player is quitting";
 
-					pthread_mutex_lock(&mutex_game_list);
-
-						(client->pointer_list_game + index_game)->player_id[index_game ^ 1] = -1;
-
-					pthread_mutex_unlock(&mutex_game_list);
+					eliminate_game_slot(client, index_game, index_player);
 
 				}else{
 
@@ -201,6 +202,12 @@ void* handle_client(void* arg){
 						while((client->pointer_list_game + index_game)->ready_player[index_game ^ 1] == false && !timed_out){
 
 							int rc = pthread_cond_timedwait(&((client->pointer_list_game + index_game)->game_condition), &mutex_game_list, &ts);
+
+							if((client->pointer_list_game + index_game)->player_id[index_player ^ 1] == -1){
+
+								timed_out = 1;
+
+							}
 
 							if(rc == ETIMEDOUT){
 
@@ -211,6 +218,8 @@ void* handle_client(void* arg){
 						}
 
 					pthread_mutex_unlock(&mutex_game_list);
+
+					//timedout or quit, the message is oging to be the same
 
 					if(timed_out == 1 || (client-> pointer_list_game + index_game)->ready_player[index_game ^ 1] == false){
 
@@ -258,6 +267,8 @@ void* handle_client(void* arg){
 		counter_thread --;
 
 	pthread_mutex_unlock(&mutex_thread_counter);
+
+	eliminate_game_slot(client,index_game, index_player);
 
 	close(client->socket_fd);
 
