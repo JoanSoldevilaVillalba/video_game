@@ -196,7 +196,7 @@ void* handle_client(void* arg){
 
 					pthread_mutex_lock(&mutex_game_list);
 
-						while((client->pointer_list_game + index_game)->ready_player[index_game ^ 1] == false && !timed_out){
+						while((client->pointer_list_game + index_game)->ready_player[index_player ^ 1] == false && !timed_out){
 
 							int rc = pthread_cond_timedwait(&((client->pointer_list_game + index_game)->game_condition), &mutex_game_list, &ts);
 
@@ -216,7 +216,7 @@ void* handle_client(void* arg){
 
 					pthread_mutex_unlock(&mutex_game_list);
 
-					if(timed_out == 1 || (client-> pointer_list_game + index_game)->ready_player[index_game ^ 1] == false){
+					if(timed_out == 1 || (client-> pointer_list_game + index_game)->ready_player[index_player ^ 1] == false){
 
 						temporary_pointer = "1|7|other player quit game";
 
@@ -259,11 +259,19 @@ void* handle_client(void* arg){
 
 	pthread_mutex_lock(&mutex_thread_counter);
 
-		counter_thread --;
+		if(counter_thread>0){
+
+			counter_thread --;
+
+		}
 
 	pthread_mutex_unlock(&mutex_thread_counter);
 
-	eliminate_game_slot(client,index_game, index_player);
+	if(index_game != -1 && index_player != -1){
+
+		eliminate_game_slot(client,index_game, index_player);
+
+	}
 
 	close(client->socket_fd);
 
