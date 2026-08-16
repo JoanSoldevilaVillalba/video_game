@@ -183,7 +183,31 @@ ssize_t receive_validated_message(char buffer[BUFFER_SIZE], int client_file_desc
 
 }
 
+void switch_game_player_position(struct_client* client, int index_game, int* index_player){
 
+	if(*(index_player) == 0)return; //if the player is equal to zero, that means that it is the first, player, it does nto need to do anything, just maintain its position
+
+	if(!client)return;
+
+	if(index_game<0)return;
+
+	if(!index_player || *(index_player)<0)return;
+
+	//we are not adding a safeguard to check if the first player is empty, we already know duye to the logic the slot is already empty beacuse the first player decided to quit.
+
+	//if a third thread at the same time decides that it is looking for a game, it does not matter, because it only looks at current second positions if the game_id is valid
+
+	pthread_mutex_lock(&mutex_game_list);
+
+		(client->pointer_list_game + index_game)->player_id[0] = (client->pointer_list_game+index_game)->player_id[1];
+
+		(client->pointer_list_game + index_game)->ready_player[0] = (client->pointer_list_game+index_game)->ready_player[1];
+
+	pthread_mutex_unlock(&mutex_game_list);
+
+	*(index_player) = 0;
+
+}
 void eliminate_game_slot(void* arg, int index_game, int index_player){
 
 	struct_client* fast_pointer =(struct_client*)arg;

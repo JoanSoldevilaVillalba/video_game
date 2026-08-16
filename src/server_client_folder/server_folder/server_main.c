@@ -150,13 +150,8 @@ void* handle_client(void* arg){
 				            temporary_buffer[BUFFER_SIZE-1] = '\0';
 				        }
 			    }
-			    ssize_t sent = send_validated_message(temporary_buffer, buffer_send, client->socket_fd);
-
 				temporary_pointer=temporary_buffer;
-			    if (sent == -1) {
-			        printf("Error sending MENU_PREPERATION to client %d\n", client->socket_fd);
-			        quit = true;
-			    }
+
 			    break;
 
 			case WAITING_INIT:{
@@ -179,7 +174,7 @@ void* handle_client(void* arg){
 
 					if(!play){
 
-						(client->pointer_list_game + index_game)->ready_player[index_player & 1] = -1;
+						(client->pointer_list_game + index_game)->player_id[index_player & 1] = -1;
 
 					}
 					pthread_cond_signal(&(client->pointer_list_game + index_game)->game_condition);
@@ -219,6 +214,10 @@ void* handle_client(void* arg){
 					if(timed_out == 1 || (client-> pointer_list_game + index_game)->ready_player[index_player ^ 1] == false){
 
 						temporary_pointer = "1|7|other player quit game";
+
+						//if the other player quit, we are going to have to switch the currents clients poisition within the curretn game slot, only if the he or she found the game (index_player = 1), not when he or she created the game
+
+						switch_game_player_position(client,index_game, &index_player);
 
 					}else{
 

@@ -18,4 +18,6 @@ ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER
 
 ssize_t receive_validated_message(char buffer[BUFFER_SIZE], int client_file_descriptor);
 
+void switch_game_player_position(struct_client* client, int index_game, int* index_player);
+
 void eliminate_game_slot(void* arg, int index_game, int index_player);
