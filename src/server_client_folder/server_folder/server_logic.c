@@ -190,6 +190,20 @@ void eliminate_game_slot(void* arg, int index_game, int index_player){
 
 	struct_client fast_pointer =(struct_client*)arg;
 
+	if(!fast_pointer){
+
+		return;
+
+	}
+
+	if(index_game < 0 || index_game >= MAX_GAMES_SIZE)[
+
+		return;
+
+	}
+
+	pthread_mutex_lock(&mutex_game_list);
+
 	((fast_pointer->game_struct_players->pointer_list_game) + index_game)->player_id[index_player & 1] = -1;
 
 	((fast_pointer->game_struct_players->pointer_list_game) + index_game)->player_ready[index_player & 1] = false;
@@ -200,5 +214,9 @@ void eliminate_game_slot(void* arg, int index_game, int index_player){
 
 
 	}
+
+	pthread_cond_signal(&gl[index_game].game_condition);
+
+	pthread_mutex_unlock(&mutex_game_list);
 
 }
