@@ -178,11 +178,11 @@ void* handle_client(void* arg){
 
 				pthread_mutex_lock(&mutex_game_list);
 
-					(client->pointer_list_game + index_game)->ready_player[index_player & 1] = (bool)play;//for now lets assume that when player wants to quit, 
+					(client->pointer_list_game + index_game)->ready_player[index_player & 1] = (bool)play;
 
 					if(!play){
 
-						(client->pointer_list_game + index_game)->ready_player[index_player & 1] = -1; //we are setting the current client player_i
+						(client->pointer_list_game + index_game)->ready_player[index_player & 1] = -1;
 
 					}
 					pthread_cond_signal(&(client->pointer_list_game + index_game)->game_condition);
@@ -219,15 +219,13 @@ void* handle_client(void* arg){
 
 					pthread_mutex_unlock(&mutex_game_list);
 
-					//timedout or quit, the message is oging to be the same
-
 					if(timed_out == 1 || (client-> pointer_list_game + index_game)->ready_player[index_game ^ 1] == false){
 
 						temporary_pointer = "1|7|other player quit game";
 
 					}else{
 
-						temporary_pointer = "3|10|other player ready"; //other player ready, next step is switching from tcp to udp once main gameplay loop starts
+						temporary_pointer = "3|10|other player ready";
 
 					}
 
@@ -311,8 +309,6 @@ int main()
 	struct sockaddr_in address;
 
 	memset(&address,0, sizeof(address));
-
-	pthread_t thread_clients[MAX_GAMES_SIZE*2];
 
 	game_struct_players game_list[MAX_GAMES_SIZE];
 

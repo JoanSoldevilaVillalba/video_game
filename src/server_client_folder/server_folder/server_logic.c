@@ -126,7 +126,7 @@ ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER
 
                 if(result == -1){
 
-                        printf("Unable to send message to server: %s\n", strerror(errno));
+                        printf("Unable to send message to server\n");
 
                         result = -1;
 
@@ -171,6 +171,8 @@ void eliminate_game_slot(void* arg, int index_game, int index_player){
 	struct_client fast_pointer =(struct_client*)arg;
 
 	((fast_pointer->game_struct_players->pointer_list_game) + index_game)->player_id[index_player & 1] = -1;
+
+	((fast_pointer->game_struct_players->pointer_list_game) + index_game)->player_ready[index_player & 1] = false;
 
 	if(((fast_pointer->game_struct_players->pointer_list_game) + index_game)->player_id[index_player ^ 1] == -1){
 
