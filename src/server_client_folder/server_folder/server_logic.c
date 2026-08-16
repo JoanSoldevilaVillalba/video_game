@@ -5,7 +5,7 @@ void reverse(char* pointer){
 
         int length = strlen(pointer);
 
-        for(int i = 0;i<length;i++){
+        for(int i = 0;i<length/2;i++){
 
                 char temp = *(pointer + i);
 
@@ -162,5 +162,21 @@ ssize_t receive_validated_message(char buffer[BUFFER_SIZE], int client_file_desc
         }
 
         return result_bytes_receive;
+
+}
+
+
+void eliminate_game_slot(void* arg, int index_game, int index_player){
+
+	struct_client fast_pointer =(struct_client*)arg;
+
+	((fast_pointer->game_struct_players->pointer_list_game) + index_game)->player_id[index_player & 1] = -1;
+
+	if(((fast_pointer->game_struct_players->pointer_list_game) + index_game)->player_id[index_player ^ 1] == -1){
+
+		((fast_pointer->game_struct_players->pointer_list_game) + index_game)->game_id = -1;
+
+
+	}
 
 }
