@@ -11,6 +11,8 @@ int handleServerCommunication(int server_port){
 
 	int option = 0, client_file_descriptor = -1, first_number = -1, second_number = -1, counter = 0, client_1 = -1, client_2 = -1;
 
+	int time_experation = 0;
+
         bool quit = false, memory = false, input = true;
 
 
@@ -221,9 +223,54 @@ int handleServerCommunication(int server_port){
 
 						printf("After showing menu information, the other player quit. Still waiting for someone to join our game\n");
 
-						//here we can ask how long do you want to wait, do you still want to wait....
+						printf("Do you still want to wait for someone to enter your game(y/n)?\n");
+
+						char waiting_choice;
+
+						do{
+							printf("Please enter you final decision down below:\n");
+
+							scanf("%c", &waiting_choice);
+
+							if(waiting_choice !='y' || waiting_choice !='n'){
+
+								printf("Error, invalid input\n Enter y for yes or n for no: \n");
+
+							}
+
+						}while(waiting_choice !='y' || waiting_choice !='n');
 
 
+						if(waiting_choice == 'y'){
+
+							printf("How long do you want to wait for?");
+
+							do{
+
+								printf("Enter a number down below (seconds):\n");
+
+								scanf("%d", &time_experation);
+
+								if(time_exepration<=0 || time_experation >=360){
+
+									printf("Error: enter a number between <120> and <360>\n");
+
+								}
+
+							}while(time_exepration<=0 || time_experation >=360);
+
+						temporary_buffer=""; //here besides the protocol numbers we are going to have to add the time_experation, 
+						}else{
+
+							//in this case, we just need to indicate to the server that we do not want to quit, but rather just empty our slot in game_list global variable to free up our slot for someone else to use
+
+							temporary_buffer="";
+
+							input = false;
+
+							memory = false;
+
+						}
 						break;
 
 
