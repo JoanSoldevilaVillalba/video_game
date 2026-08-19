@@ -246,7 +246,7 @@ int wait_signal_cond(int* list_game_pointer, int index_player, struct timespec* 
 
 }
 
-char* waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[], int* result_function, int* timed_out){
+char* waiting_for_player(struct struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[], int* result_function, int* timed_out){
 
 	time_init(ts,time_experation);
 
@@ -258,15 +258,15 @@ char* waiting_for_player(struct_client* client, int* index_game,int* index_playe
 
 	pthread_mutex_lock(&mutex_game_list);
 
-	list_game_pointer->ready_player[index_player & 1] = (bool)play;
+		list_game_pointer->ready_player[index_player & 1] = (bool)play;
 
-	if(!play){
+		if(!play){
 
-		list_game_pointer->player_id[index_player & 1] = -1;//if we do not want to play we set index_player id to -1, liberating this slot for another player who is currently looking
+			list_game_pointer->player_id[index_player & 1] = -1;//if we do not want to play we set index_player id to -1, liberating this slot for another player who is currently looking
 
-	}
+		}
 
-	pthread_cond_signal(&(list_game_pointer->game_condition)); //after changing game_list variables, we send a signal to the other player indicating that we have changed variables
+		pthread_cond_signal(&(list_game_pointer->game_condition)); //after changing game_list variables, we send a signal to the other player indicating that we have changed variables
 
 	pthread_mutex_unlock(&mutex_game_list);
 

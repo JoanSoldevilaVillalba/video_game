@@ -157,6 +157,16 @@ void* handle_client(void* arg){
 
 				timed_out = wait_signal_cond((client->pointer_list_game) + index_game, index_player, &ts, time_experation);
 
+				if(timed_out == 1 || ((client->pointer_list_game) + index_game)->ready_player[index_player ^ 1] == false){
+
+					temporary_pointer ="still no one"; //in the future we are going to use files that contain the  actual messages instead, of harcodedd messages in the source code (i think it is more professional)
+
+				}else{
+
+					temporary_pointer = "someone else has enterd our game"; 
+
+				}
+
 				break;
 
 			case PLAYTIME:
