@@ -51,27 +51,32 @@ char* create_game(int temporary_fd, int* result_function, int* index_game, game_
 
                 pthread_mutex_lock(&mutex_game_list);
 
-                if((game_list+i)->game_id!=-1 && (game_list+i)->player_id[1]==-1){
+			if((game_list+i)->game_lock == false){//if game_lock is equal to true, that means both slots are still occupied,no need to check rest of fields
 
-                        (game_list+i)->player_id[1] = temporary_fd;
-                        *(result_function) = 1;
-                        *(index_game) = i;
-                        pthread_cond_signal(&(game_list + i)->game_condition);
-                        pthread_mutex_unlock(&mutex_game_list);
-                        return "0|1|you have succesfuly entered a game";
+	                	if((game_list+i)->game_id!=-1 && (game_list+i)->player_id[1]==-1){
 
-                }else if((game_list+i)->game_id==-1){
+        	                	(game_list+i)->player_id[1] = temporary_fd;
+	                	        *(result_function) = 1;
+	                        	*(index_game) = i;
+					(game_list+i)->game_lock = true;//if the client is the second player, someone  already created the game, both slots are full, game must be locked to prevent race condition
+		                        pthread_cond_signal(&(game_list + i)->game_condition);
+	        	                pthread_mutex_unlock(&mutex_game_list);
+	                	        return "0|1|you have succesfuly entered a game";
 
-                        (game_list+i)->game_id = i;
-                        (game_list+i)->player_id[0] = temporary_fd;
-                        *(result_function) = 2;
-                        *(index_game) = i;
-                        pthread_mutex_unlock(&mutex_game_list);
-                        return "0|2|you have succesfuly created a game";
+	        	        }else if((game_list+i)->game_id==-1){
 
-                }
+        	        	        (game_list+i)->game_id = i;
+                	        	(game_list+i)->player_id[0] = temporary_fd;
+	                	        *(result_function) = 2;
+        	                	*(index_game) = i;
+	                	        pthread_mutex_unlock(&mutex_game_list);
+        	                	return "0|2|you have succesfuly created a game";
 
-        pthread_mutex_unlock(&mutex_game_list);
+	                	}
+
+			}
+
+	        pthread_mutex_unlock(&mutex_game_list);
 
         }
 
@@ -157,9 +162,9 @@ ssize_t receive_validated_message(char buffer[BUFFER_SIZE], int client_file_desc
 
 }
 
-void switch_game_player_position(int* list_game_pointer int* index_game, int* index_player){
+void switch_game_player_position(game_struct_players* list_game_pointer int* index_game, int* index_player){
 
-	//the folloiwng is only necessary if the current client is in the second position of the array
+	//the folloiwng is only necessary if the current client is in the second position of the array, this function is also only called when one of the clients/threads decides to exit the game
 
 	if(!*(index_game)) return; //if the value pointed by index_game is equal to zero or false (zero is false), we do not need to perform a switch
 
@@ -182,31 +187,32 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 
 	struct_client* fast_pointer =(struct_client*)arg;
 
-	if(!fast_pointer){
-
-		return;
-
-	}
-
+	if(!fast_pointer)return;
 	if (!fast_pointer->pointer_list_game) return;
 	if (*(index_game) < 0 || *(index_game) >= MAX_GAMES_SIZE) return;
 	if (*(index_player) < 0 || *(index_player) > 1) return;
 
-	int* temp_pointer = (fast_pointer->pointer_list_game) + index_game;
+	game_struct_players* temp_pointer = (fast_pointer->pointer_list_game) + index_game;
 
 	pthread_mutex_lock(&mutex_game_list);
 
-	temp_pointer->player_id[index_player & 1] = -1;
+		temp_pointer->player_id[index_player & 1] = -1;
 
-	temp_pointer->ready_player[index_player & 1] = false;
+		temp_pointer->ready_player[index_player & 1] = false;
 
-	if(temp_pointer->player_id[index_player ^ 1] == -1){
+		if(temp_pointer->player_id[index_player ^ 1] == -1){
 
-		temp_pointer->game_id = -1;
+			temp_pointer->game_id = -1;
 
-	}
+		}
 
-	pthread_cond_signal(&(temp_pointer->game_condition));
+		pthread_cond_signal(&(temp_pointer->game_condition));
+
+		if(temp_pointer->game_lock){
+
+			temp_pointer->game_lock = false;
+
+		}
 
 	pthread_mutex_unlock(&mutex_game_list);
 
@@ -214,7 +220,7 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 
 //list_game_pointer is the same as the following: client->pointer_list_game
 
-int wait_signal_cond(int* list_game_pointer, int index_player, struct timespec* ts, int time_exp){
+int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, struct timespec* ts, int time_exp){
 
 	time_init(ts, time_exp);
 
@@ -254,7 +260,7 @@ char* waiting_for_player(struct struct_client* client, int* index_game,int* inde
 
 	int play = buffer_receive[counter] - '0';//we receive what the current client wants to do after viewing menu information
 
-	int* list_game_pointer = ((client->pointer_list_game) + index_game); //simplify pointer arithmetic
+	game_struct_players* list_game_pointer = ((client->pointer_list_game) + index_game); //simplify pointer arithmetic
 
 	pthread_mutex_lock(&mutex_game_list);
 
@@ -265,6 +271,18 @@ char* waiting_for_player(struct struct_client* client, int* index_game,int* inde
 			list_game_pointer->player_id[index_player & 1] = -1;//if we do not want to play we set index_player id to -1, liberating this slot for another player who is currently looking
 
 		}
+
+		/*
+There is a possible race condition in this scenario, lets suppose that there are three threads. To of them have already communicated between
+each other and now one of them still wants to play but the other thread/client after reading/receiving menu information, the client/thread wants to quit.
+having said this in between setting player_id to minus one, if that player is the second player, we can have a context switch where 
+a different client/thread checks the second_player id and sees that it is set to -1, whilst still trying to close this slot. This possibly could lead to undefined behavoour, not desirable. Unless if threads in linux behave as folloiwgn: if two threads share a conditional variabe, which is the cause
+between the first two clients that i have commetned, then maybe the second thread receivng  the signal call will probably be moved to the top of the OS 
+schedduler, having said this we are not going to optmistic, we are going to try to develop some type of system that bypasses this possible race condition
+we can add some type of boolean called lock, indicating that there are still to players, either playing or even if one of them is elimintaeing itself from the game
+
+		*/
+
 
 		pthread_cond_signal(&(list_game_pointer->game_condition)); //after changing game_list variables, we send a signal to the other player indicating that we have changed variables
 

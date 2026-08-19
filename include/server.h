@@ -30,6 +30,7 @@ typedef struct {
     int game_id;
     pthread_cond_t game_condition;
     bool ready_player[2];
+    bool game_lock;
 } game_struct_players;
 
 typedef struct {

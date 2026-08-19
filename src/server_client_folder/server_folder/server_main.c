@@ -247,6 +247,8 @@ void initilizeGames(game_struct_players* game_list){
 
 		(game_list+i)->ready_player[1] = false;
 
+		(game_list+i)->game_lock = false;
+
 	}
 
 }
