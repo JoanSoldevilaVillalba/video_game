@@ -17,13 +17,15 @@ void* handle_client(void* arg){
 
 	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE], temporary_buffer[BUFFER_SIZE];
 
-	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1;
+	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1, timed_out = 0, time_experation = -1;
 
 	bool quit = false;
 
 	ssize_t bytes_result = 0;
 
 	const char* temporary_pointer = NULL;
+
+	struct timespec ts;
 
 	while(!quit){
 
@@ -52,13 +54,13 @@ void* handle_client(void* arg){
 
 			case ENTERING_CREATING_GAME:{
 
-				struct timespec ts;
-
 				clock_gettime(CLOCK_REALTIME, &ts);
 
-				ts.tv_sec +=5;
+				time_experation = 5;
 
-				int timed_out = 0;
+				ts.tv_sec +=time_experation;
+
+				timed_out = 0;
 
 				memset(buffer_send, 0, sizeof(buffer_send));
 
@@ -84,21 +86,7 @@ void* handle_client(void* arg){
 
 				if(result == 2){
 
-					pthread_mutex_lock(&mutex_game_list);
-
-		                                while((client->pointer_list_game + index_game)->player_id[1] == -1 && !timed_out){
-
-                		                        int rc = pthread_cond_timedwait(&((client->pointer_list_game + index_game)->game_condition), &mutex_game_list, &ts);
-
-	                        	                if(rc == ETIMEDOUT){
-
-	                                	                timed_out = 1;
-
-	                                        	}
-
-	        	                        }
-
-	                                pthread_mutex_unlock(&mutex_game_list);
+					timed_out = wait_signal_cond((client->pointer_list_game) + index_game , index_player);
 
 	                                if(timed_out == 1 || (client->pointer_list_game + index_game)->player_id[1] == -1){
 
@@ -154,82 +142,44 @@ void* handle_client(void* arg){
 
 			    break;
 
-			case WAITING_INIT:{
+			case WAITING_INIT:
 
-				struct timespec ts;
+				time_experation = 120;
 
-				clock_gettime(CLOCK_REALTIME, &ts);
+				temporary_pointer = waiting_for_player(&client, &index_game,&index_player, time_experation, &ts, &counter,buffer_receive,  &result);
 
-				ts.tv_sec +=120;
+				switch(result){
 
-				int timed_out = 0;
+					case 1:
 
-				counter = 4;
+						break;
 
-				int play = buffer_receive[counter] - '0';
 
-				pthread_mutex_lock(&mutex_game_list);
+					case 2:
 
-					(client->pointer_list_game + index_game)->ready_player[index_player & 1] = (bool)play;
+						break;
 
-					if(!play){
 
-						(client->pointer_list_game + index_game)->player_id[index_player & 1] = -1;
+					case 3:
 
-					}
 
-					pthread_cond_signal(&(client->pointer_list_game + index_game)->game_condition);
+						break;
 
-				pthread_mutex_unlock(&mutex_game_list);
 
-				if(play == false){
+					default:
 
-					temporary_pointer = "1|8|player is quitting";
+						printf("Error: invalid return statemtn from waiting_for_player function\n");
 
-					eliminate_game_slot(client, index_game, index_player);
+						break;
 
-				}else{
-
-					pthread_mutex_lock(&mutex_game_list);
-
-						while((client->pointer_list_game + index_game)->ready_player[index_player ^ 1] == false && !timed_out){
-
-							int rc = pthread_cond_timedwait(&((client->pointer_list_game + index_game)->game_condition), &mutex_game_list, &ts);
-
-							if((client->pointer_list_game + index_game)->player_id[index_player ^ 1] == -1){
-
-								timed_out = 1;
-
-							}
-
-							if(rc == ETIMEDOUT){
-
-								timed_out = 1;
-
-							}
-
-						}
-
-					pthread_mutex_unlock(&mutex_game_list);
-
-					if(timed_out == 1 || (client-> pointer_list_game + index_game)->ready_player[index_player ^ 1] == false){
-
-						temporary_pointer = "1|7|other player quit game";
-
-						//if the other player quit, we are going to have to switch the currents clients poisition within the curretn game slot, only if the he or she found the game (index_player = 1), not when he or she created the game
-
-						switch_game_player_position(client,index_game, &index_player);
-
-					}else{
-
-						temporary_pointer = "3|10|other player ready";
-
-					}
 
 				}
+
+
+
+				result = -1;
 
 				break;
-				}
 
 			case KEEP_WAITING:
 
