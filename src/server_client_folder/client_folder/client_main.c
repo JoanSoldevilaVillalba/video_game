@@ -1,213 +1,6 @@
 #include "client_main.h"
 #include "client_send_data.h"
 
-typedef enum{
-
-//the following are options when the user wants to play the game and either has to: wait for another player to enter, needs to close the connection because nobody wants to play or games are full and when a game has been found and the client side has to switch context
-
-	GAME_FOUND = 1,
-
-	WAITING_FOR_GAME = 2,
-
-	GAME_NOT_FOUND = 3,
-
-}SECOND_LAYER_WAITING;
-
-
-
-typedef enum{
-
-//the following are options for quitting. There are differnt types of quitting: when the connection is broken, when the server decided to quit, when the client decided to quit (server deciding to quit is redundant because the client always initiates, but we are still going to add it)
-
-	CLIENT_QUIT = 4,
-
-	SERVER_QUIT = 5,
-
-	BROKEN_QUIT = 6,
-
-	OTHER_PLAYER_QUIT = 7,
-
-	YOU_PLAYER_QUIT = 8
-
-
-}SECOND_LAYER_QUIT;
-
-
-
-
-typedef enum{ 
-//this typedef enumerator is used for when the server has found a game, and now the client is able to start playing the game
-
-	MENU = 7,
-
-	PLAY_TIME = 8,
-
-	PROLOGUE = 9,
-
-	SETUP = 10
-
-
-}SECOND_LAYER_PLAY;
-
-
-
-
-typedef enum{
-
-	ENTERING_CREATING_GAME = 0,
-
-	QUIT = 1,
-
-	RANDOM_MESSAGE = 2,
-
-	GAME_PLAY = 3,
-
-
-}FIRST_LAYER;
-
-int menu_fd_parser(char* pointer_string, int* counter, char end_terminator){
-
-	int i = *(counter);
-
-	int current = 0;
-
-	int temporary = 0;
-
-	while(*(pointer_string + i) != end_terminator){
-
-		temporary = *(pointer_string + i) - '0';
-
-		current = current * 10;
-
-		current = current + temporary;
-
-		i++;
-
-	}
-
-	*(counter) = ++i;
-
-	return current;
-
-}
-
-
-
-int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_address, int port){
-
-	*(client_file_descriptor) = socket(AF_INET, SOCK_STREAM,0);
-
-	if(*(client_file_descriptor)<0){
-
-		printf("Error, no file descriptor was assigned to client: %s\n",strerror( errno));
-
-		return -1;
-
-	}
-
-
-	server_address->sin_family = AF_INET;
-
-	server_address->sin_port = htons(port);
-
-
-	int result_translation = 0;
-
-	int status = 0;
-
-
-	result_translation =  inet_pton(AF_INET, "127.0.0.1", &server_address->sin_addr);
-
-	if(result_translation <=0){
-
-		printf("Error, possible incorrect format: %s\n", strerror(errno));
-
-		return -1;
-
-	}
-
-
-	status = connect(*(client_file_descriptor), (struct sockaddr*)server_address, sizeof(*(server_address)));
-
-	if(status<0){
-
-		printf("Error, connection with server was not possible: %s\n",strerror(errno));
-
-		return -1;
-
-	}
-
-
-	return 0;
-
-}
-
-
-void printMenuSC(){
-
-	printf("---- CLIENT MENU ----\n");
-	printf("0. PLAY GAME\n");
-	printf("1. QUIT GAME\n");
-
-}
-
-//before sending information, we need to first validate that the length of the message is not bigger than BUFFER_SIZE, we need to validate this.
-
-bool validate_message_length(const char* temporary_pointer){
-
-        if(BUFFER_SIZE <= strlen(temporary_pointer)){
-
-                return false;
-
-        }else{
-
-                return true;
-
-        }
-
-        //rememeber that strlen is indexed to one,
-
-}
-
-
-
-ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER_SIZE], int client_file_descriptor){
-
-	bool correct_length = validate_message_length(temporary_pointer);
-
-	ssize_t result = 0;
-
-	if(correct_length == true){
-
-		strncpy(buffer, temporary_pointer, strlen(temporary_pointer));
-
-		buffer[strlen(temporary_pointer)] = '\0';
-
-		result = send_framed_message(client_file_descriptor, buffer, (uint32_t)strlen(temporary_pointer));
-
-		if(result == -1){
-
-			printf("Unable to send message to server: %s\n", strerror(errno));
-
-			result = -1;
-
-		}
-
-	}else{
-
-		printf("Error, the following message exceeds the BUFFER_SIZE limit: %s\n", temporary_pointer);
-
-		result = -2;
-
-	}
-
-
-
-	return result;
-
-}
-
-
 int handleServerCommunication(int server_port){
 
 	char buffer_send[BUFFER_SIZE]={0}, buffer_receive[BUFFER_SIZE]={0}; const char* temporary_buffer =NULL;
@@ -309,11 +102,9 @@ int handleServerCommunication(int server_port){
 
 				quit = true;
 
-				memory = true; //this does not really matter
+				memory = true;
 
 			}else if(result_send_receive == -2){
-
-				//when string exceeds buffer limit that we have defined (BUFFER_SIZE)
 
 				memory = false;
 
@@ -382,21 +173,6 @@ int handleServerCommunication(int server_port){
 
 						printf("Server responded with the following message: %s\n", buffer_receive);
 
-						//the server can only respond with two possible messages if the server is trying to find a gamne for us:
-
-						//0|3: game not found, time expired
-
-						//0|1: game was found
-
-						/*
-						For the purpose of testing on how our client-server model behaves we are going to do the folloiwng:
-
-						if the response is gmae was found, we are going just simply quit
-
-						if a game was found, we are just going to go to the pro
-
-						*/
-
 						memory = true;
 
 						first_number = ENTERING_CREATING_GAME;
@@ -440,6 +216,16 @@ int handleServerCommunication(int server_port){
 						input = false;
 
 						break;
+
+					case STILL_WAITING:
+
+						printf("After showing menu information, the other player quit. Still waiting for someone to join our game\n");
+
+						//here we can ask how long do you want to wait, do you still want to wait....
+
+
+						break;
+
 
 				}
 
@@ -508,6 +294,7 @@ int handleServerCommunication(int server_port){
 							//buffer_receive = "4|i|";
 
 							buffer_receive[4] = option + '0';
+
 
 							temporary_buffer = buffer_receive;
 
