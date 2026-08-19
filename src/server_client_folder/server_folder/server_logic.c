@@ -17,40 +17,6 @@ void reverse(char* pointer){
 
 }
 
-//number_to_char is going to be obslete for now, ai has given us a better and safer version of the smae thing, int_to_str function
-/*int number_to_char(char* pointer, int temporary){
-
-        int i = 0;
-
-        int residual = 0;
-
-
-        while(temporary>=10){
-
-                residual = temporary % 10;
-
-                temporary = temporary/10;
-
-                *(pointer + i) = residual +'0';
-
-                i++;
-
-        }
-
-        *(pointer + i) = temporary + '0';
-
-        ++i;
-
-        *(pointer + i)  = '\0';
-
-        reverse(pointer);
-
-        i = i - 1;
-
-        return i;
-
-}
-*/
 int int_to_str(char *dst, ssize_t dst_size, int value){
 
 	if(!dst||dst_size == 0){
