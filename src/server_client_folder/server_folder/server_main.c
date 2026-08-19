@@ -54,11 +54,9 @@ void* handle_client(void* arg){
 
 			case ENTERING_CREATING_GAME:{
 
-				clock_gettime(CLOCK_REALTIME, &ts);
-
 				time_experation = 5;
 
-				ts.tv_sec +=time_experation;
+				void time_init(&ts,time_experation);
 
 				timed_out = 0;
 
@@ -148,42 +146,16 @@ void* handle_client(void* arg){
 
 				temporary_pointer = waiting_for_player(&client, &index_game,&index_player, time_experation, &ts, &counter,buffer_receive,  &result);
 
-				switch(result){
-
-					case 1:
-
-						break;
-
-
-					case 2:
-
-						break;
-
-
-					case 3:
-
-
-						break;
-
-
-					default:
-
-						printf("Error: invalid return statemtn from waiting_for_player function\n");
-
-						break;
-
-
-				}
-
-
-
 				result = -1;
 
 				break;
 
 			case KEEP_WAITING:
 
-				//after the game was created, menu information was sent, but the other player still decided to quit at the end, this curretn client has the possiblity to continue to wait until someone else deicdes to enter its game
+
+				time_experation = 120;
+
+				timed_out = wait_signal_cond((client->pointer_list_game) + index_game, index_player, &ts, time_experation);
 
 				break;
 

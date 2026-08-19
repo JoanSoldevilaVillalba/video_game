@@ -1,6 +1,14 @@
 #include "server_logic.h"
 #include "server_send_data.h"
 
+void time_init(struct timespec* ts, int time_experation){
+
+	clock_gettime(CLOCK_REALTIME, ts);
+
+	ts.tv_sec +=time_experation;
+
+}
+
 void reverse(char* pointer){
 
         ssize_t length = strlen(pointer);
@@ -206,17 +214,19 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 
 //list_game_pointer is the same as the following: client->pointer_list_game
 
-int wait_signal_cond(int* list_game_pointer, int index_player){
+int wait_signal_cond(int* list_game_pointer, int index_player, struct timespec* ts, int time_exp){
 
-	 pthread_mutex_lock(&mutex_game_list);
+	time_init(ts, time_exp);
+
+	pthread_mutex_lock(&mutex_game_list);
 
 	int timed_out = 0;
 
          while(list_game_pointer->ready_player[index_player ^ 1] == false && !timed_out){
 
-         	int rc = pthread_cond_timedwait(&list_game_pointer->game_condition), &mutex_game_list, &ts);
+         	int rc = pthread_cond_timedwait(&list_game_pointer->game_condition), &mutex_game_list, ts);
 
-	         if(list_game_pointer->player_id[index_player ^ 1] == -1){ //we check if the other player has liberated its position
+	         if(list_game_pointer->player_id[index_player ^ 1] == -1){
 
 	         	timed_out = 1;
 
@@ -236,15 +246,11 @@ int wait_signal_cond(int* list_game_pointer, int index_player){
 
 }
 
-char* waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[], int* result_function){
+char* waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[], int* result_function, int* timed_out){
 
-	clock_gettime(CLOCK_REALTIME, ts);
+	time_init(ts,time_experation);
 
-	ts->tv_sec += time_experation;
-
-	int timed_out = 0;
-
-	(*counter) = 4;
+	*(counter) = 4;
 
 	int play = buffer_receive[counter] - '0';//we receive what the current client wants to do after viewing menu information
 
@@ -268,7 +274,7 @@ char* waiting_for_player(struct_client* client, int* index_game,int* index_playe
 
 		eliminate_game_slot(client, index_game, index_player); //we elinate ouersevles fromthe game, 
 
-		(*result_function) = 1 //this player has selected to quit after seeing menu information
+		*(result_function) = 1 //this player has selected to quit after seeing menu information
 
 		return "1|8|player is quitting";
 
@@ -278,25 +284,24 @@ char* waiting_for_player(struct_client* client, int* index_game,int* index_playe
 
 		//in htis case the curretn client wants to continue to play the game
 
-		timed_out = wait_signal_cond(list_game_pointer, (*index_player));
+		*(timed_out) = wait_signal_cond(list_game_pointer, (*index_player));
 
-		if(timed_out == 1 || (list_game_pointer->ready_player[index_player ^ 1] == false){
+		if(*(timed_out) == 1 || (list_game_pointer->ready_player[index_player ^ 1] == false){
 
 			switch_game_player_position(client,index_game, index_player);
 
-			(*result_function) = 2; // other player quitted after seeing game menu, it is up to the current client if he or she wants  to continue to wait for someone else to enter the game
+			*(result_function) = 2; // other player quitted after seeing game menu, it is up to the current client if he or she wants  to continue to wait for someone else to enter the game
 
 			return "1|7|other player quit game";
 
 		}else{
 
-			(*result_function) = 3; //both players after reveiwn gmenu information, they have both decided to continue to play, main game loop is going to start soon
+			*(result_function) = 3; //both players after reveiwn gmenu information, they have both decided to continue to play, main game loop is going to start soon
 
 			return "3|10|other player ready";
 
 		}
 
 	}
-
 
 }
