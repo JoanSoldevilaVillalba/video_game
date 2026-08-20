@@ -51,14 +51,11 @@ char* create_game(int temporary_fd, int* result_function, int* index_game, game_
 
                 pthread_mutex_lock(&mutex_game_list);
 
-			if((game_list+i)->game_lock == false){//if game_lock is equal to true, that means both slots are still occupied,no need to check rest of fields
-
 	                	if((game_list+i)->game_id!=-1 && (game_list+i)->player_id[1]==-1){
 
         	                	(game_list+i)->player_id[1] = temporary_fd;
 	                	        *(result_function) = 1;
 	                        	*(index_game) = i;
-					(game_list+i)->game_lock = true;//if the client is the second player, someone  already created the game, both slots are full, game must be locked to prevent race condition
 		                        pthread_cond_signal(&(game_list + i)->game_condition);
 	        	                pthread_mutex_unlock(&mutex_game_list);
 	                	        return "0|1|you have succesfuly entered a game";
@@ -73,8 +70,6 @@ char* create_game(int temporary_fd, int* result_function, int* index_game, game_
         	                	return "0|2|you have succesfuly created a game";
 
 	                	}
-
-			}
 
 	        pthread_mutex_unlock(&mutex_game_list);
 
@@ -208,12 +203,6 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 
 		pthread_cond_signal(&(temp_pointer->game_condition));
 
-		if(temp_pointer->game_lock){
-
-			temp_pointer->game_lock = false;
-
-		}
-
 	pthread_mutex_unlock(&mutex_game_list);
 
 }
@@ -280,7 +269,7 @@ a different client/thread checks the second_player id and sees that it is set to
 between the first two clients that i have commetned, then maybe the second thread receivng  the signal call will probably be moved to the top of the OS 
 schedduler, having said this we are not going to optmistic, we are going to try to develop some type of system that bypasses this possible race condition
 we can add some type of boolean called lock, indicating that there are still to players, either playing or even if one of them is elimintaeing itself from the game
-
+adding this new game_lock does not really prevent the race condition. We are going to have to earse it, and just elongate how long we are locking something
 		*/
 
 
