@@ -188,8 +188,8 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 	if (*(index_player) < 0 || *(index_player) > 1) return;
 
 	game_struct_players* temp_pointer = (fast_pointer->pointer_list_game) + index_game;
-
-	pthread_mutex_lock(&mutex_game_list);
+//the following mutex lock and unlock is not needed.
+//	pthread_mutex_lock(&mutex_game_list);
 
 		temp_pointer->player_id[index_player & 1] = -1;
 
@@ -203,7 +203,7 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 
 		pthread_cond_signal(&(temp_pointer->game_condition));
 
-	pthread_mutex_unlock(&mutex_game_list);
+//	pthread_mutex_unlock(&mutex_game_list);
 
 }
 
@@ -213,9 +213,9 @@ int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, s
 
 	time_init(ts, time_exp);
 
-	pthread_mutex_lock(&mutex_game_list);
-
 	int timed_out = 0;
+
+	pthread_mutex_lock(&mutex_game_list);
 
          while(list_game_pointer->ready_player[index_player ^ 1] == false && !timed_out){
 
@@ -261,25 +261,14 @@ char* waiting_for_player(struct struct_client* client, int* index_game,int* inde
 
 		}
 
-		/*
-There is a possible race condition in this scenario, lets suppose that there are three threads. To of them have already communicated between
-each other and now one of them still wants to play but the other thread/client after reading/receiving menu information, the client/thread wants to quit.
-having said this in between setting player_id to minus one, if that player is the second player, we can have a context switch where 
-a different client/thread checks the second_player id and sees that it is set to -1, whilst still trying to close this slot. This possibly could lead to undefined behavoour, not desirable. Unless if threads in linux behave as folloiwgn: if two threads share a conditional variabe, which is the cause
-between the first two clients that i have commetned, then maybe the second thread receivng  the signal call will probably be moved to the top of the OS 
-schedduler, having said this we are not going to optmistic, we are going to try to develop some type of system that bypasses this possible race condition
-we can add some type of boolean called lock, indicating that there are still to players, either playing or even if one of them is elimintaeing itself from the game
-adding this new game_lock does not really prevent the race condition. We are going to have to earse it, and just elongate how long we are locking something
-		*/
-
-
 		pthread_cond_signal(&(list_game_pointer->game_condition)); //after changing game_list variables, we send a signal to the other player indicating that we have changed variables
 
-	pthread_mutex_unlock(&mutex_game_list);
 
 	if(play == false){
 
 		eliminate_game_slot(client, index_game, index_player); //we elinate ouersevles fromthe game, 
+
+		pthread_mutex_lock(&mutex_game_list);
 
 		*(result_function) = 1 //this player has selected to quit after seeing menu information
 
@@ -289,11 +278,13 @@ adding this new game_lock does not really prevent the race condition. We are goi
 	}else{
 
 
-		//in htis case the curretn client wants to continue to play the game
+		pthread_mutex_unlock(&mutex_game_list);
 
 		*(timed_out) = wait_signal_cond(list_game_pointer, (*index_player));
 
 		if(*(timed_out) == 1 || (list_game_pointer->ready_player[index_player ^ 1] == false){
+
+			//the following functino sohould only be called when its second player
 
 			switch_game_player_position(client,index_game, index_player);
 
