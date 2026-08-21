@@ -5,7 +5,7 @@ void time_init(struct timespec* ts, int time_experation){
 
 	clock_gettime(CLOCK_REALTIME, ts);
 
-	ts.tv_sec +=time_experation;
+	ts->tv_sec +=time_experation;
 
 }
 
@@ -157,21 +157,21 @@ ssize_t receive_validated_message(char buffer[BUFFER_SIZE], int client_file_desc
 
 }
 
-void switch_game_player_position(game_struct_players* list_game_pointer int* index_game, int* index_player){
+void switch_game_player_position(game_struct_players* list_game_pointer, int* index_player){
 
 	//the folloiwng is only necessary if the current client is in the second position of the array, this function is also only called when one of the clients/threads decides to exit the game
 
-	if(!*(index_game)) return; //if the value pointed by index_game is equal to zero or false (zero is false), we do not need to perform a switch
+//	if(!*(index_game)){ return}; //if the value pointed by index_game is equal to zero or false (zero is false), we do not need to perform a switch
 
-	if(!(list_game_pointer))return;
+//	if(!(list_game_pointer)){return};
 
-	if(*(index_player)<0 || *(index_player)<0)return;
+//	if(*(index_player)<0 || *(index_player)<0){return};
 
 	pthread_mutex_lock(&mutex_game_list);
 
-		(list_game_pointer->player_id[0] = list_game_pointer->player_id[1];
+		list_game_pointer->player_id[0] = list_game_pointer->player_id[1];
 
-		(list_game_pointer->ready_player[0] = list_game_pointer->ready_player[1];
+		list_game_pointer->ready_player[0] = list_game_pointer->ready_player[1];
 
 	pthread_mutex_unlock(&mutex_game_list);
 
@@ -187,15 +187,13 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 	if (*(index_game) < 0 || *(index_game) >= MAX_GAMES_SIZE) return;
 	if (*(index_player) < 0 || *(index_player) > 1) return;
 
-	game_struct_players* temp_pointer = (fast_pointer->pointer_list_game) + index_game;
-//the following mutex lock and unlock is not needed.
-//	pthread_mutex_lock(&mutex_game_list);
+	game_struct_players* temp_pointer = (fast_pointer->pointer_list_game) + *(index_game);
 
-		temp_pointer->player_id[index_player & 1] = -1;
+		temp_pointer->player_id[*(index_player) & 1] = -1;
 
-		temp_pointer->ready_player[index_player & 1] = false;
+		temp_pointer->ready_player[*(index_player) & 1] = false;
 
-		if(temp_pointer->player_id[index_player ^ 1] == -1){
+		if(temp_pointer->player_id[*(index_player) ^ 1] == -1){
 
 			temp_pointer->game_id = -1;
 
@@ -203,11 +201,8 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 
 		pthread_cond_signal(&(temp_pointer->game_condition));
 
-//	pthread_mutex_unlock(&mutex_game_list);
 
 }
-
-//list_game_pointer is the same as the following: client->pointer_list_game
 
 int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, struct timespec* ts, int time_exp){
 
@@ -219,7 +214,7 @@ int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, s
 
          while(list_game_pointer->ready_player[index_player ^ 1] == false && !timed_out){
 
-         	int rc = pthread_cond_timedwait(&list_game_pointer->game_condition), &mutex_game_list, ts);
+         	int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &mutex_game_list, ts);
 
 	         if(list_game_pointer->player_id[index_player ^ 1] == -1){
 
@@ -237,27 +232,27 @@ int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, s
 
 	pthread_mutex_unlock(&mutex_game_list);
 
-	return timed_out; //when timed_out is equal to 1, that means that the other player has decided to quit or time experation
+	return timed_out; 
 
 }
 
-char* waiting_for_player(struct struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[], int* result_function, int* timed_out){
+char* waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[], int* result_function, int* timed_out){
 
 	time_init(ts,time_experation);
 
 	*(counter) = 4;
 
-	int play = buffer_receive[counter] - '0';//we receive what the current client wants to do after viewing menu information
+	int play = buffer_receive[*(counter)] - '0';//we receive what the current client wants to do after viewing menu information
 
-	game_struct_players* list_game_pointer = ((client->pointer_list_game) + index_game); //simplify pointer arithmetic
+	game_struct_players* list_game_pointer = ((client->pointer_list_game) + *(index_game)); //simplify pointer arithmetic
 
 	pthread_mutex_lock(&mutex_game_list);
 
-		list_game_pointer->ready_player[index_player & 1] = (bool)play;
+		list_game_pointer->ready_player[*(index_player) & 1] = (bool)play;
 
 		if(!play){
 
-			list_game_pointer->player_id[index_player & 1] = -1;//if we do not want to play we set index_player id to -1, liberating this slot for another player who is currently looking
+			list_game_pointer->player_id[*(index_player) & 1] = -1;//if we do not want to play we set index_player id to -1, liberating this slot for another player who is currently looking
 
 		}
 
@@ -270,7 +265,7 @@ char* waiting_for_player(struct struct_client* client, int* index_game,int* inde
 
 		pthread_mutex_lock(&mutex_game_list);
 
-		*(result_function) = 1 //this player has selected to quit after seeing menu information
+		*(result_function) = 1; //this player has selected to quit after seeing menu information
 
 		return "1|8|player is quitting";
 
@@ -280,13 +275,15 @@ char* waiting_for_player(struct struct_client* client, int* index_game,int* inde
 
 		pthread_mutex_unlock(&mutex_game_list);
 
-		*(timed_out) = wait_signal_cond(list_game_pointer, (*index_player));
+		//game_struct_players* list_game_pointer, int index_player, struct timespec* ts, int time_exp
 
-		if(*(timed_out) == 1 || (list_game_pointer->ready_player[index_player ^ 1] == false){
+		*(timed_out) = wait_signal_cond(list_game_pointer, (*index_player), ts, time_experation);
+
+		if(*(timed_out) == 1 || list_game_pointer->ready_player[*(index_player) ^ 1] == false){
 
 			//the following functino sohould only be called when its second player
 
-			switch_game_player_position(client,index_game, index_player);
+			switch_game_player_position(client->pointer_list_game,index_player);
 
 			*(result_function) = 2; // other player quitted after seeing game menu, it is up to the current client if he or she wants  to continue to wait for someone else to enter the game
 

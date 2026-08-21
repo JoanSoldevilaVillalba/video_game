@@ -20,11 +20,11 @@ ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER
 
 ssize_t receive_validated_message(char buffer[BUFFER_SIZE], int client_file_descriptor);
 
-void switch_game_player_position(int* list_game_pointer int* index_game, int* index_player)
+void switch_game_player_position(game_struct_players* list_game_pointer, int* index_player);
 
-void eliminate_game_slot(void* arg, int index_game, int index_player);
+void eliminate_game_slot(void* arg, int* index_game, int* index_player);
 
-int wait_signal_cond(int* list_game_pointer, int index_player, struct timespec* ts, int time_exp);
+int wait_signal_cond(game_struct_players * list_game_pointer, int index_player, struct timespec* ts, int time_exp);
 
-char* waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[],  int* result_function);
+char* waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[],  int* result_function, int* timed_out);
 

@@ -56,7 +56,7 @@ void* handle_client(void* arg){
 
 				time_experation = 5;
 
-				void time_init(&ts,time_experation);
+				time_init(&ts,time_experation);
 
 				timed_out = 0;
 
@@ -84,7 +84,11 @@ void* handle_client(void* arg){
 
 				if(result == 2){
 
-					timed_out = wait_signal_cond((client->pointer_list_game) + index_game , index_player);
+//nt wait_signal_cond(game_struct_players * list_game_pointer, int index_player, struct timespec* ts, int time_exp);
+					time_experation = 60;
+
+
+					timed_out = wait_signal_cond((client->pointer_list_game) + index_game ,index_player, &ts, time_experation);
 
 	                                if(timed_out == 1 || (client->pointer_list_game + index_game)->player_id[1] == -1){
 
@@ -144,7 +148,7 @@ void* handle_client(void* arg){
 
 				time_experation = 120;
 
-				temporary_pointer = waiting_for_player(&client, &index_game,&index_player, time_experation, &ts, &counter,buffer_receive,  &result);
+				temporary_pointer = waiting_for_player(client, &index_game,&index_player, time_experation, &ts, &counter,buffer_receive,  &result, &timed_out);
 
 				result = -1;
 
@@ -169,7 +173,7 @@ void* handle_client(void* arg){
 
 				break;
 
-			case PLAYTIME:
+			case PLAY_TIME:
 
 				//after both players have accepted, we are going to have to switch from TCP to UDP, define another protocol that the client is going to have to send to the server indicating waht movements the player is doing (left, right, shooting ...)
 
@@ -213,7 +217,7 @@ void* handle_client(void* arg){
 
 	if(index_game != -1 && index_player != -1){
 
-		eliminate_game_slot(client,index_game, index_player);
+		eliminate_game_slot(client,&index_game, &index_player);
 
 	}
 
@@ -248,8 +252,6 @@ void initilizeGames(game_struct_players* game_list){
 		(game_list+i)->ready_player[0] = false;
 
 		(game_list+i)->ready_player[1] = false;
-
-		(game_list+i)->game_lock = false;
 
 	}
 
@@ -382,4 +384,6 @@ int main()
 
 
 	close(server_file_descriptor);
+
+	return 0;
 }
