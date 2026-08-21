@@ -210,13 +210,15 @@ void* handle_client(void* arg){
 
 		}
 
-	pthread_mutex_unlock(&mutex_thread_counter);
 
 	if(index_game != -1 && index_player != -1){
 
 		eliminate_game_slot(client,index_game, index_player);
 
 	}
+
+	pthread_mutex_unlock(&mutex_thread_counter);
+
 
 	close(client->socket_fd);
 
