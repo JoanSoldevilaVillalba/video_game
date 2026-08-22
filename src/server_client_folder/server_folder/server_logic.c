@@ -287,13 +287,13 @@ char* waiting_for_player(struct_client* client, int* index_game,int* index_playe
 
 			*(result_function) = 2; // other player quitted after seeing game menu, it is up to the current client if he or she wants  to continue to wait for someone else to enter the game
 
-			return "1|7|other player quit game";
+			return "1|4|other player quit game";
 
 		}else{
 
 			*(result_function) = 3; //both players after reveiwn gmenu information, they have both decided to continue to play, main game loop is going to start soon
 
-			return "3|10|other player ready";
+			return "3|3|other player ready";
 
 		}
 

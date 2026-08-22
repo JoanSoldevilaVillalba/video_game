@@ -334,14 +334,9 @@ int handleServerCommunication(int server_port){
 
 							memset(buffer_receive,0,sizeof(buffer_receive));
 
-							//we are going to have to fix the second number
-
-							temporary_buffer = "4|i|";
-
-							//buffer_receive = "4|i|";
+							buffer_receive[] = "4|i|";
 
 							buffer_receive[4] = option + '0';
-
 
 							temporary_buffer = buffer_receive;
 
@@ -415,7 +410,6 @@ int handleServerCommunication(int server_port){
 
 		}
 
-	
 
 	close(client_file_descriptor);
 

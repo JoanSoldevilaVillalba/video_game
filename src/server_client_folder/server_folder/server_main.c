@@ -129,7 +129,7 @@ void* handle_client(void* arg){
 			case MENU_PREPERATION:
 
 			    if (index_game < 0 || index_game >= MAX_GAMES_SIZE) {
-				        strncpy(temporary_buffer, "4|0|error, invalid game index", BUFFER_SIZE);
+				        strncpy(temporary_buffer, "1|0|error, invalid game index, server quits", BUFFER_SIZE);
 				        temporary_buffer[BUFFER_SIZE-1] = '\0';
 			    }else {
 				        int p0 = client->pointer_list_game[index_game].player_id[0];
