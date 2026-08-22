@@ -8,6 +8,16 @@
 
 #define BUFFER_SIZE 64
 
+typedef enum {
+	ENTERING_CREATING_GAME = 0,
+	QUIT = 1,
+	RANDOM_MESSAGE = 2,
+	MENU_PREPERATION = 3,
+	WAITING_INIT = 4,
+	KEEP_WAITING = 5,
+	PLAY_TIME = 6
+} FIRST_LAYER;
+
 
 int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_address, int port);
 

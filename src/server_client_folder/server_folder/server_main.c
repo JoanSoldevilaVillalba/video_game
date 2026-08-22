@@ -175,7 +175,15 @@ void* handle_client(void* arg){
 
 			case PLAY_TIME:
 
-				//after both players have accepted, we are going to have to switch from TCP to UDP, define another protocol that the client is going to have to send to the server indicating waht movements the player is doing (left, right, shooting ...)
+				//we are not able to swtich from tcp to udp on the same socekt/file descriptor without destoying the tcp connection.
+
+				//instead we are just going to have to use two different socket/file descriptors
+
+				//we are first going to have to send the udp info throught the already established tcp connection: port, ip (in this case it is just loop back)
+
+				//after sending all of the necessary informatino, both client and server create their udp socket/file descriptors.
+
+				//server is going to be the first one to send information
 
 				break;
 
