@@ -251,13 +251,13 @@ int handleServerCommunication(int server_port){
 
 								scanf("%d", &time_experation);
 
-								if(time_exepration<=0 || time_experation >=360){
+								if(time_experation<=0 || time_experation >=360){
 
 									printf("Error: enter a number between <120> and <360>\n");
 
 								}
 
-							}while(time_exepration<=0 || time_experation >=360);
+							}while(time_experation<=0 || time_experation >=360);
 
 						temporary_buffer=""; //here besides the protocol numbers we are going to have to add the time_experation, 
 						}else{
@@ -334,7 +334,7 @@ int handleServerCommunication(int server_port){
 
 							memset(buffer_receive,0,sizeof(buffer_receive));
 
-							buffer_receive[] = "4|i|";
+							buffer_receive = "4|i|";
 
 							buffer_receive[4] = option + '0';
 
