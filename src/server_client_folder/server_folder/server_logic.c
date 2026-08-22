@@ -263,7 +263,7 @@ char* waiting_for_player(struct_client* client, int* index_game,int* index_playe
 
 		eliminate_game_slot(client, index_game, index_player); //we elinate ouersevles fromthe game, 
 
-		pthread_mutex_lock(&mutex_game_list);
+		pthread_mutex_unlock(&mutex_game_list);
 
 		*(result_function) = 1; //this player has selected to quit after seeing menu information
 
