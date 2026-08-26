@@ -15,7 +15,7 @@ void* handle_client(void* arg){
 
 	pthread_detach(pthread_self());
 
-	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE], temporary_buffer[BUFFER_SIZE];
+	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE], temporary_buffer[BUFFER_SIZE], buffer_error[BUFFER_SIZE];
 
 	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1, timed_out = 0, time_experation = -1;
 
@@ -31,7 +31,9 @@ void* handle_client(void* arg){
 
 		memset(buffer_receive, 0, sizeof(buffer_receive)); memset(buffer_send, 0, sizeof(buffer_send)); temporary_pointer = NULL; counter = 0 ;
 
-		bytes_result = receive_validated_message(buffer_receive, client->socket_fd);
+		bytes_result = receive_validated_message(buffer_receive, buffer_errorclient->socket_fd);
+
+		handlePE(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
 
 		if(bytes_result == -1){
 
@@ -56,7 +58,7 @@ void* handle_client(void* arg){
 
 				time_experation = 5;
 
-				void time_init(&ts,time_experation);
+				time_init(&ts,time_experation);
 
 				timed_out = 0;
 
@@ -84,7 +86,11 @@ void* handle_client(void* arg){
 
 				if(result == 2){
 
-					timed_out = wait_signal_cond((client->pointer_list_game) + index_game , index_player);
+//nt wait_signal_cond(game_struct_players * list_game_pointer, int index_player, struct timespec* ts, int time_exp);
+					time_experation = 60;
+
+
+					timed_out = wait_signal_cond((client->pointer_list_game) + index_game ,index_player, &ts, time_experation);
 
 	                                if(timed_out == 1 || (client->pointer_list_game + index_game)->player_id[1] == -1){
 
@@ -125,7 +131,7 @@ void* handle_client(void* arg){
 			case MENU_PREPERATION:
 
 			    if (index_game < 0 || index_game >= MAX_GAMES_SIZE) {
-				        strncpy(temporary_buffer, "4|0|error, invalid game index", BUFFER_SIZE);
+				        strncpy(temporary_buffer, "1|0|error, invalid game index, server quits", BUFFER_SIZE);
 				        temporary_buffer[BUFFER_SIZE-1] = '\0';
 			    }else {
 				        int p0 = client->pointer_list_game[index_game].player_id[0];
@@ -144,7 +150,7 @@ void* handle_client(void* arg){
 
 				time_experation = 120;
 
-				temporary_pointer = waiting_for_player(&client, &index_game,&index_player, time_experation, &ts, &counter,buffer_receive,  &result);
+				temporary_pointer = waiting_for_player(client, &index_game,&index_player, time_experation, &ts, &counter,buffer_receive,  &result, &timed_out);
 
 				result = -1;
 
@@ -169,9 +175,17 @@ void* handle_client(void* arg){
 
 				break;
 
-			case PLAYTIME:
+			case PLAY_TIME:
 
-				//after both players have accepted, we are going to have to switch from TCP to UDP, define another protocol that the client is going to have to send to the server indicating waht movements the player is doing (left, right, shooting ...)
+				//we are not able to swtich from tcp to udp on the same socekt/file descriptor without destoying the tcp connection.
+
+				//instead we are just going to have to use two different socket/file descriptors
+
+				//we are first going to have to send the udp info throught the already established tcp connection: port, ip (in this case it is just loop back)
+
+				//after sending all of the necessary informatino, both client and server create their udp socket/file descriptors.
+
+				//server is going to be the first one to send information
 
 				break;
 
@@ -210,13 +224,15 @@ void* handle_client(void* arg){
 
 		}
 
-	pthread_mutex_unlock(&mutex_thread_counter);
 
 	if(index_game != -1 && index_player != -1){
 
-		eliminate_game_slot(client,index_game, index_player);
+		eliminate_game_slot(client,&index_game, &index_player);
 
 	}
+
+	pthread_mutex_unlock(&mutex_thread_counter);
+
 
 	close(client->socket_fd);
 
@@ -246,8 +262,6 @@ void initilizeGames(game_struct_players* game_list){
 		(game_list+i)->ready_player[0] = false;
 
 		(game_list+i)->ready_player[1] = false;
-
-		(game_list+i)->game_lock = false;
 
 	}
 
@@ -380,4 +394,6 @@ int main()
 
 
 	close(server_file_descriptor);
+
+	return 0;
 }

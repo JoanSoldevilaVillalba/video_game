@@ -167,7 +167,7 @@ ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 }
 
 
-ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len){
+ssize_t receive_framed_message(int fd, char* buf, char* buffer_error, ssize_t max_buf_len){
 
 	uint32_t net_len = 0;
 
