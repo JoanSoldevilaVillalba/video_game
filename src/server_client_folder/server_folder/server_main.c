@@ -15,7 +15,7 @@ void* handle_client(void* arg){
 
 	pthread_detach(pthread_self());
 
-	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE], temporary_buffer[BUFFER_SIZE];
+	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE], temporary_buffer[BUFFER_SIZE], buffer_error[BUFFER_SIZE];
 
 	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1, timed_out = 0, time_experation = -1;
 
@@ -31,7 +31,9 @@ void* handle_client(void* arg){
 
 		memset(buffer_receive, 0, sizeof(buffer_receive)); memset(buffer_send, 0, sizeof(buffer_send)); temporary_pointer = NULL; counter = 0 ;
 
-		bytes_result = receive_validated_message(buffer_receive, client->socket_fd);
+		bytes_result = receive_validated_message(buffer_receive, buffer_errorclient->socket_fd);
+
+		handlePE(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
 
 		if(bytes_result == -1){
 

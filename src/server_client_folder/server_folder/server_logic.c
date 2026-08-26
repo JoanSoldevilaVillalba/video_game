@@ -139,9 +139,9 @@ ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER
 }
 
 
-ssize_t receive_validated_message(char buffer[BUFFER_SIZE], int client_file_descriptor){
+ssize_t receive_validated_message(char buffer[BUFFER_SIZE],char buffer_error[BUFFER_SIZE], int client_file_descriptor){
 
-        ssize_t result_bytes_receive = receive_framed_message(client_file_descriptor, buffer, (ssize_t) BUFFER_SIZE);
+        ssize_t result_bytes_receive = receive_framed_message(client_file_descriptor, buffer, buffer_error, (ssize_t) BUFFER_SIZE);
 
         const char* temporary_pointer = buffer;
 
@@ -298,5 +298,29 @@ char* waiting_for_player(struct_client* client, int* index_game,int* index_playe
 		}
 
 	}
+
+}
+
+
+
+void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* quit, int* first_number){
+
+
+	printf("We have received the following number of bytes: %d\n",(int)*(result));
+
+	printf("Errno is giving us the following value: , and the string to this error is the following: \n", (int)(errno), strerror(errno));
+
+	if(*(result) == -1){
+
+		printf("Personal protocol message: %s\n", buffer_error);//we are going to have to add a specific string that is going to be used in  order to return statments that determinte the error that has happened
+
+		printf("An error happend, we are going to close the connection\n");
+
+	}else{
+
+		printf("No error has occured, message from client: %c\n", buffer_receive);
+
+	}
+
 
 }
