@@ -152,36 +152,35 @@ bool validate_message_numbers(char* message_buffer, char* error_buffer){
 
 
 
-ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER_SIZE], int client_file_descriptor){
-
-        bool correct_length = validate_message_length(temporary_pointer);
+ssize_t send_validated_message(char* temporary_pointer, char* buffer,char* buffer_error, int client_file_descriptor){
 
         ssize_t result = 0;
 
-        if(correct_length == true){
 
-                strncpy(buffer, temporary_pointer, strlen(temporary_pointer));
+        if(!validate_message_length(buffer, error_buffer)){
 
-                buffer[strlen(temporary_pointer)] = '\0';
+		return -1;
 
-                result = send_framed_message(client_file_descriptor, buffer, (uint32_t)strlen(temporary_pointer));
+	}
 
-                if(result == -1){
+	if(!validate_message_numbers(buffer,error_buffer)){
 
-                        printf("Unable to send message to server\n");
+		return -1;
 
-                        result = -1;
+	}
 
-                }
+	if(validate_message_structure(buffer, error_buffer)){
 
-        }else{
+		return -1;
 
-                printf("Error, the following message exceeds the BUFFER_SIZE limit: %s\n", temporary_pointer);
+	}
 
-                result = -2;
 
-        }
+        strncpy(buffer, temporary_pointer, strlen(temporary_pointer));
 
+        buffer[strlen(temporary_pointer)] = '\0';
+
+        result = send_framed_message(client_file_descriptor, buffer, (uint32_t)strlen(temporary_pointer));
 
 
         return result;
@@ -195,7 +194,7 @@ ssize_t receive_validated_message(char buffer[BUFFER_SIZE],char buffer_error[BUF
 
         if(result_bytes_receive == -1 || !validated){
 
-                return -1;
+		return -1;
 
         }
 
