@@ -14,7 +14,11 @@ int int_to_str(char *dst, ssize_t dst_size, int value);
 
 char* create_game(int temporary_fd, int* result_function, int* index_game, game_struct_players* game_list);
 
-bool validate_message_length(const char* temporary_pointer);
+bool validate_message_length(char* buffer,char* buffer_error);
+
+bool validate_message_structure(char* buffer,char* buffer_error);
+
+bool validate_message_numbers(char* buffer, char* buffer_error);
 
 ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER_SIZE], int client_file_descriptor);
 

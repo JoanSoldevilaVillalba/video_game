@@ -86,7 +86,7 @@ char* create_game(int temporary_fd, int* result_function, int* index_game, game_
 
 
 
-bool validate_message_length(const char* temporary_pointer){
+bool validate_message_length(char* message_buffer, char* error_buffer){
 
         if(BUFFER_SIZE <= strlen(temporary_pointer)){
 
@@ -97,6 +97,56 @@ bool validate_message_length(const char* temporary_pointer){
                 return true;
 
         }
+
+}
+
+bool validate_message_structure(char* message_buffer, char* error_buffer){
+
+	char first_seperator = *(temporary_pointer + 1);
+
+	char second_seperator = *(temporary_pointer + 3);
+
+	bool result = false;
+
+	if(second_seperator == '|' && first_seperator == '|'){
+
+		result = true;
+
+	}else{
+
+		strcpy(error_buffer, "Error, message does not have the correct strucutre, missing seperator characters\0");
+
+	}
+
+	return false;
+
+}
+
+bool validate_message_numbers(char* message_buffer, char* error_buffer){
+
+	int first_number = *(temporary_pointer) - '0';
+
+	int second_number = *(temporary_pointer + 2) - '0';
+
+	bool result = true;
+
+	if(first_number > 10 || firsts_number<0){
+
+		strcpy(error_buffer, "Error, first number is not correct");
+
+		result = false;
+
+	}
+
+	if(second_number > 10 || second_number < 0){
+
+		strcpy(error_buffer, "Error, second number is not correct");
+
+		result = false;
+
+	}
+
+	return result;
 
 }
 
@@ -143,15 +193,30 @@ ssize_t receive_validated_message(char buffer[BUFFER_SIZE],char buffer_error[BUF
 
         ssize_t result_bytes_receive = receive_framed_message(client_file_descriptor, buffer, buffer_error, (ssize_t) BUFFER_SIZE);
 
-        const char* temporary_pointer = buffer;
-
-        bool validated = validate_message_length(temporary_pointer);
-
         if(result_bytes_receive == -1 || !validated){
 
                 return -1;
 
         }
+
+
+	if(!validate_message_length(buffer, buffer_error)){
+
+		return -1;
+
+	}
+
+	if(!validate_message_structure(buffer, buffer_error)){
+
+		return -1;
+
+	}
+
+	if(validate_message_numbers(buffer, buffer_error)){
+
+		return -1;
+
+	}
 
         return result_bytes_receive;
 
@@ -308,13 +373,19 @@ void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* 
 
 	printf("We have received the following number of bytes: %d\n",(int)*(result));
 
-	printf("Errno is giving us the following value: , and the string to this error is the following: \n", (int)(errno), strerror(errno));
+	//the following line is going to be presented when we have defined some type of specific Error typedef struct:	printf("Errno is giving us the following value: , and the string to this error is the following: \n", (int)(errno), strerror(errno));
 
 	if(*(result) == -1){
 
-		printf("Personal protocol message: %s\n", buffer_error);//we are going to have to add a specific string that is going to be used in  order to return statments that determinte the error that has happened
+		printf("Error message: %s\n", buffer_error);
 
 		printf("An error happend, we are going to close the connection\n");
+
+		//here we are going to have to set the numbers specificly for quitting, keep in mind that for now, when someone quits the other endpoint is going to know due to a event or time experation (this is bad but we will fix later)
+
+		*(first_number) = QUIT;
+
+		*(quit) = true;
 
 	}else{
 

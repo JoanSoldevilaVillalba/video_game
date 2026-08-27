@@ -1,6 +1,9 @@
 #include "server_send_data.h"
 
-ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
+
+//in the future we are going to craete a new type of struct, called Error, in this struct we are going to allocate a char buffer aswell as a errno error number, and maybe we can also add a field for strerror(errno)
+
+ssize_t read_all(int temporary_fd, char buffer[], char buffer_error[], ssize_t length){
 
         ssize_t total_length  = 0;
 
@@ -25,13 +28,13 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 
 		if(ret == -1){
 
-			printf("Error in event driven poll syscall: %s\n", strerror(errno));
+			strcpy(buffer_error, "Error in event driven poll syscall\0");//strerror(errno);
 
 			return -1;
 
 		}else if(ret == 0){
 
-			printf("Error, time out expired for poll event\n");
+			strcpy(buffer_error ,"Error, time out expired for poll event\0");
 
 			return -1;
 
@@ -47,12 +50,16 @@ ssize_t read_all(int temporary_fd, char buffer[], ssize_t length){
 				continue;
 			}
 
+			strcpy(buffer_error ,"syscall error (recv syscall)\0"); //strerror(errno);
+
 			return -1;
 
 		}
 
 		if(n == 0){
+
 			break;
+
 		}
                 total_length+=n;
 
@@ -177,23 +184,13 @@ ssize_t receive_framed_message(int fd, char* buf, char* buffer_error, ssize_t ma
 
 	if((int)header_bytes == 0){
 
-		printf("Error, no bytes will be received\n");
-
-		return -1;
-
-	}
-
-	if((int)header_bytes == -1){
-
-		printf("Error, borken connection possible: %s\n", strerror(errno));
-
 		return -1;
 
 	}
 
 	if(header_bytes< (ssize_t)sizeof(net_len)){
 
-		printf("Error, we where not able to receive the 4 bytes containing the length of the message\n");
+		strcpy(buffer,"Error, we where not able to receive the 4 bytes containing the length of the message\0");
 
 		return -1;
 
@@ -203,7 +200,7 @@ ssize_t receive_framed_message(int fd, char* buf, char* buffer_error, ssize_t ma
 
 	if((ssize_t)payload_len >= max_buf_len){
 
-		printf("Error, the message that we want to receive is larger than the max length of the buffer\n");
+		strcpy(buffer,"Error, the message that we want to receive is larger than the max length of the buffer\0");
 
 		return -1;
 
@@ -212,9 +209,15 @@ ssize_t receive_framed_message(int fd, char* buf, char* buffer_error, ssize_t ma
 
 	ssize_t payload_bytes = read_all(fd, buf,(ssize_t)payload_len);
 
+	if(payload_bytes<0){
+
+		return -1;
+
+	}
+
 	if(payload_bytes < (ssize_t)payload_len){
 
-		printf("Error, the number of bytes received from the actual messages is not the same as the first 4 byte number\n");
+		strcpy(buffer,"Error, the number of bytes received from the actual messages is not the same as the first 4 byte number\0");
 
 		return -1;
 	}

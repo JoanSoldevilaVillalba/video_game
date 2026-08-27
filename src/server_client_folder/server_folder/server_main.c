@@ -31,25 +31,16 @@ void* handle_client(void* arg){
 
 		memset(buffer_receive, 0, sizeof(buffer_receive)); memset(buffer_send, 0, sizeof(buffer_send)); temporary_pointer = NULL; counter = 0 ;
 
+
 		bytes_result = receive_validated_message(buffer_receive, buffer_errorclient->socket_fd);
 
 		handlePE(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
 
-		if(bytes_result == -1){
-
-			printf("Error, closing the connection with client, %s\n", strerror(errno));
-
-			quit = true;
-
-			break;
-
-		}
-
-		printf("We have received the following message from the client: %s\n", buffer_receive);
 
 		counter = 0;
 
 		first_number = buffer_receive[counter] - '0';
+
 
 		switch(first_number){
 
@@ -62,11 +53,11 @@ void* handle_client(void* arg){
 
 				timed_out = 0;
 
-				memset(buffer_send, 0, sizeof(buffer_send));
 
 				temporary_pointer = create_game(client->socket_fd,&result, &index_game, client->pointer_list_game);
 
 				bytes_result = send_validated_message(temporary_pointer, buffer_send, client->socket_fd);
+
 
 				if(bytes_result == -1){
 
@@ -86,7 +77,6 @@ void* handle_client(void* arg){
 
 				if(result == 2){
 
-//nt wait_signal_cond(game_struct_players * list_game_pointer, int index_player, struct timespec* ts, int time_exp);
 					time_experation = 60;
 
 
