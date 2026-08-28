@@ -86,9 +86,11 @@ char* create_game(int temporary_fd, int* result_function, int* index_game, game_
 
 
 
-bool validate_message_length(char* message_buffer, char* error_buffer){
+bool validate_message_length(char* buffer_message, char* buffer_error){
 
-        if(BUFFER_SIZE <= strlen(temporary_pointer)){
+        if(BUFFER_SIZE <= strlen(buffer_message)){
+
+		strcpy(buffer_error, "Error, message length is too large\0");
 
                 return false;
 
@@ -100,11 +102,11 @@ bool validate_message_length(char* message_buffer, char* error_buffer){
 
 }
 
-bool validate_message_structure(char* message_buffer, char* error_buffer){
+bool validate_message_structure(char* buffer_message, char* buffer_error){
 
-	char first_seperator = *(temporary_pointer + 1);
+	char first_seperator = *(buffer_message + 1);
 
-	char second_seperator = *(temporary_pointer + 3);
+	char second_seperator = *(buffer_message + 3);
 
 	bool result = false;
 
@@ -114,7 +116,7 @@ bool validate_message_structure(char* message_buffer, char* error_buffer){
 
 	}else{
 
-		strcpy(error_buffer, "Error, message does not have the correct strucutre, missing seperator characters\0");
+		strcpy(buffer_error, "Error, message does not have the correct strucutre, missing seperator characters\0");
 
 	}
 
@@ -122,17 +124,17 @@ bool validate_message_structure(char* message_buffer, char* error_buffer){
 
 }
 
-bool validate_message_numbers(char* message_buffer, char* error_buffer){
+bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
-	int first_number = *(temporary_pointer) - '0';
+	int first_number = *(buffer_message) - '0';
 
-	int second_number = *(temporary_pointer + 2) - '0';
+	int second_number = *(buffer_message + 2) - '0';
 
 	bool result = true;
 
 	if(first_number > 10 || firsts_number<0){
 
-		strcpy(error_buffer, "Error, first number is not correct");
+		strcpy(buffer_error, "Error, first number is not correct");
 
 		result = false;
 
@@ -140,7 +142,7 @@ bool validate_message_numbers(char* message_buffer, char* error_buffer){
 
 	if(second_number > 10 || second_number < 0){
 
-		strcpy(error_buffer, "Error, second number is not correct");
+		strcpy(buffer_error, "Error, second number is not correct");
 
 		result = false;
 
@@ -152,35 +154,35 @@ bool validate_message_numbers(char* message_buffer, char* error_buffer){
 
 
 
-ssize_t send_validated_message(const char* temporary_pointer, char* buffer,char* buffer_error, int client_file_descriptor){
+ssize_t send_validated_message(const char* temporary_pointer, char* buffer_message, char* buffer_error, int client_file_descriptor){
 
         ssize_t result = 0;
 
 
-        if(!validate_message_length(buffer, error_buffer)){
+        if(!validate_message_length(buffer_message, error_buffer)){
 
 		return -1;
 
 	}
 
-	if(!validate_message_numbers(buffer,error_buffer)){
+	if(!validate_message_numbers(buffer_message,error_buffer)){
 
 		return -1;
 
 	}
 
-	if(validate_message_structure(buffer, error_buffer)){
+	if(validate_message_structure(buffer_message, error_buffer)){
 
 		return -1;
 
 	}
 
 
-        strncpy(buffer, temporary_pointer, strlen(temporary_pointer));
+        strncpy(buffer_message, temporary_pointer, strlen(temporary_pointer));
 
         buffer[strlen(temporary_pointer)] = '\0';
 
-        result = send_framed_message(client_file_descriptor, buffer, (uint32_t)strlen(temporary_pointer));
+        result = send_framed_message(client_file_descriptor, buffer_message, (uint32_t)strlen(temporary_pointer));
 
 
         return result;
@@ -188,7 +190,7 @@ ssize_t send_validated_message(const char* temporary_pointer, char* buffer,char*
 }
 
 
-ssize_t receive_validated_message(char buffer[BUFFER_SIZE],char buffer_error[BUFFER_SIZE], int client_file_descriptor){
+ssize_t receive_validated_message(char* buffer,char* buffer_error, int client_file_descriptor){
 
         ssize_t result_bytes_receive = receive_framed_message(client_file_descriptor, buffer, buffer_error, (ssize_t) BUFFER_SIZE);
 
