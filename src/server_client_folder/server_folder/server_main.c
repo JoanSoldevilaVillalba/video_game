@@ -15,7 +15,7 @@ void* handle_client(void* arg){
 
 	pthread_detach(pthread_self());
 
-	char buffer_receive[BUFFER_SIZE], buffer_send [BUFFER_SIZE], temporary_buffer[BUFFER_SIZE], buffer_error[BUFFER_SIZE];
+	char buffer_receive[64], buffer_send [64], temporary_buffer[64], buffer_error[64];
 
 	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1, timed_out = 0, time_experation = -1;
 
@@ -32,7 +32,7 @@ void* handle_client(void* arg){
 		memset(buffer_receive, 0, sizeof(buffer_receive)); memset(buffer_send, 0, sizeof(buffer_send)); temporary_pointer = NULL; counter = 0 ;
 
 
-		bytes_result = receive_validated_message(buffer_receive, buffer_errorclient->socket_fd);
+		bytes_result = receive_validated_message(buffer_receive, buffer_error,client->socket_fd);
 
 		handlePE(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
 
@@ -54,9 +54,9 @@ void* handle_client(void* arg){
 
 				temporary_pointer = create_game(client->socket_fd,&result, &index_game, client->pointer_list_game);
 
-				bytes_result = send_validated_message(temporary_pointer, buffer_send, client->socket_fd);
+				bytes_result = send_validated_message(temporary_pointer, buffer_send,buffer_error, client->socket_fd);
 
-				handlePhandlePE(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
+				handlePE(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
 
 
 				memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive, 0, sizeof(buffer_receive));
@@ -179,7 +179,7 @@ void* handle_client(void* arg){
 
 		bytes_result = send_validated_message(temporary_pointer, buffer_send, buffer_error, client->socket_fd);
 
-		handlePE(bytes_result, buffer_send,buffer_error, &quit, &first_number);
+		handlePE(&bytes_result, buffer_send,buffer_error, &quit, &first_number);
 
 
 		printf("The server has succesfully sent the following message %s\n", buffer_send);

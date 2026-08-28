@@ -120,7 +120,7 @@ bool validate_message_structure(char* buffer_message, char* buffer_error){
 
 		//strcpy(buffer_error, "Error, message does not have the correct strucutre, missing seperator characters\0");
 
-		sprintf(buffer_error, sizeof(buffer_error)"%s", "Error, message does not have the correct structure, missing seperator characters");
+		snprintf(buffer_error, sizeof(buffer_error),"%s", "Error, message does not have the correct structure, missing seperator characters");
 
 	}
 
@@ -136,11 +136,11 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
 	bool result = true;
 
-	if(first_number > 10 || firsts_number<0){
+	if(first_number > 10 || first_number<0){
 
 		//strcpy(buffer_error, "Error, first number is not correct");
 
-		sprintf(buffer_error, sizeof(buffer_error), "%s", "Error, first number is not correct");
+		snprintf(buffer_error, sizeof(buffer_error), "%s", "Error, first number is not correct");
 
 		result = false;
 
@@ -148,7 +148,7 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
 	if(second_number > 10 || second_number < 0){
 
-		sprintf(buffer_error, sizeof(buffer_error), , "%s", "Error, second number is not correct");
+		snprintf(buffer_error, sizeof(buffer_error) , "%s", "Error, second number is not correct");
 
 		result = false;
 
@@ -165,28 +165,28 @@ ssize_t send_validated_message(const char* temporary_pointer, char* buffer_messa
         ssize_t result = 0;
 
 
-        if(!validate_message_length(buffer_message, error_buffer)){
+        if(!validate_message_length(buffer_message, buffer_error)){
 
 		return -1;
 
 	}
 
-	if(!validate_message_numbers(buffer_message,error_buffer)){
+	if(!validate_message_numbers(buffer_message,buffer_error)){
 
 		return -1;
 
 	}
 
-	if(validate_message_structure(buffer_message, error_buffer)){
+	if(validate_message_structure(buffer_message, buffer_error)){
 
 		return -1;
 
 	}
 
 
-	sprintf(buffer_message, sizeof(buffer_message), "%s", temporary_pointer);
+	snprintf(buffer_message, sizeof(buffer_message), "%s", temporary_pointer);
 
-        result = send_framed_message(client_file_descriptor, buffer_message, (uint32_t)strlen(temporary_pointer));
+        result = send_framed_message(client_file_descriptor, buffer_message, buffer_error, (uint32_t)strlen(temporary_pointer));
 
 
         return result;
@@ -194,30 +194,30 @@ ssize_t send_validated_message(const char* temporary_pointer, char* buffer_messa
 }
 
 
-ssize_t receive_validated_message(char* buffer,char* buffer_error, int client_file_descriptor){
+ssize_t receive_validated_message(char* buffer_message,char* buffer_error, int client_file_descriptor){
 
-        ssize_t result_bytes_receive = receive_framed_message(client_file_descriptor, buffer, buffer_error, (ssize_t) BUFFER_SIZE);
+        ssize_t result_bytes_receive = receive_framed_message(client_file_descriptor, buffer_message, buffer_error, (ssize_t) BUFFER_SIZE);
 
-        if(result_bytes_receive == -1 || !validated){
+        if(result_bytes_receive == -1){
 
 		return -1;
 
         }
 
 
-	if(!validate_message_length(buffer, buffer_error)){
+	if(!validate_message_length(buffer_message, buffer_error)){
 
 		return -1;
 
 	}
 
-	if(!validate_message_structure(buffer, buffer_error)){
+	if(!validate_message_structure(buffer_message, buffer_error)){
 
 		return -1;
 
 	}
 
-	if(validate_message_numbers(buffer, buffer_error)){
+	if(validate_message_numbers(buffer_message, buffer_error)){
 
 		return -1;
 
@@ -373,7 +373,7 @@ char* waiting_for_player(struct_client* client, int* index_game,int* index_playe
 
 
 
-void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* quit, int* first_number){
+void handlePE(size_t* result, char buffer_receive[],char buffer_error[], bool* quit, int* first_number){
 
 
 	printf("We have received the following number of bytes: %d\n",(int)*(result));
@@ -394,11 +394,11 @@ void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* 
 
 	}else{
 
-		printf("No error has occured, message from client: %c\n", buffer_receive);
+		printf("No error has occured, message from client: %s\n", buffer_receive);
 
 		printf("Setting first number to what the message has sent over\n");
 
-		*(first_number) = buffer_receive[counter] - '0';
+		*(first_number) = buffer_receive[0] - '0';
 
 	}
 
