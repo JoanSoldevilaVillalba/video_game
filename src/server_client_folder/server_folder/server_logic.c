@@ -1,6 +1,6 @@
 #include "server_logic.h"
 #include "server_send_data.h"
-
+//snprintf(dst,sizeof dst, %s, src);
 void time_init(struct timespec* ts, int time_experation){
 
 	clock_gettime(CLOCK_REALTIME, ts);
@@ -90,7 +90,9 @@ bool validate_message_length(char* buffer_message, char* buffer_error){
 
         if(BUFFER_SIZE <= strlen(buffer_message)){
 
-		strcpy(buffer_error, "Error, message length is too large\0");
+		//strcpy(buffer_error, "Error, message length is too large\0");
+
+		snprintf(buffer_error, sizeof(buffer_error), "%s", "Error, message length is too large" );
 
                 return false;
 
@@ -116,7 +118,9 @@ bool validate_message_structure(char* buffer_message, char* buffer_error){
 
 	}else{
 
-		strcpy(buffer_error, "Error, message does not have the correct strucutre, missing seperator characters\0");
+		//strcpy(buffer_error, "Error, message does not have the correct strucutre, missing seperator characters\0");
+
+		sprintf(buffer_error, sizeof(buffer_error)"%s", "Error, message does not have the correct structure, missing seperator characters");
 
 	}
 
@@ -134,7 +138,9 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
 	if(first_number > 10 || firsts_number<0){
 
-		strcpy(buffer_error, "Error, first number is not correct");
+		//strcpy(buffer_error, "Error, first number is not correct");
+
+		sprintf(buffer_error, sizeof(buffer_error), "%s", "Error, first number is not correct");
 
 		result = false;
 
@@ -142,7 +148,7 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
 	if(second_number > 10 || second_number < 0){
 
-		strcpy(buffer_error, "Error, second number is not correct");
+		sprintf(buffer_error, sizeof(buffer_error), , "%s", "Error, second number is not correct");
 
 		result = false;
 
@@ -178,9 +184,7 @@ ssize_t send_validated_message(const char* temporary_pointer, char* buffer_messa
 	}
 
 
-        strncpy(buffer_message, temporary_pointer, strlen(temporary_pointer));
-
-        buffer[strlen(temporary_pointer)] = '\0';
+	sprintf(buffer_message, sizeof(buffer_message), "%s", temporary_pointer);
 
         result = send_framed_message(client_file_descriptor, buffer_message, (uint32_t)strlen(temporary_pointer));
 

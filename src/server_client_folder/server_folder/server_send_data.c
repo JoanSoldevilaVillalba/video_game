@@ -28,13 +28,15 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
 		if(ret == -1){
 
-			strcpy(buffer_error, "Error in event driven poll syscall\0");//strerror(errno);
+			//strcpy(buffer_error, "Error in event driven poll syscall\0");//strerror(errno);
+
+			sprintf(buffer_error, sizeof(buffer_error), "%s", "Error in event driven poll syscall");
 
 			return -1;
 
 		}else if(ret == 0){
 
-			strcpy(buffer_error ,"Error, time out expired for poll event\0");
+			sprintf(buffer_error,sizeof(buffer_print), "%s" ,"Error, time out expired for poll event\0");
 
 			return -1;
 
@@ -50,7 +52,7 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 				continue;
 			}
 
-			strcpy(buffer_error ,"syscall error (recv syscall)\0"); //strerror(errno);
+			sprintf(buffer_error ,sizeof(buffer_error),"%s","syscall error (recv syscall)\0"); //strerror(errno);
 
 			return -1;
 
@@ -96,14 +98,14 @@ ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssiz
 
 		if(ret == -1){
 
-			strcpy(buffer_error, "Error, in event driven poll syscall\0"); //strerror(errno);
+			sprintf(buffer_error,sizeof(buffer_error), "%s","Error, in event driven poll syscall\0"); //strerror(errno);
 
 			return -1;
 
 		}else if(ret == 0){
 
 
-			strcpy(buffer_error, "Error, time out expired for poll event\0");
+			sprintf(buffer_error, sizeof(buffer_error),"%s","Error, time out expired for poll event\0");
 
 			return -1;
 
@@ -122,7 +124,7 @@ ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssiz
 
 			}
 
-			strcpy(buffer_error, "Error, possible broken connection\0");
+			sprintf(buffer_error, sizeof(buffer_error),"%s", "Error, possible broken connection\0");
 			return -1;
 
 		}
@@ -156,7 +158,7 @@ ssize_t send_framed_message(int fd, const char *payload, char* buffer_error, uin
 
 	if ( result != sizeof(net_len)) {
 
-		strcpy(buffer_error, "Error, amount of bytes sent is not equal to its protocol theoretical value (initilae message)\0");
+		sprintf(buffer_error,sizeof(buffer_error),"%s", "Error, amount of bytes sent is not equal to its protocol theoretical value (initilae message)\0");
 
         	return -1;
 	}
@@ -172,7 +174,7 @@ ssize_t send_framed_message(int fd, const char *payload, char* buffer_error, uin
 
 	if ((int)result != (ssize_t)payload_len) {
 
-		strcpy(buffer_error, "Error, amount of bytes sent is not equal to its protocol theoretical value (actual message)");
+		sprintf(buffer_error, sizeof(buffer_error), "%s", "Error, amount of bytes sent is not equal to its protocol theoretical value (actual message)");
 
 	        return -1;
 	}
@@ -181,7 +183,7 @@ ssize_t send_framed_message(int fd, const char *payload, char* buffer_error, uin
 }
 
 
-ssize_t receive_framed_message(int fd, char* buf, char* buffer_error, ssize_t max_buf_len){
+ssize_t receive_framed_message(int fd, char* buffer_message, char* buffer_error, ssize_t max_buf_len){
 
 	uint32_t net_len = 0;
 
@@ -197,7 +199,7 @@ ssize_t receive_framed_message(int fd, char* buf, char* buffer_error, ssize_t ma
 
 	if(header_bytes< (ssize_t)sizeof(net_len)){
 
-		strcpy(buffer,"Error, we where not able to receive the 4 bytes containing the length of the message\0");
+		strcpy(buffer_error, sizeof(buffer_error), "%s","Error, we where not able to receive the 4 bytes containing the length of the message\0");
 
 		return -1;
 
@@ -207,14 +209,14 @@ ssize_t receive_framed_message(int fd, char* buf, char* buffer_error, ssize_t ma
 
 	if((ssize_t)payload_len >= max_buf_len){
 
-		strcpy(buffer,"Error, the message that we want to receive is larger than the max length of the buffer\0");
+		sprintf(buffer_error, sizeof(buffer_error),"%s","Error, the message that we want to receive is larger than the max length of the buffer\0");
 
 		return -1;
 
 	}
 
 
-	ssize_t payload_bytes = read_all(fd, buf,(ssize_t)payload_len);
+	ssize_t payload_bytes = read_all(fd, buffer_message,(ssize_t)payload_len);
 
 	if(payload_bytes<0){
 
@@ -224,7 +226,7 @@ ssize_t receive_framed_message(int fd, char* buf, char* buffer_error, ssize_t ma
 
 	if(payload_bytes < (ssize_t)payload_len){
 
-		strcpy(buffer,"Error, the number of bytes received from the actual messages is not the same as the first 4 byte number\0");
+		sprintf(buffer_error, sizeof(buffer), "%s","Error, the number of bytes received from the actual messages is not the same as the first 4 byte number\0");
 
 		return -1;
 	}
