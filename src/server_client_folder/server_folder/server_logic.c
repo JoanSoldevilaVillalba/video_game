@@ -152,7 +152,7 @@ bool validate_message_numbers(char* message_buffer, char* error_buffer){
 
 
 
-ssize_t send_validated_message(char* temporary_pointer, char* buffer,char* buffer_error, int client_file_descriptor){
+ssize_t send_validated_message(const char* temporary_pointer, char* buffer,char* buffer_error, int client_file_descriptor){
 
         ssize_t result = 0;
 

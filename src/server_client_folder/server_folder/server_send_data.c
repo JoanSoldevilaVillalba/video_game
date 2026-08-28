@@ -3,7 +3,7 @@
 
 //in the future we are going to craete a new type of struct, called Error, in this struct we are going to allocate a char buffer aswell as a errno error number, and maybe we can also add a field for strerror(errno)
 
-ssize_t read_all(int temporary_fd, char buffer[], char buffer_error[], ssize_t length){
+ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t length){
 
         ssize_t total_length  = 0;
 
@@ -70,7 +70,7 @@ ssize_t read_all(int temporary_fd, char buffer[], char buffer_error[], ssize_t l
 }
 
 
-ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
+ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssize_t length){
 
         ssize_t total_length  = 0;
 
@@ -96,13 +96,14 @@ ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
 
 		if(ret == -1){
 
-			printf("Error in event driven poll syscall: %s\n", strerror(errno));
+			strcpy(buffer_error, "Error, in event driven poll syscall\0"); //strerror(errno);
 
 			return -1;
 
 		}else if(ret == 0){
 
-			printf("Error, time out expired for poll event\n");
+
+			strcpy(buffer_error, "Error, time out expired for poll event\0");
 
 			return -1;
 
@@ -121,6 +122,7 @@ ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
 
 			}
 
+			strcpy(buffer_error, "Error, possible broken connection\0");
 			return -1;
 
 		}
@@ -139,15 +141,13 @@ ssize_t send_all(int temporary_fd, const char*  buffer, ssize_t length){
         return total_length;
 
 }
-ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
+ssize_t send_framed_message(int fd, const char *payload, char* buffer_error, uint32_t payload_len) {
 
 	uint32_t net_len = htonl(payload_len);
 
-	size_t result = send_all(fd, (const char *)&net_len, sizeof(net_len));
+	size_t result = send_all(fd, (const char *)&net_len, buffer_error, sizeof(net_len));
 
 	if((int)result == -1){
-
-		printf("Error, possible broken connection\n");
 
 		return -1;
 
@@ -155,18 +155,25 @@ ssize_t send_framed_message(int fd, const char *payload, uint32_t payload_len) {
 
 
 	if ( result != sizeof(net_len)) {
+
+		strcpy(buffer_error, "Error, amount of bytes sent is not equal to its protocol theoretical value (initilae message)\0");
+
         	return -1;
 	}
 
-	result = send_all(fd, payload, payload_len);
+	result = send_all(fd, payload, buffer_error,payload_len);
 
 	if((int)result == -1){
 
-		printf("Error, possible broken connection\n");
+
+		return -1;
 
 	}
 
 	if ((int)result != (ssize_t)payload_len) {
+
+		strcpy(buffer_error, "Error, amount of bytes sent is not equal to its protocol theoretical value (actual message)");
+
 	        return -1;
 	}
 

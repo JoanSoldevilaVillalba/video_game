@@ -12,7 +12,7 @@ int number_to_char(char* pointer, int temporary);
 
 int int_to_str(char *dst, ssize_t dst_size, int value);
 
-char* create_game(int temporary_fd, int* result_function, int* index_game, game_struct_players* game_list);
+
 
 bool validate_message_length(char* buffer,char* buffer_error);
 
@@ -20,9 +20,11 @@ bool validate_message_structure(char* buffer,char* buffer_error);
 
 bool validate_message_numbers(char* buffer, char* buffer_error);
 
-ssize_t send_validated_message(const char* temporary_pointer, char buffer[BUFFER_SIZE], int client_file_descriptor);
+
+ssize_t send_validated_message(const char* temporary_pointer, char* buffer,char* buffer_error, int client_file_descriptor);
 
 ssize_t receive_validated_message(char buffer[BUFFER_SIZE], char buffer_error[BUFFER_SIZE], int client_file_descriptor);
+
 
 void switch_game_player_position(game_struct_players* list_game_pointer, int* index_player);
 
@@ -33,3 +35,5 @@ int wait_signal_cond(game_struct_players * list_game_pointer, int index_player, 
 char* waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[],  int* result_function, int* timed_out);
 
 void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* quit, int* first_number);
+
+char* create_game(int temporary_fd, int* result_function, int* index_game, game_struct_players* game_list);
