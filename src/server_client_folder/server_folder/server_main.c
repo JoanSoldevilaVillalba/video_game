@@ -39,8 +39,6 @@ void* handle_client(void* arg){
 
 		counter = 0;
 
-		first_number = buffer_receive[counter] - '0';
-
 
 		switch(first_number){
 
@@ -58,49 +56,48 @@ void* handle_client(void* arg){
 
 				bytes_result = send_validated_message(temporary_pointer, buffer_send, client->socket_fd);
 
+				handlePhandlePE(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
 
-				if(bytes_result == -1){
-
-					printf("Error, borken connection: unable to send information to client. Closing connection\n");
-
-					quit = true;
-
-				}
 
 				memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive, 0, sizeof(buffer_receive));
 
-				if(result == 1){
 
-					index_player = 1;
+				if(!quit){
 
-				}
+					if(result == 1){
 
-				if(result == 2){
+						index_player = 1;
 
-					time_experation = 60;
+					}else if(result == 2){
 
-
-					timed_out = wait_signal_cond((client->pointer_list_game) + index_game ,index_player, &ts, time_experation);
-
-	                                if(timed_out == 1 || (client->pointer_list_game + index_game)->player_id[1] == -1){
-
-						temporary_pointer = "0|3|Game not found: time expired";
-
-	                                }else{
-
-						temporary_pointer = "0|1|Game was found";
-
-						index_player = 0;
-
-	                                }
+						time_experation = 60;
 
 
+						timed_out = wait_signal_cond((client->pointer_list_game) + index_game ,index_player, &ts, time_experation);
+
+	                                	if(timed_out == 1 || (client->pointer_list_game + index_game)->player_id[1] == -1){
+
+							temporary_pointer = "0|3|Game not found: time expired";
+
+	                	                }else{
+
+							temporary_pointer = "0|1|Game was found";
+
+							index_player = 0;
+
+		                                }
+
+
+					}else{
+
+						continue;
+
+					}
 				}else{
 
-					continue;
+					temporary_pointer = buffer_error;//we are goint to have to add numbers to this message indicating that some type of error has occured
 
 				}
-
 				break;
 				}
 
@@ -155,7 +152,7 @@ void* handle_client(void* arg){
 
 				if(timed_out == 1 || ((client->pointer_list_game) + index_game)->ready_player[index_player ^ 1] == false){
 
-					temporary_pointer ="still no one"; //in the future we are going to use files that contain the  actual messages instead, of harcodedd messages in the source code (i think it is more professional)
+					temporary_pointer ="still no one";
 
 				}else{
 
@@ -166,16 +163,6 @@ void* handle_client(void* arg){
 				break;
 
 			case PLAY_TIME:
-
-				//we are not able to swtich from tcp to udp on the same socekt/file descriptor without destoying the tcp connection.
-
-				//instead we are just going to have to use two different socket/file descriptors
-
-				//we are first going to have to send the udp info throught the already established tcp connection: port, ip (in this case it is just loop back)
-
-				//after sending all of the necessary informatino, both client and server create their udp socket/file descriptors.
-
-				//server is going to be the first one to send information
 
 				break;
 
@@ -190,15 +177,10 @@ void* handle_client(void* arg){
 		}
 
 
-		bytes_result = send_validated_message(temporary_pointer, buffer_send, client->socket_fd);
+		bytes_result = send_validated_message(temporary_pointer, buffer_send, buffer_error, client->socket_fd);
 
-		if(bytes_result == -1){
+		handlePE(bytes_result, buffer_send,buffer_error, &quit, &first_number);
 
-			printf("Error: closing connection with client\n");
-
-			quit = true;
-
-		}
 
 		printf("The server has succesfully sent the following message %s\n", buffer_send);
 

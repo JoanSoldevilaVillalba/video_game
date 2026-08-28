@@ -390,6 +390,10 @@ void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* 
 
 		printf("No error has occured, message from client: %c\n", buffer_receive);
 
+		printf("Setting first number to what the message has sent over\n");
+
+		*(first_number) = buffer_receive[counter] - '0';
+
 	}
 
 
