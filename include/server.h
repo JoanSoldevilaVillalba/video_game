@@ -37,6 +37,49 @@ typedef struct {
 	game_struct_players* pointer_list_game;
 } struct_client;
 
+
+typedef enum{
+//error messages
+
+//protocol messages (for client)
+
+ENTERD_GAME = 0,
+
+CREATED_GAME = 1,
+
+GAMES_OCCUPIED = 2,
+
+RANDOM_MESSAGE = 3,
+
+QUIT_CLIENT = 4, //there are several types of quit statments depending on the sitautoin 
+
+MENU_PREPERATION = 5,
+
+//the following enums are used when the game is created, and after both players receive the menu info, they need to click play/confirm that they are going to play
+
+PL_QUIT = 6,
+
+OT_QUIT = 7,
+
+BT_READY = 8
+
+
+}messageID;
+
+const char* string_holder[] ={
+"you have entered a game",
+"you have created a game",
+"all games occupied",
+"this is response to random message",
+"server received quit statement, goodbye",
+"",
+"player is quitting",
+"other player is quitting",
+"other player ready"
+
+}
+
+
 extern pthread_mutex_t mutex_game_list;
 extern pthread_mutex_t mutex_thread_counter;
 extern pthread_cond_t conditional_variable;
