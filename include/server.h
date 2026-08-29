@@ -66,25 +66,69 @@ BT_READY = 8
 
 }ProtocolmessageID;
 
-typedef enum{
 
-
-
-}ErrormessageID;
-
+//the followig numbers are going to have to be revised
 const char* protocol_string_holder[] ={
-"you have entered a game",
-"you have created a game",
-"all games occupied",
-"this is response to random message",
-"server received quit statement, goodbye",
-"",
-"player is quitting",
-"other player is quitting",
-"other player ready"
+"0|1|you have entered a game",
+"0|2|you have created a game",
+"0|3|all games occupied",
+"2|1|this is response to random message",
+"1|1|server received quit statement, goodbye",
+"3|7|%d|%d",
+"1|8|player is quitting",
+"1|4|other player is quitting",
+"3|3|other player ready"
 
 }
 
+
+typedef enum{
+
+SYS_POLL = 0,
+
+TIME_EXPIRED_POLL = 1,
+
+SYS_RECV = 2,
+
+SYS_SEND = 3,
+
+INIT_SEND_LEN = 4,
+
+MESS_SEND_LEN = 5,
+
+INIT_RECV_LEN = 6,
+
+MESS_RECV_LEN_OVF = 7
+
+MESS_RECV_LEN = 8,
+
+//the folloinwg are errors that do not deal with code that uses POSIX syscalls
+
+BUFF_OVF = 9,
+
+BUFF_STRUCT = 10,
+
+BUFF_PROT_FIRST = 11,
+
+BUFF_PROT_SECOND = 12,
+
+MENU_INDEX = 13,
+
+}}ErrormessageID;
+const char* error_string_holder[]={
+"Error in event driven poll syscall (errno str):%s",
+"Error, time out expired for poll event",
+"Error, recv syscall went wrong (errno str):%s"
+"Error, send syscall went wrong (errno str): %s",
+"Error, amount of bytes sent in init message is not equal to 4 bytes",
+"Error, amount of bytes sent of real message is not equal to length/bytes of message"
+"Error, amount of bytes received in init message is not equal to 4 bytes",
+"Error, amount of bytes recevied in init message is overflowing (>BUFFER_SIZE)"
+"Error, amount of bytes received in real mesage is not equal to length/bytes of init message"
+"Error, message length is too large",
+"Error, message odes not have the correct structure",
+"Error, first protocol number is not correct",
+}
 
 extern pthread_mutex_t mutex_game_list;
 extern pthread_mutex_t mutex_thread_counter;
