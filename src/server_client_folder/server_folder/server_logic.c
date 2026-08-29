@@ -405,26 +405,22 @@ void handlePE(size_t* result, char buffer_receive[],char buffer_error[], bool* q
 
 }
 
-int menu_preperation_validation(struct_client* client, int index_game,char* temporary_buffer, char* buffer_error){ //remember that buffer_error is really an array of 64 bytes
 
-                  //in menu preperation, we need to validate a few things: first we need to validate the index, we need to validate both file>
-                                //after adding this abstraction, we are goinig to have to call handlePE (to handle possible errors after executing the prev>
+int menu_preperation_validation(struct_client* client, int index, char* temporary_buffer, char* buffer_error){
 
+	if(index<0||index_game>=MAX_GAMES_SIZE){
 
-                            if (index_game < 0 || index_game >= MAX_GAMES_SIZE) {
-                                        strncpy(temporary_buffer, "1|0|error, invalid game index, server quits", BUFFER_SIZE);
-                                        temporary_buffer[BUFFER_SIZE-1] = '\0';
-                            }else {
-                                        int p0 = client->pointer_list_game[index_game].player_id[0];
-                                        int p1 = client->pointer_list_game[index_game].player_id[1];
-                                        int n = snprintf(temporary_buffer, sizeof temporary_buffer, "3|7|%d|%d", p0, p1);
-                                        if (n < 0 || n >= (int)sizeof temporary_buffer) {
-                                            strncpy(temporary_buffer, "1|0|Server wants to quit, Goodbye", BUFFER_SIZE);
-                                            temporary_buffer[BUFFER_SIZE-1] = '\0';
-                                        }
-                            }
-                                temporary_pointer=temporary_buffer;
+		snprintf(buffer_error, sizeof(buffer_error), "Error, invalid game index");
 
+		return -1;
 
+	}
 
+	int p0 = client->pointer_list_game[index_game].player_id[0];
+
+	int p1 = client->poitner_list_game[index_game].player_id[1];
+
+	int result = snprintf(temporary_buffer, sizeof(temporary_buffer), "3|7|%d|%d", p0, p1); //in the future we are going to have to change this, using hardcoded strings is not good
+
+	return result;
 }

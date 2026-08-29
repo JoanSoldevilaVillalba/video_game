@@ -117,23 +117,10 @@ void* handle_client(void* arg){
 
 			case MENU_PREPERATION:
 
-				//in menu preperation, we need to validate a few things: first we need to validate the index, we need to validate both file descriptors are actually ok (non negative integers),
-				//after adding this abstraction, we are goinig to have to call handlePE (to handle possible errors after executing the previous function)
+				bytes_result = menu_preperation_validation(struct_client* client, int index, char* temporary_buffer, char* buffer_error);
 
+				handlePE(&bytes_result, temporary_buffer, buffer_error, &quit, &first_number);
 
-			    if (index_game < 0 || index_game >= MAX_GAMES_SIZE) {
-				        strncpy(temporary_buffer, "1|0|error, invalid game index, server quits", BUFFER_SIZE);
-				        temporary_buffer[BUFFER_SIZE-1] = '\0';
-			    }else {
-				        int p0 = client->pointer_list_game[index_game].player_id[0];
-				        int p1 = client->pointer_list_game[index_game].player_id[1];
-				        int n = snprintf(temporary_buffer, sizeof temporary_buffer, "3|7|%d|%d", p0, p1);
-				        if (n < 0 || n >= (int)sizeof temporary_buffer) {
-				            strncpy(temporary_buffer, "1|0|Server wants to quit, Goodbye", BUFFER_SIZE);
-				            temporary_buffer[BUFFER_SIZE-1] = '\0';
-				        }
-			    }
-				temporary_pointer=temporary_buffer;
 
 			    break;
 
