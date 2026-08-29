@@ -64,9 +64,15 @@ OT_QUIT = 7,
 BT_READY = 8
 
 
-}messageID;
+}ProtocolmessageID;
 
-const char* string_holder[] ={
+typedef enum{
+
+
+
+}ErrormessageID;
+
+const char* protocol_string_holder[] ={
 "you have entered a game",
 "you have created a game",
 "all games occupied",

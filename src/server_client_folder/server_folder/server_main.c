@@ -117,6 +117,10 @@ void* handle_client(void* arg){
 
 			case MENU_PREPERATION:
 
+				//in menu preperation, we need to validate a few things: first we need to validate the index, we need to validate both file descriptors are actually ok (non negative integers),
+				//after adding this abstraction, we are goinig to have to call handlePE (to handle possible errors after executing the previous function)
+
+
 			    if (index_game < 0 || index_game >= MAX_GAMES_SIZE) {
 				        strncpy(temporary_buffer, "1|0|error, invalid game index, server quits", BUFFER_SIZE);
 				        temporary_buffer[BUFFER_SIZE-1] = '\0';
