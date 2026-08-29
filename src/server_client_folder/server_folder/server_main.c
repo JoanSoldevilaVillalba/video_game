@@ -103,13 +103,13 @@ void* handle_client(void* arg){
 
 			case RANDOM_MESSAGE:
 
-				temporary_pointer = "2|0|Server has recevied random";
+				temporary_pointer = protocol_string_holder[RANDOM_MESSAGE];
 
 				break;
 
 			case QUIT:
 
-				temporary_pointer = "1|0|Server received quit statement, goodbye";
+				temporary_pointer = protocol_string_holder[QUIT_CLIENT];
 
 				quit = true;
 

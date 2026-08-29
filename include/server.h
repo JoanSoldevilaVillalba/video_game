@@ -43,7 +43,7 @@ typedef enum{
 
 //protocol messages (for client)
 
-ENTERD_GAME = 0,
+ENTERED_GAME = 0,
 
 CREATED_GAME = 1,
 

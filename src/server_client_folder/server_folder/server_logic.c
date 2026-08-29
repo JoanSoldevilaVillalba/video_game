@@ -1,6 +1,6 @@
 #include "server_logic.h"
 #include "server_send_data.h"
-//snprintf(dst,sizeof dst, %s, src);
+
 void time_init(struct timespec* ts, int time_experation){
 
 	clock_gettime(CLOCK_REALTIME, ts);
@@ -58,7 +58,7 @@ char* create_game(int temporary_fd, int* result_function, int* index_game, game_
 	                        	*(index_game) = i;
 		                        pthread_cond_signal(&(game_list + i)->game_condition);
 	        	                pthread_mutex_unlock(&mutex_game_list);
-	                	        return "0|1|you have succesfuly entered a game";
+	                	       	return protocol_string_holder[ENTERED_GAME];
 
 	        	        }else if((game_list+i)->game_id==-1){
 
@@ -67,8 +67,7 @@ char* create_game(int temporary_fd, int* result_function, int* index_game, game_
 	                	        *(result_function) = 2;
         	                	*(index_game) = i;
 	                	        pthread_mutex_unlock(&mutex_game_list);
-        	                	return "0|2|you have succesfuly created a game";
-
+					return protocol_string_holder[CREATED_GAME];
 	                	}
 
 	        pthread_mutex_unlock(&mutex_game_list);
@@ -80,7 +79,9 @@ char* create_game(int temporary_fd, int* result_function, int* index_game, game_
         *(result_function) = 3 ;
         *(index_game) = -1;
 
-        return "0|3|All games are occupied, try again later";
+
+
+        return protocol_string_holder[GAMES_OCCUPIED];
 
 }
 
@@ -90,9 +91,7 @@ bool validate_message_length(char* buffer_message, char* buffer_error){
 
         if(BUFFER_SIZE <= strlen(buffer_message)){
 
-		//strcpy(buffer_error, "Error, message length is too large\0");
-
-		snprintf(buffer_error, sizeof(buffer_error), "%s", "Error, message length is too large" );
+		snprintf(buffer_error, sizeof(buffer_error), "%s", error_string_holder[BUFF_OVF]);
 
                 return false;
 
@@ -118,9 +117,7 @@ bool validate_message_structure(char* buffer_message, char* buffer_error){
 
 	}else{
 
-		//strcpy(buffer_error, "Error, message does not have the correct strucutre, missing seperator characters\0");
-
-		snprintf(buffer_error, sizeof(buffer_error),"%s", "Error, message does not have the correct structure, missing seperator characters");
+		snprintf(buffer_error, sizeof(buffer_error),"%s", error_string_holder[BUFF_STRUCT]);
 
 	}
 
@@ -138,9 +135,7 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
 	if(first_number > 10 || first_number<0){
 
-		//strcpy(buffer_error, "Error, first number is not correct");
-
-		snprintf(buffer_error, sizeof(buffer_error), "%s", "Error, first number is not correct");
+		snprintf(buffer_error, sizeof(buffer_error), "%s", error_string_holder[BUFF_PROT_FIRST]);
 
 		result = false;
 
@@ -148,7 +143,7 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
 	if(second_number > 10 || second_number < 0){
 
-		snprintf(buffer_error, sizeof(buffer_error) , "%s", "Error, second number is not correct");
+		snprintf(buffer_error, sizeof(buffer_error) , "%s", error_string_holder[BUFF_PROT_SECOND]);
 
 		result = false;
 
@@ -228,14 +223,6 @@ ssize_t receive_validated_message(char* buffer_message,char* buffer_error, int c
 }
 
 void switch_game_player_position(game_struct_players* list_game_pointer, int* index_player){
-
-	//the folloiwng is only necessary if the current client is in the second position of the array, this function is also only called when one of the clients/threads decides to exit the game
-
-//	if(!*(index_game)){ return}; //if the value pointed by index_game is equal to zero or false (zero is false), we do not need to perform a switch
-
-//	if(!(list_game_pointer)){return};
-
-//	if(*(index_player)<0 || *(index_player)<0){return};
 
 	pthread_mutex_lock(&mutex_game_list);
 
@@ -322,22 +309,22 @@ char* waiting_for_player(struct_client* client, int* index_game,int* index_playe
 
 		if(!play){
 
-			list_game_pointer->player_id[*(index_player) & 1] = -1;//if we do not want to play we set index_player id to -1, liberating this slot for another player who is currently looking
+			list_game_pointer->player_id[*(index_player) & 1] = -1;
 
 		}
 
-		pthread_cond_signal(&(list_game_pointer->game_condition)); //after changing game_list variables, we send a signal to the other player indicating that we have changed variables
+		pthread_cond_signal(&(list_game_pointer->game_condition));
 
 
 	if(play == false){
 
-		eliminate_game_slot(client, index_game, index_player); //we elinate ouersevles fromthe game, 
+		eliminate_game_slot(client, index_game, index_player);
 
 		pthread_mutex_unlock(&mutex_game_list);
 
-		*(result_function) = 1; //this player has selected to quit after seeing menu information
+		*(result_function) = 1;
 
-		return "1|8|player is quitting";
+		return protocol_string_holder[PL_QUIT];
 
 
 	}else{
@@ -345,25 +332,21 @@ char* waiting_for_player(struct_client* client, int* index_game,int* index_playe
 
 		pthread_mutex_unlock(&mutex_game_list);
 
-		//game_struct_players* list_game_pointer, int index_player, struct timespec* ts, int time_exp
-
 		*(timed_out) = wait_signal_cond(list_game_pointer, (*index_player), ts, time_experation);
 
 		if(*(timed_out) == 1 || list_game_pointer->ready_player[*(index_player) ^ 1] == false){
 
-			//the following functino sohould only be called when its second player
-
 			switch_game_player_position(client->pointer_list_game,index_player);
 
-			*(result_function) = 2; // other player quitted after seeing game menu, it is up to the current client if he or she wants  to continue to wait for someone else to enter the game
+			*(result_function) = 2;
 
-			return "1|4|other player quit game";
+			return protocol_string_holder[OT_QUIT];
 
 		}else{
 
-			*(result_function) = 3; //both players after reveiwn gmenu information, they have both decided to continue to play, main game loop is going to start soon
+			*(result_function) = 3;
 
-			return "3|3|other player ready";
+			return protocol_string_holder[BT_READY];
 
 		}
 
@@ -410,7 +393,7 @@ int menu_preperation_validation(struct_client* client, int index, char* temporar
 
 	if(index<0||index_game>=MAX_GAMES_SIZE){
 
-		snprintf(buffer_error, sizeof(buffer_error), "Error, invalid game index");
+		snprintf(buffer_error, sizeof(buffer_error), error_string_holder[MENU_INDEX]);
 
 		return -1;
 
@@ -420,7 +403,7 @@ int menu_preperation_validation(struct_client* client, int index, char* temporar
 
 	int p1 = client->poitner_list_game[index_game].player_id[1];
 
-	int result = snprintf(temporary_buffer, sizeof(temporary_buffer), "3|7|%d|%d", p0, p1); //in the future we are going to have to change this, using hardcoded strings is not good
+	int result = snprintf(temporary_buffer, sizeof(temporary_buffer), protocol_string_holder[MENU_PREPERATION], p0, p1); //in the future we are going to have to change this, using hardcoded strings is not good
 
 	return result;
 }
