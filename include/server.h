@@ -131,9 +131,10 @@ const char* error_string_holder[]={
 "Error, amount of bytes received in init message is not equal to 4 bytes",
 "Error, amount of bytes recevied in init message is overflowing (>BUFFER_SIZE)"
 "Error, amount of bytes received in real mesage is not equal to length/bytes of init message"
-"Error, message length is too large",
+"Error, message length is too large: overflow",
 "Error, message odes not have the correct structure",
 "Error, first protocol number is not correct",
+"Error, second protocol number is not correct"
 "Error, first seperator was not found in the following message: %s",
 "Error, second sepeartor was not found in the folloiwn gmessage: %s",
 "Error, null message"
