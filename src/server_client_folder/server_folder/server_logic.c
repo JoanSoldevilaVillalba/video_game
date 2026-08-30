@@ -113,12 +113,6 @@ bool validate_message_structure(char* buffer_message, char* buffer_error){
 
 	}
 
-	char first_seperator = *(buffer_message + 1);
-
-	char second_seperator = *(buffer_message + 3);
-
-	bool result = false;
-
 	char* first_sep=strchr(buffer_message, '|');
 
 	if(first_sep ==NULL){
@@ -129,7 +123,7 @@ bool validate_message_structure(char* buffer_message, char* buffer_error){
 
 	}
 
-	char* second_sep = strchr(buffer_message + 1, '|');
+	char* second_sep = strchr(first_sep + 1, '|');
 
 	if(second_sep == NULL){
 
@@ -174,9 +168,9 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
 	endptr = strch(temp_ptr, "|");
 
-	first_number_int = (int)strol(temp_ptr,&endptr,10);
+	first_number_int = (int)strol(first_number,&endptr,10);
 
-	temp_ptr = temp_ptr + endptr + 1;
+	temp_ptr = temp_ptr + endptr + 1;//temp_ptr is pointing to character |, we need to add one more position to the pointer in order to start the next part of the protocol number (second protocol number)
 
 
 	char* second_number = strtok_r (temp_ptr, '|', &saveptr);
@@ -191,8 +185,23 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
 	endptr = strch(temp_ptr, "|");
 
-	second_number_int = (int)strol(temp_tr, &endptr,10);
+	second_number_int = (int)strol(second_number, &endptr,10);
 
+
+	if(first_number_int<0 || first_number_int>10){
+
+		snprintf(buffer_error, BUFFER_SIZE, error_string_holder[PROT_FIRST_VALUE]);
+
+	}
+
+
+	if(second_number_int<0||second_number_int>10){
+
+		snprintf(buffer_error,BUFFER_SIZE,error_string_holde[PROT_SECOND_VALUE], )
+
+		return false;
+
+	}
 
 	snprintf(buffer_message, BUFFER_SIZE, protocol_string_holder[MENU_PREPERATION],first_number_int, second_number_int);
 
