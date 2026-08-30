@@ -30,13 +30,13 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
 			//strcpy(buffer_error, "Error in event driven poll syscall\0");//strerror(errno);
 
-			snprintf(buffer_error, sizeof(buffer_error), error_string_holder[SYS_POLL],strerror(errno));
+			snprintf(buffer_error, BUFFER_SIZE, error_string_holder[SYS_POLL],strerror(errno));
 
 			return -1;
 
 		}else if(ret == 0){
 
-			snprintf(buffer_error,sizeof(buffer_error), "%s" ,error_string_holder[TIME_EXPIRED_POLL]);
+			snprintf(buffer_error,BUFFER_SIZE, "%s" ,error_string_holder[TIME_EXPIRED_POLL]);
 
 			return -1;
 
@@ -52,7 +52,7 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 				continue;
 			}
 
-			snprintf(buffer_error ,sizeof(buffer_error),error_string_holder[SYS_RECV],strerror(errno)); //strerror(errno);
+			snprintf(buffer_error , BUFFER_SIZE,error_string_holder[SYS_RECV],strerror(errno)); //strerror(errno);
 
 			return -1;
 
@@ -98,14 +98,14 @@ ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssiz
 
 		if(ret == -1){
 
-			snprintf(buffer_error,sizeof(buffer_error),error_string_holder[SYS_POLL], strerror(errno)); //strerror(errno);
+			snprintf(buffer_error,BUFFER_SIZE,error_string_holder[SYS_POLL], strerror(errno)); //strerror(errno);
 
 			return -1;
 
 		}else if(ret == 0){
 
 
-			snprintf(buffer_error, sizeof(buffer_error),"%s",error_string_holder[TIME_EXPIRED_POLL]);
+			snprintf(buffer_error, BUFFER_SIZE,"%s",error_string_holder[TIME_EXPIRED_POLL]);
 
 			return -1;
 
@@ -122,7 +122,7 @@ ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssiz
 
 			}
 
-			snprintf(buffer_error, sizeof(buffer_error),error_string_holder[SYS_SEND]);
+			snprintf(buffer_error, BUFFER_SIZE,error_string_holder[SYS_SEND]);
 
 			return -1;
 
@@ -157,7 +157,7 @@ ssize_t send_framed_message(int fd, const char *payload, char* buffer_error, uin
 
 	if ( result != sizeof(net_len)) {
 
-		snprintf(buffer_error,sizeof(buffer_error),"%s", error_string_holder[INIT_SEND_LEN]);
+		snprintf(buffer_error,BUFFER_SIZE,"%s", error_string_holder[INIT_SEND_LEN]);
 
         	return -1;
 	}
@@ -173,7 +173,7 @@ ssize_t send_framed_message(int fd, const char *payload, char* buffer_error, uin
 
 	if ((int)result != (ssize_t)payload_len) {
 
-		snprintf(buffer_error, sizeof(buffer_error), "%s", error_string_holder[MESS_SEND_LEN]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[MESS_SEND_LEN]);
 
 	        return -1;
 	}
@@ -198,7 +198,7 @@ ssize_t receive_framed_message(int fd, char* buffer_message, char* buffer_error,
 
 	if(header_bytes< (ssize_t)sizeof(net_len)){
 
-		snprintf(buffer_error, sizeof(buffer_error), "%s", error_string_holder[INIT_RECV_LEN]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[INIT_RECV_LEN]);
 
 		return -1;
 
@@ -208,7 +208,7 @@ ssize_t receive_framed_message(int fd, char* buffer_message, char* buffer_error,
 
 	if((ssize_t)payload_len >= max_buf_len){
 
-		snprintf(buffer_error, sizeof(buffer_error),"%s",error_string_holder[MESS_RECV_LEN_OVF]);
+		snprintf(buffer_error, BUFFER_SIZE,"%s",error_string_holder[MESS_RECV_LEN_OVF]);
 
 		return -1;
 
@@ -225,7 +225,7 @@ ssize_t receive_framed_message(int fd, char* buffer_message, char* buffer_error,
 
 	if(payload_bytes < (ssize_t)payload_len){
 
-		snprintf(buffer_error, sizeof(buffer_error), "%s",error_string_holder[MESS_RECV_LEN]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[MESS_RECV_LEN]);
 
 		return -1;
 	}
