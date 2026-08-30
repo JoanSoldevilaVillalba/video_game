@@ -145,29 +145,58 @@ bool validate_message_structure(char* buffer_message, char* buffer_error){
 
 bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
-	int first_number = *(buffer_message) - '0';
+	char* temp_ptr = buffer_message;
 
-	int second_number = *(buffer_message + 2) - '0';
+	char* save_ptr = NULL;
 
-	bool result = true;
+	int first_number_int = -1;
 
-	if(first_number > 10 || first_number<0){
+	int second_number_int = -1;
 
-		snprintf(buffer_error, sizeof(buffer_error), "%s", error_string_holder[BUFF_PROT_FIRST]);
+	char* endptr = NULL;
+	if(buffer_message == NULL){
 
-		result = false;
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
+
+		return false;
+	}
+
+
+	char* first_number = strtok_r(temp_ptr, '|', &saveptr);
+
+	if(first_number == NULL){
+
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[BUFF_PROT_FIRST]);
+
+		return false;
 
 	}
 
-	if(second_number > 10 || second_number < 0){
+	endptr = strch(temp_ptr, "|");
 
-		snprintf(buffer_error, sizeof(buffer_error) , "%s", error_string_holder[BUFF_PROT_SECOND]);
+	first_number_int = (int)strol(temp_ptr,&endptr,10);
 
-		result = false;
+	temp_ptr = temp_ptr + endptr + 1;
+
+
+	char* second_number = strtok_r (temp_ptr, '|', &saveptr);
+
+	if(second_number == NULL){
+
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[BUFF_PROT_SECOND]);
+
+		return false;
 
 	}
 
-	return result;
+	endptr = strch(temp_ptr, "|");
+
+	second_number_int = (int)strol(temp_tr, &endptr,10);
+
+
+	snprintf(buffer_message, BUFFER_SIZE, protocol_string_holder[MENU_PREPERATION],first_number_int, second_number_int);
+
+	return true;
 
 }
 
