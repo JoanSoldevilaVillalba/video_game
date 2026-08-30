@@ -58,7 +58,7 @@ char* create_game(int temporary_fd, int* result_function, int* index_game, game_
 	                        	*(index_game) = i;
 		                        pthread_cond_signal(&(game_list + i)->game_condition);
 	        	                pthread_mutex_unlock(&mutex_game_list);
-	                	       	return protocol_string_holder[ENTERED_GAME];
+	                	       	return protocol_string_holder[FOUND_GAME];
 
 	        	        }else if((game_list+i)->game_id==-1){
 
@@ -105,23 +105,41 @@ bool validate_message_length(char* buffer_message, char* buffer_error){
 
 bool validate_message_structure(char* buffer_message, char* buffer_error){
 
+	if(buffer_message == NULL){
+
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
+
+		return false;
+
+	}
+
 	char first_seperator = *(buffer_message + 1);
 
 	char second_seperator = *(buffer_message + 3);
 
 	bool result = false;
 
-	if(second_seperator == '|' && first_seperator == '|'){
+	char* first_sep=strchr(buffer_message, '|');
 
-		result = true;
+	if(first_sep ==NULL){
 
-	}else{
+		snprintf(buffer_error, BUFFER_SIZE, error_string_holder[STRUCT_FIRST], buffer_message);
 
-		snprintf(buffer_error, sizeof(buffer_error),"%s", error_string_holder[BUFF_STRUCT]);
+		return false;
 
 	}
 
-	return false;
+	char* second_sep = strchr(buffer_message + 1, '|');
+
+	if(second_sep == NULL){
+
+		snprintf(buffer_error, BUFFER_SIZE, error_string_holder[STRUCT_SECOND], buffer_message);
+
+		return false;
+
+	}
+
+	return true;
 
 }
 

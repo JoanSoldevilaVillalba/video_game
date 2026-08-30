@@ -43,7 +43,7 @@ typedef enum{
 
 //protocol messages (for client)
 
-ENTERED_GAME = 0,
+FOUND_GAME = 0,
 
 CREATED_GAME = 1,
 
@@ -69,7 +69,7 @@ BT_READY = 8
 
 //the followig numbers are going to have to be revised
 const char* protocol_string_holder[] ={
-"0|1|you have entered a game",
+"0|1|you have found a game",
 "0|2|you have created a game",
 "0|3|all games occupied",
 "2|1|this is response to random message",
@@ -114,6 +114,12 @@ BUFF_PROT_SECOND = 12,
 
 MENU_INDEX = 13,
 
+STRUCT_FIRST = 14,
+
+STRUCT_SECOND = 15,
+
+NULL_MESS = 16
+
 }}ErrormessageID;
 const char* error_string_holder[]={
 "Error in event driven poll syscall (errno str):%s",
@@ -128,6 +134,9 @@ const char* error_string_holder[]={
 "Error, message length is too large",
 "Error, message odes not have the correct structure",
 "Error, first protocol number is not correct",
+"Error, first seperator was not found in the following message: %s",
+"Error, second sepeartor was not found in the folloiwn gmessage: %s",
+"Error, null message"
 }
 
 extern pthread_mutex_t mutex_game_list;
