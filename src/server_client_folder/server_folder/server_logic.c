@@ -139,6 +139,12 @@ bool validate_message_structure(char* buffer_message, char* buffer_error){
 
 bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
+	/*
+	here we need to keep in mind that we might
+	need to use this function when the server is sending and receving, and depending on both of these, we are going to have to perform differnet things
+
+	*/
+
 	char* temp_ptr = buffer_message;
 
 	char* save_ptr = NULL;
@@ -156,7 +162,7 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 	}
 
 
-	char* first_number = strtok_r(temp_ptr, '|', &saveptr);
+	char* first_number = strtok_r(temp_ptr, '|', &save_ptr);
 
 	if(first_number == NULL){
 
@@ -166,14 +172,13 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
 	}
 
-	endptr = strch(temp_ptr, "|");
+	endptr = strchr(temp_ptr, '|');
 
-	first_number_int = (int)strol(first_number,&endptr,10);
+	first_number_int = (int)strtol(first_number,&endptr,10);
 
-	temp_ptr = temp_ptr + endptr + 1;//temp_ptr is pointing to character |, we need to add one more position to the pointer in order to start the next part of the protocol number (second protocol number)
+	temp_ptr = endptr + 1;
 
-
-	char* second_number = strtok_r (temp_ptr, '|', &saveptr);
+	char* second_number = strtok_r (temp_ptr, '|', &save_ptr);
 
 	if(second_number == NULL){
 
@@ -185,25 +190,29 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
 	endptr = strch(temp_ptr, "|");
 
-	second_number_int = (int)strol(second_number, &endptr,10);
+	second_number_int = (int)strtol(second_number, &endptr,10);
 
 
 	if(first_number_int<0 || first_number_int>10){
 
-		snprintf(buffer_error, BUFFER_SIZE, error_string_holder[PROT_FIRST_VALUE]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[PROT_FIRST_VALUE]);
+
+		return false;
 
 	}
 
 
 	if(second_number_int<0||second_number_int>10){
 
-		snprintf(buffer_error,BUFFER_SIZE,error_string_holde[PROT_SECOND_VALUE], )
+		snprintf(buffer_error,BUFFER_SIZE,"%s",error_string_holder[PROT_SECOND_VALUE], );
 
 		return false;
 
 	}
 
-	snprintf(buffer_message, BUFFER_SIZE, protocol_string_holder[MENU_PREPERATION],first_number_int, second_number_int);
+	//the following line depends, we are probably going to have to change the folloiwng
+
+//	snprintf(buffer_message, BUFFER_SIZE, protocol_string_holder[MENU_PREPERATION],first_number_int, second_number_int);
 
 	return true;
 
