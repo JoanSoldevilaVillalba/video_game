@@ -118,7 +118,11 @@ STRUCT_FIRST = 14,
 
 STRUCT_SECOND = 15,
 
-NULL_MESS = 16
+NULL_MESS = 16,
+
+PROT_FIRST_VALUE = 17,
+
+PROT_SECOND_VALUE = 18
 
 }}ErrormessageID;
 const char* error_string_holder[]={
@@ -133,11 +137,13 @@ const char* error_string_holder[]={
 "Error, amount of bytes received in real mesage is not equal to length/bytes of init message"
 "Error, message length is too large: overflow",
 "Error, message odes not have the correct structure",
-"Error, first protocol number is not correct",
-"Error, second protocol number is not correct"
+"Error, first protocol number was not found",
+"Error, second protocol number was not found"
 "Error, first seperator was not found in the following message: %s",
 "Error, second sepeartor was not found in the folloiwn gmessage: %s",
-"Error, null message"
+"Error, null message",
+"Error, first protocol number is out of range (value not correct)",
+"Error, second protocol number is out of range (value not correct)",
 }
 
 extern pthread_mutex_t mutex_game_list;
