@@ -104,13 +104,13 @@ void* handle_client(void* arg){
 
 			case RANDOM_MESSAGE_STATE:
 
-				temporary_pointer = protocol_string_holder[RANDOM_MESSAGE_PROT];
+				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[RANDOM_MESSAGE_PROT]);
 
 				break;
 
 			case QUIT_STATE:
 
-				temporary_pointer = protocol_string_holder[QUIT_CLIENT];
+				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_CLIENT]);
 
 				quit = true;
 
