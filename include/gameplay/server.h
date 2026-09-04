@@ -69,17 +69,17 @@ BT_READY = 8
 
 //the followig numbers are going to have to be revised
 const char* protocol_string_holder[] ={
-"0|1|you have found a game",
-"0|2|you have created a game",
-"0|3|all games occupied",
-"2|1|this is response to random message",
-"1|1|server received quit statement, goodbye",
-"3|7|%d|%d",
-"1|8|player is quitting",
-"1|4|other player is quitting",
-"3|3|other player ready"
+[FOUND_GAME] = "0|1|you have found a game",
+[CREATED_GAME] = "0|2|you have created a game",
+[GAMES_OCCUPIED] = "0|3|all games occupied",
+[RANDOM_MESSAGE] = "2|1|this is response to random message",
+[QUIT_CLIENT] = "1|1|server received quit statement, goodbye",
+[MENU_PREPERATION] = "3|7|%d|%d",
+[PL_QUIT] = "1|8|player is quitting",
+[OT_QUIT] = "1|4|other player is quitting",
+[BT_READY] = "3|3|other player ready"
 
-}
+};
 
 
 typedef enum{
