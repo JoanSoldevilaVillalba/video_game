@@ -28,7 +28,15 @@ void* handle_client(void* arg){
 
 		bytes_result = receive_validated_message(buffer_receive, buffer_error,client->socket_fd);
 
+		printf("\nClient has sent the following message: %s", buffer_receive);
+
 		handlePE(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
+
+		first_number = str_to_int(buffer_receive, buffer_error);
+
+		printf("This is the first number: %d",(int) first_number);
+
+		handlePE((ssize_t*)&first_number, buffer_receive, buffer_error, &quit, &first_number);
 
 
 		counter = 0;
