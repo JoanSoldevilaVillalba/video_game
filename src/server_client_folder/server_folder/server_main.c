@@ -72,15 +72,11 @@ void* handle_client(void* arg){
 
 	                                	if(timed_out == 1 || (client->pointer_list_game + index_game)->player_id[1] == -1){
 
-							//temporary_pointer = "0|4|Game not found: time expired";
-
-							snprintf(temporary_buffer, sizeof(temporary_pointer), "%s", protocol_string_holder[GAME_EXPERATION]);
+							snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[GAME_EXPERATION]);
 
 	                	                }else{
 
-							//temporary_pointer = "0|1|Game was found";
-
-							snprintf(temporary_buffer, sizeof(temporary_pointer), "%s",protocol_string_holder[FOUND_GAME]);
+							snprintf(temporary_buffer, BUFFER_SIZE, "%s",protocol_string_holder[FOUND_GAME]);
 
 							index_player = 0;
 
