@@ -510,6 +510,8 @@ void waiting_for_player(struct_client* client, int* index_game,int* index_player
 void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* quit, int* first_number){
 
 
+	printf("\n----- ERROR HANDLER ---- \n");
+
 	printf("We have received the following number of bytes: %d\n",(int)*(result));
 
 	//the following line is going to be presented when we have defined some type of specific Error typedef struct:	printf("Errno is giving us the following value: , and the string to this error is the following: \n", (int)(errno), strerror(errno));
