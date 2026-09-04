@@ -154,7 +154,9 @@ const char* error_string_holder[]={
 
 "Error, first protocol number was not found",
 
-"Error, second protocol number was not found"
+"Error, second protocol number was not found",
+
+"Error, game index contains bad value",
 
 "Error, first seperator was not found in the following message: %s",
 
