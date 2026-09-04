@@ -139,82 +139,87 @@ bool validate_message_structure(char* buffer_message, char* buffer_error){
 
 bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
-	/*
-	here we need to keep in mind that we might
-	need to use this function when the server is sending and receving, and depending on both of these, we are going to have to perform differnet things
+        char* first = buffer_message;
 
-	*/
+        char* end = NULL;
 
-	char* temp_ptr = buffer_message;
+        const char delimiter = '|';
 
-	char* save_ptr = NULL;
+        int first_number = -1, second_number = -1;
 
-	int first_number_int = -1;
+        if(buffer_message == NULL){
 
-	int second_number_int = -1;
+                snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
 
-	char* endptr = NULL;
-	if(buffer_message == NULL){
+                return false;
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
-
-		return false;
-	}
+        }
 
 
-	char* first_number = strtok_r(temp_ptr, '|', &save_ptr);
+        end = strchr(first, delimiter);
 
-	if(first_number == NULL){
+        if(end == NULL){
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[BUFF_PROT_FIRST]);
+                snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[STRUCT_FIRST]);
 
-		return false;
+                return false;
 
-	}
+        }
 
-	endptr = strchr(temp_ptr, '|');
+        if(first == end){
 
-	first_number_int = (int)strtol(first_number,&endptr,10);
+                snprintf(buffer_error, BUFFER_SIZE,error_string_holder[NO_FIRST_NUMBER], buffer_message);
 
-	temp_ptr = endptr + 1;
+                return false;
 
-	char* second_number = strtok_r (temp_ptr, '|', &save_ptr);
+        }
 
-	if(second_number == NULL){
-
-		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[BUFF_PROT_SECOND]);
-
-		return false;
-
-	}
-
-	endptr = strch(temp_ptr, "|");
-
-	second_number_int = (int)strtol(second_number, &endptr,10);
+        first_number = (int)strtol(first, &end,10);
 
 
-	if(first_number_int<0 || first_number_int>10){
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[PROT_FIRST_VALUE]);
+        first = end + 1;
 
-		return false;
+        end = first;
 
-	}
+        end = strchr(first, delimiter);
+
+        if(end == NULL){
+
+                snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[STRUCT_SECOND]);
+
+                return false;
+
+        }
+
+        if(end == first){
+
+                snprintf(buffer_error, BUFFER_SIZE,error_string_holder[NO_SECOND_NUMBER], buffer_message);
+
+                return false;
+
+        }
+
+        second_number = (int)strtol(first, &end, 10);
+
+        if(first_number<0 || first_number>10){
+
+                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[PROT_FIRST_VALUE]);
+
+                return false;
+
+        }
 
 
-	if(second_number_int<0||second_number_int>10){
+        if(second_number<0||second_number>10){
 
-		snprintf(buffer_error,BUFFER_SIZE,"%s",error_string_holder[PROT_SECOND_VALUE], );
+                snprintf(buffer_error,BUFFER_SIZE,"%s",error_string_holder[PROT_SECOND_VALUE]);
 
-		return false;
+                return false;
 
-	}
+        }
 
-	//the following line depends, we are probably going to have to change the folloiwng
-
-//	snprintf(buffer_message, BUFFER_SIZE, protocol_string_holder[MENU_PREPERATION],first_number_int, second_number_int);
-
-	return true;
+        return true;
 
 }
 
