@@ -23,7 +23,7 @@ void* handle_client(void* arg){
 
 	while(!quit){
 
-		memset(buffer_receive, 0, sizeof(buffer_receive)); temporary_pointer = NULL; counter = 0 ;
+		memset(buffer_receive, 0, sizeof(buffer_receive));counter = 0 ;
 
 
 		bytes_result = receive_validated_message(buffer_receive, buffer_error,client->socket_fd);
@@ -138,11 +138,11 @@ void* handle_client(void* arg){
 
 				if(timed_out == 1 || ((client->pointer_list_game) + index_game)->ready_player[index_player ^ 1] == false){
 
-					temporary_pointer ="still no one";
+					//temporary_pointer ="still no one";
 
 				}else{
 
-					temporary_pointer = "someone else has enterd our game"; 
+//					temporary_pointer = "someone else has enterd our game"; 
 
 				}
 
