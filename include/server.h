@@ -98,7 +98,7 @@ MESS_SEND_LEN = 5,
 
 INIT_RECV_LEN = 6,
 
-MESS_RECV_LEN_OVF = 7
+MESS_RECV_LEN_OVF = 7,
 
 MESS_RECV_LEN = 8,
 
@@ -122,29 +122,55 @@ NULL_MESS = 16,
 
 PROT_FIRST_VALUE = 17,
 
-PROT_SECOND_VALUE = 18
+PROT_SECOND_VALUE = 18,
 
-}}ErrormessageID;
+NO_FIRST_NUMBER = 19,
+
+NO_SECOND_NUMBER = 20,
+
+}ErrormessageID;
 const char* error_string_holder[]={
 "Error in event driven poll syscall (errno str):%s",
+
 "Error, time out expired for poll event",
+
 "Error, recv syscall went wrong (errno str):%s"
+
 "Error, send syscall went wrong (errno str): %s",
+
 "Error, amount of bytes sent in init message is not equal to 4 bytes",
+
 "Error, amount of bytes sent of real message is not equal to length/bytes of message"
+
 "Error, amount of bytes received in init message is not equal to 4 bytes",
+
 "Error, amount of bytes recevied in init message is overflowing (>BUFFER_SIZE)"
+
 "Error, amount of bytes received in real mesage is not equal to length/bytes of init message"
+
 "Error, message length is too large: overflow",
+
 "Error, message odes not have the correct structure",
+
 "Error, first protocol number was not found",
+
 "Error, second protocol number was not found"
+
 "Error, first seperator was not found in the following message: %s",
-"Error, second sepeartor was not found in the folloiwn gmessage: %s",
+
+"Error, second seperator was not found in the following message: %s",
+
 "Error, null message",
+
 "Error, first protocol number is out of range (value not correct)",
+
 "Error, second protocol number is out of range (value not correct)",
-}
+
+"Error, the following message does not contain first protocol number: %s",
+
+"Error, the folloiwng message does not contain second protocol number: %s"
+
+};
 
 extern pthread_mutex_t mutex_game_list;
 extern pthread_mutex_t mutex_thread_counter;
