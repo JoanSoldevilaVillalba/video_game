@@ -19,8 +19,6 @@ void* handle_client(void* arg){
 
 	ssize_t bytes_result = 0;
 
-	const char* temporary_pointer = NULL; //this is not going to be used in the future
-
 	struct timespec ts;
 
 	while(!quit){
