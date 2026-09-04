@@ -129,50 +129,31 @@ NO_FIRST_NUMBER = 19,
 NO_SECOND_NUMBER = 20,
 
 }ErrormessageID;
-const char* error_string_holder[]={
-"Error in event driven poll syscall (errno str):%s",
 
-"Error, time out expired for poll event",
-
-"Error, recv syscall went wrong (errno str):%s"
-
-"Error, send syscall went wrong (errno str): %s",
-
-"Error, amount of bytes sent in init message is not equal to 4 bytes",
-
-"Error, amount of bytes sent of real message is not equal to length/bytes of message"
-
-"Error, amount of bytes received in init message is not equal to 4 bytes",
-
-"Error, amount of bytes recevied in init message is overflowing (>BUFFER_SIZE)"
-
-"Error, amount of bytes received in real mesage is not equal to length/bytes of init message"
-
-"Error, message length is too large: overflow",
-
-"Error, message odes not have the correct structure",
-
-"Error, first protocol number was not found",
-
-"Error, second protocol number was not found",
-
-"Error, game index contains bad value",
-
-"Error, first seperator was not found in the following message: %s",
-
-"Error, second seperator was not found in the following message: %s",
-
-"Error, null message",
-
-"Error, first protocol number is out of range (value not correct)",
-
-"Error, second protocol number is out of range (value not correct)",
-
-"Error, the following message does not contain first protocol number: %s",
-
-"Error, the folloiwng message does not contain second protocol number: %s"
-
+const char* error_string_holder[] = {
+    [SYS_POLL]              = "Error in event driven poll syscall (errno str):%s",
+    [TIME_EXPIRED_POLL]     = "Error, time out expired for poll event",
+    [SYS_RECV]              = "Error, recv syscall went wrong (errno str):%s",
+    [SYS_SEND]              = "Error, send syscall went wrong (errno str): %s",
+    [INIT_SEND_LEN]         = "Error, amount of bytes sent in init message is not equal to 4 bytes",
+    [MESS_SEND_LEN]         = "Error, amount of bytes sent of real message is not equal to length/bytes of message",
+    [INIT_RECV_LEN]         = "Error, amount of bytes received in init message is not equal to 4 bytes",
+    [MESS_RECV_LEN_OVF]     = "Error, amount of bytes recevied in init message is overflowing (>BUFFER_SIZE)",
+    [MESS_RECV_LEN]         = "Error, amount of bytes received in real mesage is not equal to length/bytes of init message",
+    [BUFF_OVF]              = "Error, message length is too large: overflow",
+    [BUFF_STRUCT]           = "Error, message odes not have the correct structure",
+    [BUFF_PROT_FIRST]       = "Error, first protocol number was not found",
+    [BUFF_PROT_SECOND]      = "Error, second protocol number was not found",
+    [MENU_INDEX]            = "Error, game index contains bad value",
+    [STRUCT_FIRST]          = "Error, first seperator was not found in the following message: %s",
+    [STRUCT_SECOND]         = "Error, second seperator was not found in the following message: %s",
+    [NULL_MESS]             = "Error, null message",
+    [PROT_FIRST_VALUE]      = "Error, first protocol number is out of range (value not correct)",
+    [PROT_SECOND_VALUE]     = "Error, second protocol number is out of range (value not correct)",
+    [NO_FIRST_NUMBER]       = "Error, the following message does not contain first protocol number: %s",
+    [NO_SECOND_NUMBER]      = "Error, the folloiwng message does not contain second protocol number: %s"
 };
+
 
 extern pthread_mutex_t mutex_game_list;
 extern pthread_mutex_t mutex_thread_counter;
