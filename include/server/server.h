@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SERVER_H
+#define SERVER_H
 
 #include <stdio.h>
 #include <netinet/in.h>
@@ -162,3 +163,6 @@ extern int counter_thread;
 
 void* handle_client(void* arg);
 void initilizeGames(game_struct_players* game_list);
+
+
+#endif SERVER_H

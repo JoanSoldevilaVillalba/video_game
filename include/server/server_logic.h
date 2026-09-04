@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SERVER_LOGIC_H
+#define SERVER_LOGIC_H
 
 #include <stdbool.h>
 #include <sys/types.h>
@@ -39,3 +40,6 @@ void handlePE(size_t* result, char* buffer_receive,char* buffer_error, bool* qui
 char* create_game(int temporary_fd, int* result_function, int* index_game, game_struct_players* game_list);
 
 int menu_preperation_validation(struct_client* client, int index, char* temporary_buffer, char* buffer_error);
+
+
+#endif SERVER_LOGIC_H
