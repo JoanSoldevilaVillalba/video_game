@@ -50,7 +50,7 @@ void time_init(struct timespec* ts, int time_experation){
 
 int str_to_int(char* buffer_message, char* buffer_error){
 
-	if(buffer_message){
+	if(buffer_message == NULL){
 
 		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
 
@@ -325,7 +325,7 @@ ssize_t send_validated_message(char* buffer_message, char* buffer_error, int cli
 
 	}
 
-	if(validate_message_structure(buffer_message, buffer_error)){
+	if(!validate_message_structure(buffer_message, buffer_error)){
 
 		return -1;
 
@@ -363,7 +363,7 @@ ssize_t receive_validated_message(char* buffer_message,char* buffer_error, int c
 
 	}
 
-	if(validate_message_numbers(buffer_message, buffer_error)){
+	if(!validate_message_numbers(buffer_message, buffer_error)){
 
 		return -1;
 
