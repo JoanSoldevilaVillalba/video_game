@@ -1,7 +1,3 @@
-#include "server.h"
-
-#include "server_send_data.h"
-
 #include "server_logic.h"
 
 pthread_mutex_t mutex_game_list;
@@ -15,7 +11,7 @@ void* handle_client(void* arg){
 
 	pthread_detach(pthread_self());
 
-	char buffer_receive[64], buffer_send [64], temporary_buffer[64], buffer_error[64];
+	char buffer_receive[64], temporary_buffer[64], buffer_error[64];
 
 	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1, timed_out = 0, time_experation = -1;
 
@@ -23,13 +19,13 @@ void* handle_client(void* arg){
 
 	ssize_t bytes_result = 0;
 
-	const char* temporary_pointer = NULL;
+	const char* temporary_pointer = NULL; //this is not going to be used in the future
 
 	struct timespec ts;
 
 	while(!quit){
 
-		memset(buffer_receive, 0, sizeof(buffer_receive)); memset(buffer_send, 0, sizeof(buffer_send)); temporary_pointer = NULL; counter = 0 ;
+		memset(buffer_receive, 0, sizeof(buffer_receive)); temporary_pointer = NULL; counter = 0 ;
 
 
 		bytes_result = receive_validated_message(buffer_receive, buffer_error,client->socket_fd);
@@ -43,7 +39,7 @@ void* handle_client(void* arg){
 		switch(first_number){
 
 
-			case ENTERING_CREATING_GAME:{
+			case ENTERING_CREATING_GAME_STATE:{
 
 				time_experation = 5;
 
@@ -52,14 +48,13 @@ void* handle_client(void* arg){
 				timed_out = 0;
 
 
-				temporary_pointer = create_game(client->socket_fd,&result, &index_game, client->pointer_list_game);
+				create_game(client->socket_fd,&result, &index_game, client->pointer_list_game, temporary_buffer);
 
-				bytes_result = send_validated_message(temporary_pointer, buffer_send,buffer_error, client->socket_fd);
+				bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
-				handlePE(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
+				handlePE(&bytes_result, temporary_buffer, buffer_error, &quit, &first_number);
 
-
-				memset(buffer_send, 0, sizeof(buffer_send)); memset(buffer_receive, 0, sizeof(buffer_receive));
+				memset(buffer_receive, 0, sizeof(buffer_receive));
 
 
 				if(!quit){
@@ -77,11 +72,15 @@ void* handle_client(void* arg){
 
 	                                	if(timed_out == 1 || (client->pointer_list_game + index_game)->player_id[1] == -1){
 
-							temporary_pointer = "0|3|Game not found: time expired";
+							//temporary_pointer = "0|4|Game not found: time expired";
+
+							snprintf(temporary_buffer, sizeof(temporary_pointer), "%s", protocol_string_holder[GAME_EXPERATION]);
 
 	                	                }else{
 
-							temporary_pointer = "0|1|Game was found";
+							//temporary_pointer = "0|1|Game was found";
+
+							snprintf(temporary_buffer, sizeof(temporary_pointer), "%s",protocol_string_holder[FOUND_GAME]);
 
 							index_player = 0;
 
@@ -95,19 +94,21 @@ void* handle_client(void* arg){
 					}
 				}else{
 
-					temporary_pointer = buffer_error;//we are goint to have to add numbers to this message indicating that some type of error has occured
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", buffer_error);
+
+					//we are goint to have to add numbers to this message indicating that some type of error has occured
 
 				}
 				break;
 				}
 
-			case RANDOM_MESSAGE:
+			case RANDOM_MESSAGE_STATE:
 
-				temporary_pointer = protocol_string_holder[RANDOM_MESSAGE];
+				temporary_pointer = protocol_string_holder[RANDOM_MESSAGE_PROT];
 
 				break;
 
-			case QUIT:
+			case QUIT_STATE:
 
 				temporary_pointer = protocol_string_holder[QUIT_CLIENT];
 
@@ -115,26 +116,26 @@ void* handle_client(void* arg){
 
 				break;
 
-			case MENU_PREPERATION:
+			case MENU_PREPERATION_STATE:
 
-				bytes_result = menu_preperation_validation(struct_client* client, int index, char* temporary_buffer, char* buffer_error);
+				bytes_result = menu_preperation_validation(client,index_game, temporary_buffer,buffer_error);
 
 				handlePE(&bytes_result, temporary_buffer, buffer_error, &quit, &first_number);
 
 
 			    break;
 
-			case WAITING_INIT:
+			case WAITING_INIT_STATE:
 
 				time_experation = 120;
 
-				temporary_pointer = waiting_for_player(client, &index_game,&index_player, time_experation, &ts, &counter,buffer_receive,  &result, &timed_out);
+				waiting_for_player(client, &index_game,&index_player, time_experation, &ts, &counter,buffer_receive,  &result, &timed_out, temporary_buffer);
 
 				result = -1;
 
 				break;
 
-			case KEEP_WAITING:
+			case KEEP_WAITING_STATE:
 
 
 				time_experation = 120;
@@ -153,7 +154,7 @@ void* handle_client(void* arg){
 
 				break;
 
-			case PLAY_TIME:
+			case PLAY_TIME_STATE:
 
 				break;
 
@@ -161,19 +162,20 @@ void* handle_client(void* arg){
 			default:
 
 
-				temporary_pointer = "4|0|error, option not valid";
+				snprintf(temporary_buffer, sizeof(temporary_buffer), "%s", protocol_string_holder[INVALID_OPT]);
+
 				break;
 
 
 		}
 
 
-		bytes_result = send_validated_message(temporary_pointer, buffer_send, buffer_error, client->socket_fd);
+		bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
 
-		handlePE(&bytes_result, buffer_send,buffer_error, &quit, &first_number);
+		handlePE(&bytes_result, temporary_buffer,buffer_error, &quit, &first_number);
 
 
-		printf("The server has succesfully sent the following message %s\n", buffer_send);
+		printf("The server has succesfully sent the following message %s\n", temporary_buffer);
 
 
 	}

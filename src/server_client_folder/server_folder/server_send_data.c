@@ -122,7 +122,7 @@ ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssiz
 
 			}
 
-			snprintf(buffer_error, BUFFER_SIZE,error_string_holder[SYS_SEND]);
+			snprintf(buffer_error, BUFFER_SIZE,error_string_holder[SYS_SEND], strerror(errno));
 
 			return -1;
 
@@ -146,7 +146,7 @@ ssize_t send_framed_message(int fd, const char *payload, char* buffer_error, uin
 
 	uint32_t net_len = htonl(payload_len);
 
-	size_t result = send_all(fd, (const char *)&net_len, buffer_error, sizeof(net_len));
+	ssize_t result = send_all(fd, (const char *)&net_len, buffer_error, sizeof(net_len));
 
 	if((int)result == -1){
 
