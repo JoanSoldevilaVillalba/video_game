@@ -48,6 +48,46 @@ void time_init(struct timespec* ts, int time_experation){
 
 }
 
+int str_to_int(char* buffer_message, char* buffer_error){
+
+	if(buffer_message){
+
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
+
+		return -1;
+
+	}
+
+	char* first = buffer_message;
+
+	char*end = NULL;
+
+	int result = -1;
+
+	const char delimiter = '|';
+
+	end = strchr(first,delimiter);
+
+	if(end == NULL){
+
+		snprintf(buffer_error, BUFFER_SIZE,  error_string_holder[STRUCT_FIRST], buffer_message);
+
+	}
+
+
+	if(end == first){
+
+		snprintf(buffer_error, BUFFER_SIZE, error_string_holder[NO_FIRST_NUMBER], buffer_message);
+
+	}
+
+	result = (int)strtol(first, &end,10);
+
+	return result;
+
+
+}
+
 void reverse(char* pointer){
 
         ssize_t length = strlen(pointer);
