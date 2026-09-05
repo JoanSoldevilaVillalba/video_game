@@ -11,7 +11,7 @@ const char* protocol_string_holder[] ={
 [PL_QUIT] = "1|8|player is quitting",
 [OT_QUIT] = "1|4|other player is quitting",
 [BT_READY] = "3|3|other player ready",
-[INVALID_OPT] = "4|0|error, option not valid"
+[INVALID_OPT] = "4|0|error, option not valid",
 };
 
 const char* error_string_holder[] = {
@@ -518,7 +518,15 @@ void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* 
 
 	if(*(result) == -1){
 
-		printf("Error message: %s\n", buffer_error);
+		if(buffer_error == NULL){
+
+			printf("There was an error, but buffer_error does not have anyting inside\n");
+
+		}else{
+
+			printf("Error message: %s\n", buffer_error);
+
+		}
 
 		printf("An error happend, we are going to close the connection\n");
 
@@ -532,9 +540,9 @@ void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* 
 
 		printf("No error has occured, message from client: %s\n", buffer_receive);
 
-		printf("Setting first number to what the message has sent over\n");
+		//printf("Setting first number to what the message has sent over\n");
 
-		*(first_number) = buffer_receive[0] - '0';
+		/*(first_number) = buffer_receive[0] - '0';*/
 
 	}
 
