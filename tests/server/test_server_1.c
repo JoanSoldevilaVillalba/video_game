@@ -101,14 +101,88 @@ int test_setup_connection(char* buffer_error, int server_port){
 
 	if (result < 0) {
 
-	return -1;
+		printf("Something went wrong: %s\n", buffer_error);
+
+		printf("We are quitting the test, goodbye....\n");
+
+		return -1;
 
 	}
 
-	snprintf(buffer_error, BUFFER_SIZE, "Setup connection was a success");
+	printf("Setup connection was a success\n");
 
 	return file_descriptor;
 
+
+}
+
+bool validate_message_length(const char* temporary_pointer, char* buffer_error){
+
+        if(BUFFER_SIZE <= strlen(temporary_pointer)){
+
+		snprintf(buffer_error, BUFFER_SIZE, 
+
+                return false;
+
+        }else{
+
+                return true;
+
+        }
+
+        //rememeber that strlen is indexed to one,
+
+}
+
+ssize_t send_validated_message(char* buffer_message, char* buffer_error, int client_file_descriptor){
+
+	bool correct_length = validate_message_length(temporary_pointer, buffer_error);
+
+	ssizse_t result = 0;
+
+	if(correct_length == true){
+
+		result = send_framed_message(client_file_descriptor, buffer, (uint32_t)strlen(temporary_pointer));
+
+		if(result == -1){
+
+			return -1;
+
+		}
+
+		return 0;
+
+	}else{
+
+
+		return -1;
+
+	}
+
+
+}
+
+int test_send_message(char* buffer_message, char* buffer_error, int client_file_descriptor){
+
+	printf("\n------ testing message sending ------\n")
+
+	int result = -1;
+
+
+
+	if(result == -1){
+
+		printf("Something went wrong: %s\n", buffer_error);
+
+		printf("We are qutting the test, goodbye ...\n");
+
+		return result;
+
+	}
+
+	printf("Sending a message was a success\n");
+
+	return 0;
 
 }
 
@@ -125,20 +199,19 @@ int main(){
 
 	int client_file_descriptor = test_setup_connection(buffer_error, port);
 
-	printf("Result of the setup connection: %d, specified message: %s",client_file_descriptor, buffer_error);
+	if(client_file_descriptor <0){
 
-	if(client_file_descriptor == -1){
-
-		printf("Test failed, exiting, goodbye ...");
-
-		return -1;
-
-	}else{
-
-		printf("Test was a success, we are going to continue with the rest ... \n");
+		return client_file_descriptor;
 
 	}
 
+	int message_send_result = test_send_message(buffer_send, buffer_error, client_file_descriptor);
+
+	if(message_send_result <0){
+
+		return message_send_result;
+
+	}
 
 	return 0;
 
