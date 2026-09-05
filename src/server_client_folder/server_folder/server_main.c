@@ -28,16 +28,17 @@ void* handle_client(void* arg){
 
 		bytes_result = receive_validated_message(buffer_receive, buffer_error,client->socket_fd);
 
-		printf("\nClient has sent the following message: %s", buffer_receive);
-
 		handlePE(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
 
-		first_number = str_to_int(buffer_receive, buffer_error);
+		if(quit == false){
 
-		printf("This is the first number: %d",(int) first_number);
+			//when an error has occured due to protocol or something else, the server is going to ignore what the client has sent over
 
-		handlePE((ssize_t*)&first_number, buffer_receive, buffer_error, &quit, &first_number);
+			first_number = str_to_int(buffer_receive, buffer_error);
 
+			handlePE((ssize_t*)&first_number, buffer_receive, buffer_error, &quit, &first_number);
+
+		}
 
 		counter = 0;
 
@@ -98,7 +99,6 @@ void* handle_client(void* arg){
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", buffer_error);
 
-					//we are goint to have to add numbers to this message indicating that some type of error has occured
 
 				}
 				break;
@@ -150,7 +150,7 @@ void* handle_client(void* arg){
 
 				}else{
 
-//					temporary_pointer = "someone else has enterd our game"; 
+					//temporary_pointer = "someone else has enterd our game"; 
 
 				}
 
