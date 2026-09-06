@@ -71,7 +71,9 @@ GAME_EXPERATION = 9,
 
 INVALID_OPT = 10,
 
-QUIT_SERVER = 11
+QUIT_SERVER = 11,
+
+GAME_NO_SCND_PLAYER = 12
 }ProtocolmessageID;
 
 typedef enum{

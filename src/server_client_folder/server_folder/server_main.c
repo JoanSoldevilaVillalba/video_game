@@ -136,11 +136,14 @@ void* handle_client(void* arg){
 
 				if(timed_out == 1 || ((client->pointer_list_game) + index_game)->ready_player[index_player ^ 1] == false){
 
-					//temporary_pointer ="still no one";
+					//temporary_pointer ="still no one"; //it some how needs to indicate that the server still has not found a player
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[GAME_NO_SCND_PLAYER]);
 
 				}else{
 
 					//temporary_pointer = "someone else has enterd our game"; 
+
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[FOUND_GAME]); //for now we are just going to use FOUND_GAME to indicate that a second player has enterd our game
 
 				}
 
