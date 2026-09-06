@@ -11,10 +11,12 @@
 #include <pthread.h>
 #include <sys/types.h>
 #include <signal.h>
+
 #define BUFFER_SIZE 64
 #define MAX_GAMES_SIZE 2
 #define MAX_CLIENT_THREADS (MAX_GAMES_SIZE*2)
-
+#define TM_EXP_WAIT_GAME 60 // the player is going to wait for 60 seconds every time that she or he desires to wait for someone to enter the game
+#define TM_EXP_POLL 2 //this time experation limit is used for the low level impellemtnation of sending and receiving information from the client, therefor>
 typedef enum {
 	ENTERING_CREATING_GAME_STATE = 0,
 	QUIT_CLIENT_STATE = 1,

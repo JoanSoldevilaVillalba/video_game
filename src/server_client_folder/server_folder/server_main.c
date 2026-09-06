@@ -13,7 +13,7 @@ void* handle_client(void* arg){
 
 	char buffer_receive[64], temporary_buffer[64], buffer_error[64];
 
-	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1, timed_out = 0, time_experation = -1;
+	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1, timed_out = 0;
 
 	bool quit = false;
 
@@ -48,9 +48,7 @@ void* handle_client(void* arg){
 
 			case ENTERING_CREATING_GAME_STATE:{
 
-				time_experation = 5;
-
-				time_init(&ts,time_experation);
+				time_init(&ts,TM_EXP_WAIT_GAME);
 
 				timed_out = 0;
 
@@ -72,10 +70,7 @@ void* handle_client(void* arg){
 
 					}else if(result == 2){
 
-						time_experation = 60;
-
-
-						timed_out = wait_signal_cond((client->pointer_list_game) + index_game ,index_player, &ts, time_experation);
+						timed_out = wait_signal_cond((client->pointer_list_game) + index_game ,index_player, &ts, TM_EXP_WAIT_GAME);
 
 	                                	if(timed_out == 1 || (client->pointer_list_game + index_game)->player_id[1] == -1){
 
@@ -129,9 +124,7 @@ void* handle_client(void* arg){
 
 			case WAITING_INIT_STATE:
 
-				time_experation = 120;
-
-				waiting_for_player(client, &index_game,&index_player, time_experation, &ts, &counter,buffer_receive,  &result, &timed_out, temporary_buffer);
+				waiting_for_player(client, &index_game,&index_player, TM_EXP_WAIT_GAME, &ts, &counter,buffer_receive,  &result, &timed_out, temporary_buffer);
 
 				result = -1;
 
@@ -139,10 +132,7 @@ void* handle_client(void* arg){
 
 			case KEEP_WAITING_STATE:
 
-
-				time_experation = 120;
-
-				timed_out = wait_signal_cond((client->pointer_list_game) + index_game, index_player, &ts, time_experation);
+				timed_out = wait_signal_cond((client->pointer_list_game) + index_game, index_player, &ts, TM_EXP_WAIT_GAME);
 
 				if(timed_out == 1 || ((client->pointer_list_game) + index_game)->ready_player[index_player ^ 1] == false){
 
@@ -154,7 +144,7 @@ void* handle_client(void* arg){
 
 				}
 
-				break;
+				break;TM_EXP_WAIT_GAME
 
 			case PLAY_TIME_STATE:
 
