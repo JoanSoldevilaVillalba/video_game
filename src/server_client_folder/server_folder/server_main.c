@@ -110,9 +110,17 @@ void* handle_client(void* arg){
 
 				break;
 
-			case QUIT_STATE:
+			case QUIT_CLIENT_STATE:
 
 				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_CLIENT]);
+
+				quit = true;
+
+				break;
+
+			case QUIT_SERVER_STATE:
+
+				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_SERVER]);
 
 				quit = true;
 
