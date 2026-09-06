@@ -311,14 +311,6 @@ int test_receive_message(char* buffer_message, char* buffer_error, int file_desc
 
 	result = receive_validated_message(buffer_message, buffer_error, file_descriptor);
 
-	if(buffer_message){
-
-		printf("Server has sent over the following message: %s\n", buffer_message);
-
-		printf("The expected message was the following: %s\n", test_message_server[RANDOM_MESSAGE_TEST]);
-
-	}
-
 	if(result == -1){
 
 		printf("An error has occuried: %s\n", buffer_error);
@@ -326,6 +318,24 @@ int test_receive_message(char* buffer_message, char* buffer_error, int file_desc
 		printf("We are quitting the test, goodbye ...\n");
 
 		return -1;
+	}
+
+
+
+	printf("Server has sent over the following message: %s\n", buffer_message);
+
+	if(strcmp(buffer_message, test_message_server[RANDOM_MESSAGE_TEST])!=0){
+
+		printf("An error has occuried\n");
+
+
+		printf("Recevied message from server is not equal to the following string: %s", test_message_server[RANDOM_MESSAGE_TEST]);
+
+		printf("We are qutting the tests, goodye ....\n");
+
+		return -1;
+
+
 	}
 
 	printf("this test was a sucess \n");
@@ -639,6 +649,18 @@ int test_quit_client(char* buffer_message, char* buffer_error, int file_descript
 	printf("Server has responded with the following message: %s\n", buffer_message);
 
 	printf("Expected message: %s\n",test_message_server[QUIT_CLIENT_MESSAGE_TEST]);
+
+	if(strcmp(buffer_message, test_message_server[QUIT_CLIENT_MESSAGE_TEST]) != 0){
+
+		printf("An error occurred\n");
+
+		printf("Expected message is the following: %s", test_message_server[QUIT_CLIENT_MESSAGE_TEST]);
+
+		return -1;
+
+	}
+
+	printf("Test was completed correctly\n");
 
 	return result;
 

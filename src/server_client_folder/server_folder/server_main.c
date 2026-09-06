@@ -155,7 +155,7 @@ void* handle_client(void* arg){
 
 				}
 
-				break;TM_EXP_WAIT_GAME
+				break;
 
 			case PLAY_TIME_STATE:
 
