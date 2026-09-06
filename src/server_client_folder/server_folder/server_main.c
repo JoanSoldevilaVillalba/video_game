@@ -120,7 +120,7 @@ void* handle_client(void* arg){
 
 			case QUIT_SERVER_STATE:
 
-				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[SERVER_QUIT]);
+				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_SERVER]);
 
 				quit = true;
 
