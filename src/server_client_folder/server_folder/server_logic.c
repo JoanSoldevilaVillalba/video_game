@@ -532,7 +532,7 @@ void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* 
 
 		//here we are going to have to set the numbers specificly for quitting, keep in mind that for now, when someone quits the other endpoint is going to know due to a event or time experation (this is bad but we will fix later)
 
-		*(first_number) = QUIT_STATE;
+		*(first_number) = QUIT_SERVER_STATE;
 
 		*(quit) = true;
 
