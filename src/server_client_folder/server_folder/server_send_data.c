@@ -20,11 +20,9 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
 	int ret = -1;
 
-	int time_out = 20000;
-
         while(total_length < length){
 
-		ret = poll(&pfd, 1,time_out );
+		ret = poll(&pfd, 1, TM_EXP_POLL);
 
 		if(ret == -1){
 
@@ -90,11 +88,9 @@ ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssiz
 
 	ssize_t ret  =-1;
 
-	int time_out = 15000;
-
         while(total_length<length){
 
-		ret = poll(&pfd, 1, time_out);
+		ret = poll(&pfd, 1, TM_EXP_POLL);
 
 		if(ret == -1){
 

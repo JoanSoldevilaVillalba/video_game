@@ -5,6 +5,7 @@ const char* protocol_string_holder[] ={
 [CREATED_GAME] = "0|2|you have created a game",
 [GAMES_OCCUPIED] = "0|3|all games occupied",
 [GAME_EXPERATION] = "0|4|Game not found: time expired",
+[GAME_NO_SCND_PLAYER] ="0|5|Second player for your match is not found yet",
 [RANDOM_MESSAGE_PROT] = "2|1|this is response to random message",
 [QUIT_CLIENT] = "1|1|server received quit statement, goodbye",
 [MENU_PREPERATION_PROT] = "3|7|%d|%d",
