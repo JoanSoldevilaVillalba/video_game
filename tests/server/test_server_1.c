@@ -35,8 +35,8 @@ const char* test_string_holder[]={
 
 const char* test_message_server[]={
 
-[RANDOM_MESSAGE_TEST] = "2|1|this is response to random message"
-
+[RANDOM_MESSAGE_TEST] = "2|1|this is response to random message",
+[QUIT_CLIENT_MESSAGE_TEST] = "1|1|server received quit statement, goodbye"
 };
 ssize_t read_all(int temporary_fd, char buffer[], ssize_t length, char* buffer_error){
 
@@ -341,6 +341,8 @@ int setupConnection(int* client_file_descriptor,struct sockaddr_in* server_addre
 
 		snprintf(buffer_error, BUFFER_SIZE, "%s", test_string_holder[TEST_NULL_POINTER_ERROR]);
 
+		return -1;
+
 	}
 
         *(client_file_descriptor) = socket(AF_INET, SOCK_STREAM,0);
@@ -604,6 +606,44 @@ int test_send_message(char* buffer_message, char* buffer_error, int client_file_
 
 }
 
+int test_quit_client(char* buffer_message, char* buffer_error, int file_descriptor){
+
+	printf("\n ----- testing quit statement from client ------ \n");
+
+	int result = send_validated_message(buffer_message, buffer_error, file_descriptor);
+
+	if(result == -1){
+
+		printf("An error occurred: %s\n", buffer_error);
+
+		printf("Testing is quitting now .... \n");
+
+		return -1;
+
+	}
+
+	printf("We have succesfully sent the following message: %s", buffer_message);
+
+	result = receive_validated_message(buffer_message, buffer_error, file_descriptor);
+
+	if(result == -1){
+
+		printf("An error occurred: %s\n",buffer_error);
+
+		printf("Testing is quitting now .... \n");
+
+		return -1;
+
+	}
+
+	printf("Server has responded with the following message: %s\n", buffer_message);
+
+	printf("Expected message: %s\n",test_message_server[QUIT_CLIENT_MESSAGE_TEST]);
+
+	return result;
+
+}
+
 int main(){
 
 	int port = 8080;
@@ -629,12 +669,36 @@ int main(){
 
 	if(message_send_result <0){
 
+		close(client_file_descriptor);
+
 		return message_send_result;
 
 	}
 
 	int message_receive_result =  test_receive_message(buffer_receive,buffer_error, client_file_descriptor);
 
+	if(message_receive_result <0){
+
+		close(client_file_descriptor);
+
+		return message_receive_result;
+
+	}
+
+	snprintf(buffer_send, BUFFER_SIZE, "%s", "1|0|client wants to quit");
+
+	int result_quit_client_statment =  test_quit_client(buffer_send, buffer_error, client_file_descriptor);
+
+	if(result_quit_client_statment <0){
+
+		close(client_file_descriptor);
+
+		return result_quit_client_statment;
+
+	}
+	close(client_file_descriptor);
+
+	printf("We have finished with the tests (all tests passed), goodbye....");
 
 	return 0;
 
