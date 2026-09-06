@@ -293,7 +293,7 @@ int receive_validated_message(char* buffer_message, char* buffer_error, int clie
 
 	}
 
-	if(!check_numbers(buffer_message, buffer_error) || check_structure(buffer_message, buffer_error)){
+	if(!check_numbers(buffer_message, buffer_error) || !check_structure(buffer_message, buffer_error)){
 
 	return -1;
 
@@ -313,9 +313,9 @@ int test_receive_message(char* buffer_message, char* buffer_error, int file_desc
 
 	if(buffer_message){
 
-		printf("Server has sent over the following message: %s", buffer_message);
+		printf("Server has sent over the following message: %s\n", buffer_message);
 
-		printf("The expected message was the following: %s", test_message_server[RANDOM_MESSAGE_TEST]);
+		printf("The expected message was the following: %s\n", test_message_server[RANDOM_MESSAGE_TEST]);
 
 	}
 
