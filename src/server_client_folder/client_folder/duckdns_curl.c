@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include "curl/curl.h"
 
 #define BUFFER_SIZE 64
@@ -34,13 +37,55 @@ const char* string_web_holder[]={
 [DUCK_DNS_DOMAIN] = "video-game-project",
 };
 
-int get_token(char* buffer_error, char* buffer_token, char* file_name){
+int get_token(char* buffer_error, char* buffer_token,char* name_file){
 
 //we are going to have to read from a file
 
 //i think its first open, then read and then we are able to close it
 
+	memset(buffer_token, '\0', BUFFER_SIZE);
 
+	int file_descriptor = open(name_file, O_RDONLY);
+
+	int result = -1;
+
+	if(file_descriptor<0){
+
+		snprintf(buffer_error, BUFFER_SIZE, "Error, unable to find file descriptor for %s: %s", name_file, strerror(errno));
+
+		return -1;
+
+	}
+
+	ssize_t bytes_read = read(file_descriptor, buffer_token, BUFFER_SIZE-1);
+
+	if(bytes_read<0){
+
+		snprintf(buffer_error, BUFFER_SIZE, "Error, read syscall failed, unable to read bytes from file %s: %s", name_file, strerror(errno));
+
+	}else if(bytes_read == 0){
+
+		snprintf(buffer_error, BUFFER_SIZE,"%s", "Error, no bytes in file, there is no token");
+
+
+	}else{
+
+        	for (ssize_t i = 0; i < bytes_read; i++) {
+            		if (buffer_token[i] == '\n' || buffer_token[i] == '\r') {
+		                buffer_token[i] = '\0';
+		                break;
+		            }
+	        }
+
+	        printf("First line: %s\n", buffer_token);
+
+		result = 0;
+
+	}
+
+	close(file_descriptor);
+
+	return result;
 
 
 }
@@ -86,9 +131,18 @@ int main(void){
 
 	char buffer_error[CURL_ERROR_SIZE];
 
-	snprintf(buffer_domain, BUFFER_SIZE, "%s", string_web_holder[DUCK_DNS_DOMAIN]);
+	char* name_file = "token.txt";
 
-	snprintf(buffer_token, BUFFER_SIZE+BUFFER_SIZE, "%s", string_web_holder[DUCK_DNS_TOKEN]);
+	int result_token_file = get_token(buffer_error, buffer_token, name_file);
+
+	if(result_token_file == -1){
+
+		printf("Something went wrong: %s\n Qutting the program...\n", buffer_error);
+
+	}
+
+
+	snprintf(buffer_domain, BUFFER_SIZE, "%s", string_web_holder[DUCK_DNS_DOMAIN]);
 
 	snprintf(buffer_url, BUFFER_SIZE+BUFFER_SIZE,string_web_holder[DUCK_DNS_URL], buffer_domain, buffer_token);
 
