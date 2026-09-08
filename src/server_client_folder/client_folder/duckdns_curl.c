@@ -26,16 +26,24 @@ DUCK_DNS_URL = 0,
 
 DUCK_DNS_DOMAIN = 1,
 
-DUCK_DNS_TOKEN = 2
-
 
 }webID;
 
 const char* string_web_holder[]={
 [DUCK_DNS_URL]"https://www.duckdns.org/update?domains=%s&token=%s&verbose=true",
 [DUCK_DNS_DOMAIN] = "video-game-project",
-[DUCK_DNS_TOKEN]="2ff8342c-836c-4712-aa25-ff5c90cd43a5"
 };
+
+int get_token(char* buffer_error, char* buffer_token, char* file_name){
+
+//we are going to have to read from a file
+
+//i think its first open, then read and then we are able to close it
+
+
+
+
+}
 
 static size_t write_callback(char *content_received, size_t size, size_t nmemb, void *user_type_data){
 
