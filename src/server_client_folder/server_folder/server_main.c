@@ -36,7 +36,7 @@ void* handle_client(void* arg){
 
 			printf("\nThere is an error happening, fix it\n ");
 
-			first_number = QUIT_SERVER;
+			first_number = QUIT_SERVER_STATE;
 
 			quit = true;
 
@@ -78,37 +78,44 @@ void* handle_client(void* arg){
 
 						index_player = 1;
 
-					}else if(result == 2){
-
-						timed_out = wait_signal_cond((client->pointer_list_game) + index_game ,index_player, &ts, TM_EXP_WAIT_GAME);
-
-	                                	if(timed_out == 1 || (client->pointer_list_game + index_game)->player_id[1] == -1){
-
-							snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[GAME_EXPERATION]);
-
-	                	                }else{
-
-							snprintf(temporary_buffer, BUFFER_SIZE, "%s",protocol_string_holder[FOUND_GAME]);
-
-							index_player = 0;
-
-		                                }
-
-
 					}else{
 
-						continue;
+
+						if(result == 2){
+
+							timed_out = wait_signal_cond((client->pointer_list_game) + index_game ,index_player, &ts, TM_EXP_WAIT_GAME);
+
+	        	                        	if(timed_out == 1 || (client->pointer_list_game + index_game)->player_id[1] == -1){
+
+								snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[GAME_EXPERATION]);
+
+		                	                }else{
+
+								snprintf(temporary_buffer, BUFFER_SIZE, "%s",protocol_string_holder[FOUND_GAME]);
+
+								index_player = 0;
+
+		                                	}
+
+						}
+
+						bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+
+	                                        handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
 
 					}
+
 				}else{
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_SERVER]); //in else statment, this means that quit is equal to true, meaning that something went wrong when trying to send the message,
 
+					bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+
+			                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
+
+
 				}
 
-				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
-
-		                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
 
 				break;
 				}
