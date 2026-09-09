@@ -1,5 +1,6 @@
-#include "test_server_1.h"
-
+#include "test_server_main.h"
+#include "test_server_interface.h"
+#include "test_server_logic.h"
 
 int main(){
 
@@ -42,6 +43,19 @@ int main(){
 
 	}
 
+	snprintf(buffer_send, BUFFER_SIZE, "%s", "0|0|client wants game");
+
+	int result_create_game = test_create_game_client(buffer_send, buffer_error, client_file_descriptor);
+
+	if(result_create_game == -1){
+
+		close(client_file_descriptor);
+
+		return result_create_game;
+
+	}
+
+
 	snprintf(buffer_send, BUFFER_SIZE, "%s", "1|0|client wants to quit");
 
 	int result_quit_client_statment =  test_quit_client(buffer_send, buffer_error, client_file_descriptor);
@@ -54,7 +68,6 @@ int main(){
 
 	}
 
-	int result_create_game = test_create_game_client(buffer_send, buffer_error, client_file_descriptor);
 
 	close(client_file_descriptor);
 
