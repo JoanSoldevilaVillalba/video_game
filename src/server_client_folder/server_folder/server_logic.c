@@ -510,14 +510,12 @@ void waiting_for_player(struct_client* client, int* index_game,int* index_player
 
 
 
-void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* quit, int* first_number){
+void handlePEClient(ssize_t* result, char* buffer_message,char* buffer_error, bool* quit, int* first_number){
 
 
-	printf("\n----- ERROR HANDLER ---- \n");
+	printf("\n----- CLIENT SIDE ERROR HANDLER ---- \n");
 
 	printf("We have received the following number of bytes: %d\n",(int)*(result));
-
-	//the following line is going to be presented when we have defined some type of specific Error typedef struct:	printf("Errno is giving us the following value: , and the string to this error is the following: \n", (int)(errno), strerror(errno));
 
 	if(*(result) == -1){
 
@@ -533,21 +531,52 @@ void handlePE(ssize_t* result, char buffer_receive[],char buffer_error[], bool* 
 
 		printf("An error happend, we are going to close the connection\n");
 
-		//here we are going to have to set the numbers specificly for quitting, keep in mind that for now, when someone quits the other endpoint is going to know due to a event or time experation (this is bad but we will fix later)
-
 		*(first_number) = QUIT_SERVER_STATE;
 
 		*(quit) = true;
 
 	}else{
 
-		printf("No error has occured, message from client: %s\n", buffer_receive);
+		printf("No error has occured, message from client: %s\n", buffer_message);
 
-		//printf("Setting first number to what the message has sent over\n");
-
-		/*(first_number) = buffer_receive[0] - '0';*/
 
 	}
+
+
+}
+
+void handlePEServer(ssize_t* result, char* buffer_message, char* buffer_error, bool* quit){
+
+//this function is just called when the server needs to send informatino to the client, but do to some error, either syscall or making the actual message...
+
+ printf("\n----- SERVER SIDE ERROR HANDLER ---- \n");
+
+        printf("Server has sent the following number of bytes: %d\n",(int)*(result));
+
+        if(*(result) == -1){
+
+                if(buffer_error == NULL){
+
+                        printf("There was an error, but buffer_error does not have anyting inside\n");
+
+                }else{
+
+                        printf("Error message: %s\n", buffer_error);
+
+                }
+
+                printf("An error happend, we are going to close the connection\n");
+
+                //*(first_number) = QUIT_SERVER_STATE;*/
+
+                *(quit) = true;
+
+        }else{
+
+                printf("No error has occured, message sent by the server: %s\n", buffer_message);
+
+
+        }
 
 
 }
