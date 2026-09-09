@@ -75,12 +75,16 @@ int str_to_int(char* buffer_message, char* buffer_error){
 
 		snprintf(buffer_error, BUFFER_SIZE,  error_string_holder[STRUCT_FIRST], buffer_message);
 
+		return -1;
+
 	}
 
 
 	if(end == first){
 
 		snprintf(buffer_error, BUFFER_SIZE, error_string_holder[NO_FIRST_NUMBER], buffer_message);
+
+		return -1;
 
 	}
 

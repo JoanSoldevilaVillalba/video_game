@@ -30,9 +30,11 @@ void* handle_client(void* arg){
 
 		handlePEClient(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
 
-		if(quit == false){
+		if(quit == true){
 
 			//when quit is equal to true, this means that something went wrong in receving the mssage, hence the server is going to try to initiate quit statment
+
+			printf("\nThere is an error happening, fix it\n ");
 
 			first_number = QUIT_SERVER;
 
@@ -41,6 +43,8 @@ void* handle_client(void* arg){
 		}else{
 
 			first_number = str_to_int(buffer_receive, buffer_error); //no need to double check, we have already checked when calling receive_validateD_message
+
+			printf("\n No errors, here is the number that we have received: %d", first_number);
 
 		}
 
@@ -51,6 +55,8 @@ void* handle_client(void* arg){
 
 
 			case ENTERING_CREATING_GAME_STATE:{
+
+				printf("In case: ENTERING_CREATING_GAME_STATE\n");
 
 				time_init(&ts,TM_EXP_WAIT_GAME);
 
@@ -99,18 +105,33 @@ void* handle_client(void* arg){
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_SERVER]); //in else statment, this means that quit is equal to true, meaning that something went wrong when trying to send the message,
 
 				}
+
+				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+
+		                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
+
 				break;
 				}
 
 			case RANDOM_MESSAGE_STATE:
 
+				printf("In case: RANDOM_MESSSAGE_STATE\n");
+
 				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[RANDOM_MESSAGE_PROT]);
+
+				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+
+		                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
 
 				break;
 
 			case QUIT_CLIENT_STATE:
 
 				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_CLIENT]);
+
+				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+
+                                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
 
 				quit = true;
 
@@ -120,6 +141,10 @@ void* handle_client(void* arg){
 
 				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_SERVER]);
 
+				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+
+                                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
+
 				quit = true;
 
 				break;
@@ -127,9 +152,6 @@ void* handle_client(void* arg){
 			case MENU_PREPERATION_STATE:
 
 				bytes_result = menu_preperation_validation(client,index_game, temporary_buffer,buffer_error);
-
-				//handlePE(&bytes_result, temporary_buffer, buffer_error, &quit, &first_number);
-				//menu preperation does not match sending or receving information for error handeling, we are going to have to add more depth to this functions
 
 				if(bytes_result == -1){
 
@@ -139,10 +161,11 @@ void* handle_client(void* arg){
 
 					quit = true;
 
-					break;
-
 				}
 
+				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+
+                                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
 
 			    break;
 
@@ -180,21 +203,16 @@ void* handle_client(void* arg){
 
 			default:
 
-
 				snprintf(temporary_buffer, sizeof(temporary_buffer), "%s", protocol_string_holder[INVALID_OPT]);
+
+				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+
+                                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
 
 				break;
 
 
 		}
-
-
-		bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
-
-		handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
-
-
-		printf("The server has succesfully sent the following message %s\n", temporary_buffer);
 
 
 	}
