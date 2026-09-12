@@ -155,7 +155,7 @@ void* handle_client(void* arg){
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", buffer_error);//if there in menu preperation, we need to communicate this to the client so that the client him or her self knows
 
-					quit = true;
+					//quit = true;
 
 				}
 
