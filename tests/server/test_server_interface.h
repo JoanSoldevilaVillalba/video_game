@@ -11,11 +11,16 @@ typedef enum {
     GAMES_OCCUPIED_TEST = 4,
     GAME_EXPERATION_TEST = 5,
     GAME_NO_SCND_PLAYER_TEST = 6,
-    MAX_MESSAGES_TEST = 7
+    MENU_PREPERATION_INFO = 7,
+    MENU_PREPERATION_FAIL_GI = 8,
+    MENU_PREPERATION_FAIL_PI = 9,
+    MAX_MESSAGES_TEST = 10
 } message_server_id;
 
 extern const char* test_message_server[];
 
+int test_menu_information_in_game(char* buffer_message, char* buffer_error, int file_descriptor);
+int test_menu_information_not_in_game(char* buffer_message, char* buffer_error, int file_descriptor);
 int test_quit_client(char* buffer_message, char* buffer_error, int file_descriptor);
 int test_receive_message(char* buffer_message, char* buffer_error, int file_descriptor);
 int test_setup_connection(char* buffer_error, int server_port);

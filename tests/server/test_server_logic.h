@@ -31,6 +31,8 @@ typedef enum {
 
 extern const char* test_string_holder[];
 
+
+bool smart_compare(char* first, const char* second, size_t length, char* buffer_error);
 bool validate_message_length(const char* temporary_pointer, char* buffer_error);
 bool check_structure(char* buffer_message, char* buffer_error);
 bool check_numbers(char* buffer_message, char* buffer_error);

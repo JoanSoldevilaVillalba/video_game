@@ -9,7 +9,6 @@ const char* test_string_holder[]={
 
 [TEST_NULL_POINTER_ERROR] = "Error, pointer is null",
 
-
 [TEST_SEND_TIMEOUT_ERROR] = "Error on setting timeout on client socket when sending information: %s",
 [TEST_SEND_RESET_TMO_ERROR] = "Error on resetting timeout to zero on client socket: %s",
 [TEST_SEND_LENGTH_INIT_ERROR] = "Error, the amount of bytes that were sent in init message is not equal to theoretical value",
@@ -33,6 +32,40 @@ const char* test_string_holder[]={
 [TEST_RECV_MAX_LENGTH_ERROR] = "Error, init message indicates message is to large for client, possible overflow",
 };
 
+bool smart_compare(char* first_buffer,const  char* second_buffer, size_t length, char* buffer_error){
+
+	bool correct = true;
+
+	size_t i = 0;
+
+	if(first_buffer== NULL || second_buffer == NULL){
+
+		snprintf(buffer_error, BUFFER_SIZE, "%s", test_string_holder[TEST_NULL_POINTER_ERROR]);
+
+		return false;
+
+	}
+
+	while(correct && i<length){
+
+		if(first_buffer[i] != second_buffer[i]){
+
+			correct = false;
+
+			snprintf(buffer_error, BUFFER_SIZE, "%s", "Error, both buffers are not equal");
+
+		}else{
+
+			i++;
+
+		}
+
+	}
+
+	return correct;
+
+
+}
 
 ssize_t read_all(int temporary_fd, char buffer[], ssize_t length, char* buffer_error){
 

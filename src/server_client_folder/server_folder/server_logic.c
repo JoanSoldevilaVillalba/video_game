@@ -14,7 +14,7 @@ const char* protocol_string_holder[] ={
 [BT_READY] = "3|3|other player ready",
 [INVALID_OPT] = "4|0|error, option not valid",
 [QUIT_SERVER] = "1|2|server is closing the connection, goodbye",
-[MENU_PREPERATION_PROT_GAME_INDEX] = "3|4|Error, game index indicates that client is not in a game",
+[MENU_PREPERATION_PROT_PLAYER_INDEX] = "3|4|Error, game index indicates that client is not in a game",
 [MENU_PREPERATION_PROT_GAME_INDEX] = "3|5|Error, player index indicates that client is not in a game"
 };
 

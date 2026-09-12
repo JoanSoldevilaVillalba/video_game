@@ -9,8 +9,71 @@ const char* test_message_server[] = {
     [GAMES_OCCUPIED_TEST] = "0|3|all games occupied",
     [GAME_EXPERATION_TEST] = "0|4|Game not found: time expired",
     [GAME_NO_SCND_PLAYER_TEST] = "0|5|Second player for your match is not found yet",
+    [MENU_PREPERATION_INFO] = "3|7|",
+    [MENU_PREPERATION_FAIL_GI] = "3|4|Error, game index indicates that client is not in a game",
+    [MENU_PREPERATION_FAIL_PI]="3|5|Error, player index indicates that client is not in a game",
     [MAX_MESSAGES_TEST] = NULL
 };
+
+int test_menu_information_in_game(char* buffer_message, char* buffer_error, int file_descriptor){
+//we need to keep in mind the following: this is only called when a game is created, meaning the server has already registesrt the playuer inside of a game slot
+
+printf("\n ---- testing menu information when client is in a game ----- \n");
+ssize_t result = send_validated_message(buffer_message, buffer_error, file_descriptor);
+
+if(result == -1){
+
+	printf("An error has occurred: %s\n", buffer_error);
+	printf("Testing is quitting now, goodye\n");
+	return -1;
+}
+printf("Server responded with the following message: %s\n", buffer_message);
+printf("Testing unit expecting the following message: %s\n", test_message_server[MENU_PREPERATION_INFO]);
+//we are only going to compare the first few characters, because the integers for both ids depend on what file descritpros the os of the server decided to give to each client socket connection
+bool equal = smart_compare(buffer_message, test_message_server[MENU_PREPERATION_INFO], (size_t)4, buffer_error);
+
+if(!equal){
+
+	printf("An error occurred: %s\n", buffer_error);
+	printf("Testing is quitting now, goodye\n");
+	return -1;
+}
+
+printf("Both buffers are equal\n We have passed this test correctly\n");
+return 0;
+
+}
+
+int test_menu_information_not_in_game(char* buffer_message, char* buffer_error, int file_descriptor){
+
+	printf("\n ---- testing menu information when client is not in a game ----- \n");
+
+	ssize_t result_temporary = send_validated_message(buffer_message, buffer_error, file_descriptor);
+
+	if(result_temporary==-1){
+
+		printf("An error has occurred: %s\n", buffer_error);
+		printf("Testing is now quitting, goodye\n");
+		return -1;
+	}
+
+	printf("Server responded with the following message: %s\n", buffer_message);
+	printf("Testing unit can expect the followin messages:\n");
+	printf("%s\n", test_message_server[MENU_PREPERATION_FAIL_GI]);
+	printf("%s\n", test_message_server[MENU_PREPERATION_FAIL_PI]);
+	//we are not using smart_compare here because we have the fully declared string to test it, string is always constant
+	if((strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_GI]) || strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_PI]))!=0){
+
+		printf("Received message is not equal to anny correct string. An error has occurred\n");
+		printf("We are quitting test suit, goodye \n");
+		return -1;
+
+	}
+	printf("This test unit has passed succesfully\n");
+	return 0;
+	//there are two types of fails
+
+}
 
 int test_quit_client(char* buffer_message, char* buffer_error, int file_descriptor) {
     printf("\n ----- testing quit statement from client ------ \n");

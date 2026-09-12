@@ -43,6 +43,19 @@ int main(){
 
 	}
 
+	//before creating a game, we are first going to test that the player is not in any game
+
+	snprintf(buffer_send, BUFFER_SIZE, "%s","3|0|client wants menu");
+	int result_menu_fail = test_menu_information_not_in_game(buffer_send, buffer_error, client_file_descriptor);
+	if(result_menu_fail <0){
+
+		close(client_file_descriptor);
+
+		return result_menu_fail;
+
+	}
+
+
 	snprintf(buffer_send, BUFFER_SIZE, "%s", "0|0|client wants game");
 
 	int result_create_game = test_create_game_client(buffer_send, buffer_error, client_file_descriptor);
@@ -55,6 +68,15 @@ int main(){
 
 	}
 
+	snprintf(buffer_send, BUFFER_SIZE, "%s", "3|0|client wants menu");
+	int result_menu_good = test_menu_information_in_game(buffer_send, buffer_error, client_file_descriptor);
+	if(result_menu_good<0){
+
+		close(client_file_descriptor);
+
+		return result_menu_good;
+
+	}
 
 	snprintf(buffer_send, BUFFER_SIZE, "%s", "1|0|client wants to quit");
 
