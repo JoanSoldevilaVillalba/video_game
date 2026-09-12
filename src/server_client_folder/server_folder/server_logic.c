@@ -145,7 +145,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game, game_s
 		                        pthread_cond_signal(&(game_list + i)->game_condition);
 	        	                pthread_mutex_unlock(&mutex_game_list);
 	                	       	snprintf(buffer_message,BUFFER_SIZE, "%s", protocol_string_holder[FOUND_GAME]);
-
+					return;
 
 
 	        	        }else if((game_list+i)->game_id==-1){
@@ -156,7 +156,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game, game_s
         	                	*(index_game) = i;
 	                	        pthread_mutex_unlock(&mutex_game_list);
 					snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[CREATED_GAME]);
-
+					return;
 
 	                	}
 
