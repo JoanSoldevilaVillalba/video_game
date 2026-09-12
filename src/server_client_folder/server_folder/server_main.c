@@ -149,19 +149,19 @@ void* handle_client(void* arg){
 
 			case MENU_PREPERATION_STATE:
 
-				bytes_result = menu_preperation_validation(client,index_game, temporary_buffer,buffer_error);
+				bytes_result = menu_preperation_validation(client,index_game,index_player, temporary_buffer,buffer_error);
 
 				if(bytes_result == -1){
 
-					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_SERVER]);
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", buffer_error);//if there in menu preperation, we need to communicate this to the client so that the client him or her self knows
 
 					quit = true;
 
 				}
 
-				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+				bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
-                                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
+				handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
 
 			    break;
 

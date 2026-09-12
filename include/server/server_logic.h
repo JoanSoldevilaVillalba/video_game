@@ -44,7 +44,7 @@ void handlePEServer(ssize_t* result, char* buffer_receive,char* buffer_error, bo
 
 void create_game(int temporary_fd, int* result_function, int* index_game, game_struct_players* game_list, char* buffer_message);
 
-int menu_preperation_validation(struct_client* client, int index, char* temporary_buffer, char* buffer_error);
+int menu_preperation_validation(struct_client* client, int index_game, int index_player, char* temporary_buffer, char* buffer_error);
 
 
 #endif //SERVER_LOGIC_H

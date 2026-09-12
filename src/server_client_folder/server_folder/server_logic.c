@@ -13,8 +13,9 @@ const char* protocol_string_holder[] ={
 [OT_QUIT] = "1|4|other player is quitting",
 [BT_READY] = "3|3|other player ready",
 [INVALID_OPT] = "4|0|error, option not valid",
-[QUIT_SERVER] = "1|2|server is closing the connection, goodbye"
-
+[QUIT_SERVER] = "1|2|server is closing the connection, goodbye",
+[MENU_PREPERATION_PROT_GAME_INDEX] = "3|4|Error, game index indicates that client is not in a game",
+[MENU_PREPERATION_PROT_GAME_INDEX] = "3|5|Error, player index indicates that client is not in a game"
 };
 
 const char* error_string_holder[] = {
@@ -586,19 +587,27 @@ void handlePEServer(ssize_t* result, char* buffer_message, char* buffer_error, b
 }
 
 
-int menu_preperation_validation(struct_client* client, int index, char* temporary_buffer, char* buffer_error){
+int menu_preperation_validation(struct_client* client, int index_game, int index_player, char* temporary_buffer, char* buffer_error){
 
-	if(index<0||index>=MAX_GAMES_SIZE){
+	if(index_game<0||index_game>=MAX_GAMES_SIZE){
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[MENU_INDEX]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s",protocol_string_holder[MENU_PREPERATION_PROT_GAME_INDEX]);
 
 		return -1;
 
 	}
 
-	int p0 = client->pointer_list_game[index].player_id[0];
+	if(index_player == -1){
 
-	int p1 = client->pointer_list_game[index].player_id[1];
+		snprintf(buffer_error, BUFFER_SIZE, "%s", protocol_string_holder[MENU_PREPERATION_PROT_PLAYER_INDEX]);
+
+		return -1;
+
+	}
+
+	int p0 = client->pointer_list_game[index_game].player_id[0];
+
+	int p1 = client->pointer_list_game[index_game].player_id[1];
 
 	int result = snprintf(temporary_buffer, BUFFER_SIZE, protocol_string_holder[MENU_PREPERATION_PROT], p0, p1); //in the future we are going to have to change this, using hardcoded strings is not good
 
