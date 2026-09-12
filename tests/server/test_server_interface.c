@@ -97,18 +97,36 @@ int test_create_game_client(char* buffer_message, char* buffer_error, int client
     }
 
     printf("Server has returned the following statment: %s\n", buffer_message);
-    printf("These are the possible outcomes:\n");
 
-    for (int i = 0; test_message_server[i] != NULL; i++) {
-        printf("%s\n", test_message_server[i]);
-        if (strcmp(buffer_message, test_message_server[i]) == 0) {
-            printf("We have found a match, done\n");
-            return 0;
-        }
+    if(strcmp(buffer_message, test_message_server[CREATED_GAME_TEST])!=0){
+
+	printf("Expected message is the following: %s\n", test_message_server[CREATED_GAME_TEST]);
+
     }
 
-    printf("Unable to find matching message\n We are quitting the tests now, goodbye\n");
-    return -1;
+    //after creating a game, the server is now going to wait until someone else enters the game, we are going to have to wait
+    result = receive_validated_message(buffer_message, buffer_error, client_file_descriptor);
+
+    if(result == -1){
+
+	printf("An error occured: %s", buffer_error);
+        printf("We are qutting the test, goodbye\n");
+	return -1;
+
+    }
+
+    printf("\nThis is the responce from the server: %s\n", buffer_message);
+    printf("Expected message was the following: %s\n", test_message_server[GAME_EXPERATION_TEST]);
+    if(strcmp(buffer_message, test_message_server[GAME_EXPERATION_TEST])!=0){
+
+	printf("An error has occurred, both strings are not equal\n");
+	printf("We are qutting th test, goodye");
+	return -1;
+
+    }
+    printf("Both game and post response are correct, this test is a success !!\n");
+    return 0;
+
 }
 
 int test_send_message(char* buffer_message, char* buffer_error, int client_file_descriptor) {
