@@ -23,6 +23,7 @@ int main(){
 
 	snprintf(buffer_send, BUFFER_SIZE, "%s", "2|0|random message init"); //this is the random message that we are going to have to send to the server side
 
+
 	int message_send_result = test_send_message(buffer_send, buffer_error, client_file_descriptor);
 
 	if(message_send_result <0){
@@ -43,8 +44,6 @@ int main(){
 
 	}
 
-	//before creating a game, we are first going to test that the player is not in any game
-
 	snprintf(buffer_send, BUFFER_SIZE, "%s","3|0|client wants menu");
 	int result_menu_fail = test_menu_information_not_in_game(buffer_send, buffer_error, client_file_descriptor);
 	if(result_menu_fail <0){
@@ -54,7 +53,6 @@ int main(){
 		return result_menu_fail;
 
 	}
-
 
 	snprintf(buffer_send, BUFFER_SIZE, "%s", "0|0|client wants game");
 
@@ -89,7 +87,6 @@ int main(){
 		return result_quit_client_statment;
 
 	}
-
 
 	close(client_file_descriptor);
 
