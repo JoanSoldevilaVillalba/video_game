@@ -34,8 +34,6 @@ void* handle_client(void* arg){
 
 			//when quit is equal to true, this means that something went wrong in receving the mssage, hence the server is going to try to initiate quit statment
 
-			printf("\nThere is an error happening, fix it\n ");
-
 			first_number = QUIT_SERVER_STATE;
 
 			quit = true;
@@ -43,8 +41,6 @@ void* handle_client(void* arg){
 		}else{
 
 			first_number = str_to_int(buffer_receive, buffer_error); //no need to double check, we have already checked when calling receive_validateD_message
-
-			printf("\n No errors, here is the number that we have received: %d", first_number);
 
 		}
 
@@ -55,8 +51,6 @@ void* handle_client(void* arg){
 
 
 			case ENTERING_CREATING_GAME_STATE:{
-
-				printf("In case: ENTERING_CREATING_GAME_STATE\n");
 
 				time_init(&ts,TM_EXP_WAIT_GAME);
 
@@ -79,7 +73,6 @@ void* handle_client(void* arg){
 						index_player = 1;
 
 					}else{
-
 
 						if(result == 2){
 
@@ -122,8 +115,6 @@ void* handle_client(void* arg){
 
 			case RANDOM_MESSAGE_STATE:
 
-				printf("In case: RANDOM_MESSSAGE_STATE\n");
-
 				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[RANDOM_MESSAGE_PROT]);
 
 				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
@@ -161,8 +152,6 @@ void* handle_client(void* arg){
 				bytes_result = menu_preperation_validation(client,index_game, temporary_buffer,buffer_error);
 
 				if(bytes_result == -1){
-
-					printf("An error occurred: %s\n", buffer_error);
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_SERVER]);
 
