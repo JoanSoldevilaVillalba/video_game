@@ -109,7 +109,7 @@ void* handle_client(void* arg){
 
 				}
 
-
+				printf("GAme index of the game that we just creatd: %d\n", index_game);
 				break;
 				}
 
