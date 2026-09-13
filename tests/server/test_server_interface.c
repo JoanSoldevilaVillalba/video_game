@@ -28,6 +28,16 @@ int test_menu_information_in_game(char* buffer_message, char* buffer_error, int 
 		printf("Testing is quitting now, goodye\n");
 		return -1;
 	}
+
+	result = receive_validated_message(buffer_message, buffer_error, file_descriptor);
+	if(result == -1){
+
+		printf("An error has occurred: %s\n", buffer_error);
+		printf("Testing is quitting now, goodbye\n");
+		return -1;
+
+	}
+
 	printf("Server responded with the following message: %s\n", buffer_message);
 	printf("Testing unit expecting the following message: %s\n", test_message_server[MENU_PREPERATION_INFO]);
 	//we are only going to compare the first few characters, because the integers for both ids depend on what file descritpros the os of the server decided to give to each client socket connection
@@ -44,6 +54,74 @@ int test_menu_information_in_game(char* buffer_message, char* buffer_error, int 
 	return 0;
 
 }
+
+
+size_t getsizestring(char* buffer){
+    size_t incrementer = 0;
+    for(; *(buffer + incrementer) != '\0'; incrementer++);
+    return incrementer;
+}
+
+void compare_every_letter(const char* buffer_client_1,const char* buffer_client_2, char* buffer_server){
+
+    size_t size_client_1 = getsizestring(buffer_client_1);
+    size_t size_server = getsizestring(buffer_server);
+    
+    if(size_client_1 != size_server){
+        printf("Error: Size mismatch detected! (Client: %zu, Server: %zu)\n", size_client_1, size_server);
+    }
+
+    size_t max_size = (size_client_1 > size_server) ? size_client_1 : size_server;
+
+    printf("\n--- Visualizing String Comparison ---\n");
+    printf("Index | Client ('%s') | Server ('%s') | Status\n", buffer_client_1, buffer_server);
+    printf("--------------------------------------------------\n");
+
+    for(size_t i = 0; i <= max_size; i++) {
+        char c_client = (i < size_client_1) ? buffer_client_1[i] : (i == size_client_1 ? '\0' : ' ');
+        char c_server = (i < size_server) ? buffer_server[i] : (i == size_server ? '\0' : ' ');
+        
+        int match = (i < size_client_1 && i < size_server && buffer_client_1[i] == buffer_server[i]);
+
+        printf("[%3zu] |      %c      |      %c      | %s\n", 
+            i, 
+            buffer_client_1[i] ? buffer_client_1[i] : '_', 
+            buffer_server[i] ? buffer_server[i] : '_', 
+            (i < size_client_1 && i < size_server) ? (match ? "MATCH [✓]" : "MISMATCH [✗]") : "OUT OF BOUNDS"
+        );
+    }
+    printf("--------------------------------------------------\n");
+
+	size_t size_client_2 = getsizestring(buffer_client_2);
+
+	   if(size_client_2 != size_server){
+        printf("Error: Size mismatch detected! (Client: %zu, Server: %zu)\n", size_client_2, size_server);
+    }
+
+    max_size = (size_client_2 > size_server) ? size_client_2 : size_server;
+
+    printf("\n--- Visualizing String Comparison ---\n");
+    printf("Index | Client ('%s') | Server ('%s') | Status\n", buffer_client_2, buffer_server);
+    printf("--------------------------------------------------\n");
+
+    for(size_t i = 0; i <= max_size; i++) {
+        char c_client = (i < size_client_2) ? buffer_client_2[i] : (i == size_client_2 ? '\0' : ' ');
+        char c_server = (i < size_server) ? buffer_server[i] : (i == size_server ? '\0' : ' ');
+
+        int match = (i < size_client_2 && i < size_server && buffer_client_2[i] == buffer_server[i]);
+
+        printf("[%3zu] |      %c      |      %c      | %s\n", 
+            i, 
+            buffer_client_2[i] ? buffer_client_2[i] : '_', 
+            buffer_server[i] ? buffer_server[i] : '_', 
+            (i < size_client_2 && i < size_server) ? (match ? "MATCH [✓]" : "MISMATCH [✗]") : "OUT OF BOUNDS"
+        );
+    }
+    printf("--------------------------------------------------\n");
+
+
+}
+
 
 int test_menu_information_not_in_game(char* buffer_message, char* buffer_error, int file_descriptor){
 
@@ -73,6 +151,10 @@ int test_menu_information_not_in_game(char* buffer_message, char* buffer_error, 
 	printf("%s\n", test_message_server[MENU_PREPERATION_FAIL_GI]);
 	printf("%s\n", test_message_server[MENU_PREPERATION_FAIL_PI]);
 	//we are not using smart_compare here because we have the fully declared string to test it, string is always constant
+	printf("\n\n\n");
+//	compare_every_letter(test_message_server[MENU_PREPERATION_FAIL_GI],test_message_server[MENU_PREPERATION_FAIL_PI], buffer_message);
+	printf("\n\n\n");
+
 	if(strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_GI]) !=0 && strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_PI])!=0){
 
 		printf("Received message is not equal to anny correct string. An error has occurred\n");
