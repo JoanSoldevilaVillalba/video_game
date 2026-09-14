@@ -57,7 +57,7 @@ void* handle_client(void* arg){
 				timed_out = 0;
 
 
-				create_game(client->socket_fd,&result, &index_game, client->pointer_list_game, temporary_buffer);
+				create_game(client->socket_fd,&result, &index_game,&index_player, client->pointer_list_game, temporary_buffer);
 
 				bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 

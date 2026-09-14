@@ -132,7 +132,7 @@ int int_to_str(char *dst, ssize_t dst_size, int value){
 }
 
 
-void create_game(int temporary_fd, int* result_function, int* index_game, game_struct_players* game_list, char* buffer_message){
+void create_game(int temporary_fd, int* result_function, int* index_game,int* index_player, game_struct_players* game_list, char* buffer_message){
 
         for(int i = 0;i<MAX_GAMES_SIZE;i++){
 
@@ -143,6 +143,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game, game_s
         	                	(game_list+i)->player_id[1] = temporary_fd;
 	                	        *(result_function) = 1;
 	                        	*(index_game) = i;
+					*(index_player) = temporary_fd;
 		                        pthread_cond_signal(&(game_list + i)->game_condition);
 	        	                pthread_mutex_unlock(&mutex_game_list);
 	                	       	snprintf(buffer_message,BUFFER_SIZE, "%s", protocol_string_holder[FOUND_GAME]);
@@ -153,6 +154,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game, game_s
 
         	        	        (game_list+i)->game_id = i;
                 	        	(game_list+i)->player_id[0] = temporary_fd;
+					*(index_player) = temporary_fd;
 	                	        *(result_function) = 2;
         	                	*(index_game) = i;
 	                	        pthread_mutex_unlock(&mutex_game_list);
