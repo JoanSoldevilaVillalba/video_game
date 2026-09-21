@@ -494,6 +494,9 @@ void waiting_for_player(struct_client* client, int* index_game,int* index_player
 
 		*(timed_out) = wait_signal_cond(list_game_pointer, (*index_player), ts, time_experation);
 
+		//this has to be corrected, we forgot to include a possible scenario where the other player simply has not yet recevied the menu informaitno, therefore the server is just going to have to wait.
+		//it will be up to the player if she or he wants to quit waiting for the other player to quit
+
 		if(*(timed_out) == 1 || list_game_pointer->ready_player[*(index_player) ^ 1] == false){
 
 			switch_game_player_position(client->pointer_list_game,index_player);
