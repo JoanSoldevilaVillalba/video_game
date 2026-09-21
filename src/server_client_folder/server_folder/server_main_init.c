@@ -249,7 +249,12 @@ void* handle_client(void* arg){
 
 void initilizeGames(game_struct_players* game_list){
 
-	for(int i =0;i<MAX_GAMES_SIZE;i++){
+	(game_list)->player_id[0] = 11111;
+	memset((game_list)->name,0,sizeof((game_list)->name));
+	(game_list)->game_id = 0;
+	(game_list)->ready_player[0] = true;
+
+	for(int i =1;i<MAX_GAMES_SIZE;i++){
 
 		(game_list+i)->player_id[0] = -1;
 

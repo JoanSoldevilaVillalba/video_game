@@ -1,0 +1,87 @@
+#include "test_server_main.h"
+#include "test_server_interface.h"
+#include "test_server_logic.h"
+
+int main(){
+
+	int port = 8080;
+
+	char buffer_send[BUFFER_SIZE];
+
+	char buffer_receive[BUFFER_SIZE];
+
+	char buffer_error[BUFFER_SIZE];
+
+
+	int client_file_descriptor = test_setup_connection(buffer_error, port);
+
+	if(client_file_descriptor <0){
+
+		return client_file_descriptor;
+
+	}
+
+	snprintf(buffer_send, BUFFER_SIZE, "%s", "2|0|random message init"); //this is the random message that we are going to have to send to the server side
+
+
+	int message_send_result = test_send_message(buffer_send, buffer_error, client_file_descriptor);
+
+	if(message_send_result <0){
+
+		close(client_file_descriptor);
+
+		return message_send_result;
+
+	}
+
+	int message_receive_result =  test_receive_message(buffer_receive,buffer_error, client_file_descriptor);
+
+	if(message_receive_result <0){
+
+		close(client_file_descriptor);
+
+		return message_receive_result;
+
+	}
+
+	snprintf(buffer_send, BUFFER_SIZE, "%s", "0|0|client wants game");
+
+	message_send_result = test_enter_game_client(buffer_send, buffer_error, client_file_descriptor);
+
+	if(message_send_result<0){
+
+		close(client_file_descriptor);
+
+		return message_send_result;
+	}
+
+	snprintf(buffer_send, BUFFER_SIZE, "%s", "3|0|client wants menu");
+
+	message_send_result = test_menu_information_in_game(buffer_send, buffer_error, client_file_descriptor);
+
+	if(message_send_result <0){
+
+
+		close(client_file_descriptor);
+
+		return message_send_result;
+
+	}
+
+
+	snprintf(buffer_send,BUFFER_SIZE, "%s", "1|0|client wants to quit");
+
+	message_send_result = test_quit_client(buffer_send, buffer_error, client_file_descriptor);
+
+	if(message_send_result<0){
+
+		close(client_file_descriptor);
+
+		return message_send_result;
+	}
+
+
+	printf("Al tests have been completed with out any errors");
+	close(client_file_descriptor);
+	return 0;
+}
