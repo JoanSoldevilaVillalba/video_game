@@ -68,6 +68,24 @@ int main(){
 
 	}
 
+	printf("What does the client want to do after receving menu information?");
+	printf("To continue to play enter an integer that is not equal to zero\n");
+	printf("To get out of the game, enter the integer 0\n");
+	int client_option = -1;
+	scanf("%d", &client_option);
+
+        snprintf(buffer_send, BUFFER_SIZE,"4|0|%d", client_option);
+
+        int result_init_wait = test_init_wait_client(buffer_send, buffer_error, client_file_descriptor);
+
+        if(result_init_wait<0){
+
+                close(client_file_descriptor);
+
+                return-1;
+
+        }
+
 
 	snprintf(buffer_send,BUFFER_SIZE, "%s", "1|0|client wants to quit");
 

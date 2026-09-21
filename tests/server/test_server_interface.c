@@ -16,6 +16,39 @@ const char* test_message_server[] = {
     [MAX_MESSAGES_TEST] = NULL
 };
 
+int test_init_wait_client(char* buffer_message, char* buffer_error, int file_descriptor){
+
+	printf("\n --- Testing init waiting mechanics -----\n");
+
+	ssize_t result = send_validated_message(buffer_message, buffer_error, file_descriptor);
+
+	if(result == -1){
+
+		printf("An error has occurred: %s\n", buffer_error);
+
+		printf("Testing is quitting now, gooodye\n");
+
+		return -1;
+
+	}
+
+	result = receive_validated_message(buffer_message, buffer_error, file_descriptor);
+
+	if(result == -1){
+
+		printf("An error has occurred: %s\n", buffer_error);
+
+		printf("Testing is quitting now, gooodye\n");
+
+		return -1;
+
+	}
+
+	printf("Server has sent the following message: %s\n", buffer_message);
+
+}
+
+
 int test_menu_information_in_game(char* buffer_message, char* buffer_error, int file_descriptor){
 //we need to keep in mind the following: this is only called when a game is created, meaning the server has already registesrt the playuer inside of a game slot
 

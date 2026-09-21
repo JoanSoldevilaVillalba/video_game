@@ -27,5 +27,5 @@ int test_setup_connection(char* buffer_error, int server_port);
 int test_create_game_client(char* buffer_message, char* buffer_error, int client_file_descriptor);
 int test_enter_game_client(char* buffer_message, char* buffer_error, int client_file_descriptor);
 int test_send_message(char* buffer_message, char* buffer_error, int client_file_descriptor);
-
+int test_init_wait_client(char* buffer_message,char* buffer_error, int client_file_descriptor);
 #endif // TEST_SERVER_INTERFACE_H
