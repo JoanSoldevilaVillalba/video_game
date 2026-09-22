@@ -173,6 +173,12 @@ void* handle_client(void* arg){
 
 				result = -1;
 
+				//after receving what the player wants to do, we are going to have to return a message indicating what has happened on the server side
+
+				bytes_result = send_validated_message(temporary_buffer, buffer_error, &quit);
+
+				handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+
 				break;
 
 			case KEEP_WAITING_STATE:

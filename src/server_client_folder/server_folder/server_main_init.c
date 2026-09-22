@@ -173,6 +173,10 @@ void* handle_client(void* arg){
 
 				result = -1;
 
+				bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
+
+				handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+
 				break;
 
 			case KEEP_WAITING_STATE:
