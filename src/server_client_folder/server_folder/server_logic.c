@@ -15,7 +15,14 @@ const char* protocol_string_holder[] ={
 [INVALID_OPT] = "4|0|error, option not valid",
 [QUIT_SERVER] = "1|2|server is closing the connection, goodbye",
 [MENU_PREPERATION_PROT_PLAYER_INDEX] = "3|5|Error, player index",
-[MENU_PREPERATION_PROT_GAME_INDEX] = "3|4|Error, game index"
+[MENU_PREPERATION_PROT_GAME_INDEX] = "3|4|Error, game index",
+
+
+[IN_GAME_CREATE_CLIENT]="0|6|Client currently in game",
+[NOT_IN_GAME_MENU] = "3|6|Client currently not in game",
+[NOT_IN_GAME_WAITING_INIT] = "4|0|Client currently not in game",
+[]
+
 };
 
 const char* error_string_holder[] = {
