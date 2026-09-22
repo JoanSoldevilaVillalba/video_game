@@ -226,6 +226,8 @@ void* handle_client(void* arg){
 
 				//before entering in this state, player should have already indicated that he or she wants to play and has already recevied the menu information
 
+				//this enum state is going to have to be devided into two different enum states: waiting for second player after creating the game, waiting for second player to recevie its menu information and confirm that he or she wants to conitnue to play
+
 				if(index_game == -1 || index_player == -1){
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[]); //in this case we have not enterd a game
