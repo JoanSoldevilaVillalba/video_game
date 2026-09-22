@@ -21,7 +21,9 @@ const char* protocol_string_holder[] ={
 [IN_GAME_CREATE_CLIENT]="0|6|Client currently in game",
 [NOT_IN_GAME_MENU] = "3|6|Client currently not in game",
 [NOT_IN_GAME_WAITING_INIT] = "4|0|Client currently not in game",
-[]
+[NOT_READY_GAME_WAITING_INIT]="4|1|Client is not ready",
+[NOT_IN_GAME_KEEP_WAITING] = "5|0|Client currently not in game",
+[NOT_ASKED_MENU_KEEP_WAITING]="5|1|Client has not asked menu"
 
 };
 

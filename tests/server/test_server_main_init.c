@@ -68,7 +68,7 @@ int main(){
 
 	}
 
-	printf("What does the client want to do after receving menu information?");
+	printf("\nWhat does the client want to do after receving menu information?\n");
 	printf("To continue to play enter an integer that is not equal to zero\n");
 	printf("To get out of the game, enter the integer 0\n");
 	int client_option = -1;
