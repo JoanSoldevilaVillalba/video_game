@@ -16,6 +16,37 @@ const char* test_message_server[] = {
     [MAX_MESSAGES_TEST] = NULL
 };
 
+int handler_error(char* buffer_error){
+
+	printf("An error has occurred: %s\n", buffer_error);
+
+	printf("Testing is quitting now, goodbye\n");
+
+	return -1;
+}
+
+bool compare_strings(char* buffer_message, const char* compare_messages[], char* buffer_error, int dimensions){
+
+	printf("Server responded with the following message: %s\n", buffer_message);
+	printf("Expected messages are the following: \n");
+
+	for(int i = 0;i<dimensions;i++){
+
+		printf("possible message number %d: %s\n",i, compare_messages[i]);
+
+		if(strcmp(buffer_message, compare_messages[i])==0){
+
+			return true;
+
+		}
+
+	}
+
+	snprintf(buffer_error, BUFFER_SIZE, "%s", "Error, message recevied from server not expected");
+	return false;
+
+}
+
 int test_init_wait_client(char* buffer_message, char* buffer_error, int file_descriptor){
 
 	printf("\n --- Testing init waiting mechanics -----\n");
@@ -24,11 +55,7 @@ int test_init_wait_client(char* buffer_message, char* buffer_error, int file_des
 
 	if(result == -1){
 
-		printf("An error has occurred: %s\n", buffer_error);
-
-		printf("Testing is quitting now, gooodye\n");
-
-		return -1;
+		return handler_error(buffer_error);
 
 	}
 
@@ -36,15 +63,13 @@ int test_init_wait_client(char* buffer_message, char* buffer_error, int file_des
 
 	if(result == -1){
 
-		printf("An error has occurred: %s\n", buffer_error);
-
-		printf("Testing is quitting now, gooodye\n");
-
-		return -1;
+		return handler_error(buffer_error);
 
 	}
 
 	printf("Server has sent the following message: %s\n", buffer_message);
+
+	printf("Test was completed correctly\n");
 
 }
 
@@ -53,37 +78,35 @@ int test_menu_information_in_game(char* buffer_message, char* buffer_error, int 
 //we need to keep in mind the following: this is only called when a game is created, meaning the server has already registesrt the playuer inside of a game slot
 
 	printf("\n ---- testing menu information when client is in a game ----- \n");
+
 	ssize_t result = send_validated_message(buffer_message, buffer_error, file_descriptor);
 
 	if(result == -1){
 
-		printf("An error has occurred: %s\n", buffer_error);
-		printf("Testing is quitting now, goodye\n");
-		return -1;
+		return handler_error(buffer_error);
+
 	}
 
 	result = receive_validated_message(buffer_message, buffer_error, file_descriptor);
+
 	if(result == -1){
 
-		printf("An error has occurred: %s\n", buffer_error);
-		printf("Testing is quitting now, goodbye\n");
-		return -1;
+		return handler_error(buffer_error);
 
 	}
 
-	printf("Server responded with the following message: %s\n", buffer_message);
-	printf("Testing unit expecting the following message: %s\n", test_message_server[MENU_PREPERATION_INFO]);
-	//we are only going to compare the first few characters, because the integers for both ids depend on what file descritpros the os of the server decided to give to each client socket connection
-	bool equal = smart_compare(buffer_message, test_message_server[MENU_PREPERATION_INFO], (size_t)4, buffer_error);
+	const char* compare_buffer[1] = {test_message_server[MENU_PREPERATION_INFO]};
+
+	bool equal = compare_strings(buffer_message, compare_buffer, buffer_error, 1); //last parameter indicates the amount of strings that the server can resonid with that are valid
 
 	if(!equal){
 
-		printf("An error occurred: %s\n", buffer_error);
-		printf("Testing is quitting now, goodye\n");
-		return -1;
+		return handler_error(buffer_error);
+
 	}
 
-	printf("Both buffers are equal\n We have passed this test correctly\n");
+	printf("Test was completed correctly\n");
+
 	return 0;
 
 }
@@ -97,35 +120,31 @@ int test_menu_information_not_in_game(char* buffer_message, char* buffer_error, 
 
 	if(result_temporary==-1){
 
-		printf("An error has occurred: %s\n", buffer_error);
-		printf("Testing is now quitting, goodye\n");
-		return -1;
+		return handler_error(buffer_error);
+
 	}
 
 	result_temporary = receive_validated_message(buffer_message, buffer_error, file_descriptor);
 
 	if(result_temporary==-1){
 
-		printf("An error has occurred: %s\n", buffer_error);
-		printf("Testing is now quitting, goodye\n");
-		return -1;
+		return handler_error(buffer_error);
 
 	}
 
-	printf("Server responded with the following message: %s\n", buffer_message);
-	printf("Testing unit can expect the followin messages:\n");
-	printf("%s\n", test_message_server[MENU_PREPERATION_FAIL_GI]);
-	printf("%s\n", test_message_server[MENU_PREPERATION_FAIL_PI]);
-	if(strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_GI]) !=0 && strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_PI])!=0){
+	const char* compare_buffer[2] = {test_message_server[MENU_PREPERATION_FAIL_GI], test_message_server[MENU_PREPERATION_FAIL_PI]};
 
-		printf("Received message is not equal to anny correct string. An error has occurred\n");
-		printf("We are quitting test suit, goodye \n");
-		return -1;
+	bool equal = compare_strings(buffer_message, compare_buffer, buffer_error, 2);
+
+	if(!equal){
+
+		return handler_error(buffer_error);
 
 	}
-	printf("This test unit has passed succesfully\n");
+
+	printf("Test was completed correctly\n");
+
 	return 0;
-	//there are two types of fails
 
 }
 
@@ -133,51 +152,58 @@ int test_quit_client(char* buffer_message, char* buffer_error, int file_descript
     printf("\n ----- testing quit statement from client ------ \n");
     int result = send_validated_message(buffer_message, buffer_error, file_descriptor);
     if (result == -1) {
-        printf("An error occurred: %s\n", buffer_error);
-        printf("Testing is quitting now .... \n");
-        return -1;
+
+	return handler_error(buffer_error);
+
     }
 
-    printf("We have succesfully sent the following message: %s", buffer_message);
     result = receive_validated_message(buffer_message, buffer_error, file_descriptor);
+
     if (result == -1) {
-        printf("An error occurred: %s\n", buffer_error);
-        printf("Testing is quitting now .... \n");
-        return -1;
+
+	return handler_error(buffer_error);
+
     }
 
-    printf("Server has responded with the following message: %s\n", buffer_message);
-    printf("Expected message: %s\n", test_message_server[QUIT_CLIENT_MESSAGE_TEST]);
 
-    if (strcmp(buffer_message, test_message_server[QUIT_CLIENT_MESSAGE_TEST]) != 0) {
-        printf("An error occurred\n");
-        printf("Expected message is the following: %s", test_message_server[QUIT_CLIENT_MESSAGE_TEST]);
-        return -1;
+    const char* compare_buffer[1] = {test_message_server[QUIT_CLIENT_MESSAGE_TEST]};
+
+    bool equal = compare_strings(buffer_message, compare_buffer,buffer_error, 1);
+
+    if(!equal){
+
+	return handler_error(buffer_error);
+
     }
 
     printf("Test was completed correctly\n");
-    return result;
+    return 0;
 }
 
 int test_receive_message(char* buffer_message, char* buffer_error, int file_descriptor) {
     printf("\n------- testing receive message ------- \n");
+
     int result = receive_validated_message(buffer_message, buffer_error, file_descriptor);
-    if (result == -1) {
-        printf("An error has occuried: %s\n", buffer_error);
-        printf("We are quitting the test, goodbye ...\n");
-        return -1;
+
+    if(result == -1){
+
+	return handler_error(buffer_error);
+
     }
 
-    printf("Server has sent over the following message: %s\n", buffer_message);
-    if (strcmp(buffer_message, test_message_server[RANDOM_MESSAGE_TEST]) != 0) {
-        printf("An error has occuried\n");
-        printf("Recevied message from server is not equal to the following string: %s", test_message_server[RANDOM_MESSAGE_TEST]);
-        printf("We are qutting the tests, goodye ....\n");
-        return -1;
+    const char* compare_buffer[1] = {test_message_server[RANDOM_MESSAGE_TEST]};
+
+    bool equal = compare_strings(buffer_message, compare_buffer, buffer_error, 1);
+
+    if(!equal){
+
+	return handler_error(buffer_error);
+
     }
 
-    printf("this test was a sucess \n");
-    return result;
+    printf("Test was completed correctly\n");
+
+    return 0;
 }
 
 int test_setup_connection(char* buffer_error, int server_port) {
@@ -186,13 +212,14 @@ int test_setup_connection(char* buffer_error, int server_port) {
 
     printf("----- Testing Connection Setup -----\n");
     int result = setupConnection(&file_descriptor, &server_address, server_port, buffer_error);
-    if (result < 0) {
-        printf("Something went wrong: %s\n", buffer_error);
-        printf("We are quitting the test, goodbye....\n");
-        return -1;
+    if (result  == -1) {
+
+	return handler_error(buffer_error);
+
     }
 
-    printf("Setup connection was a success\n");
+    printf("Test was completed correctly\n");
+
     return file_descriptor;
 }
 
@@ -200,80 +227,78 @@ int test_enter_game_client(char* buffer_message, char* buffer_error, int client_
     printf("\n ----- testing enter game action ----- \n");
     int result = send_validated_message(buffer_message, buffer_error, client_file_descriptor);
     if (result == -1) {
-        printf("An error has occuried: %s\n", buffer_error);
-        printf("We are quitting the test, goodbye ...\n");
-        return -1;
+
+	return handler_error(buffer_error);
+
     }
 
-    printf("Test client has succesfully sent the following message: %s\n", buffer_message);
     result = receive_validated_message(buffer_message, buffer_error, client_file_descriptor);
     if (result == -1) {
-        printf("An error has occuried: %s\n", buffer_error);
-        printf("We are quitting the test, goodbye ...\n");
-        return -1;
-    }
 
-    printf("Server has returned the following statment: %s\n", buffer_message);
-    //in this case, we should receive a message indicating that the game has already been created and that we have entered the game
-    printf("Expected message was the following statment: %s\n", test_message_server[FOUND_GAME_TEST]);
-    if(strcmp(buffer_message, test_message_server[FOUND_GAME_TEST])!=0){
-
-        printf("An error occurred, message received was not the expected message\n");
-	printf("Exting test suit, goodye...\n");
-	return -1;
+	return handler_error(buffer_error);
 
     }
 
-    printf("This test has passed with out any problems. Continuing with suit test \n");
+    const char* compare_buffer[1]={test_message_server[FOUND_GAME_TEST]};
+
+    bool equal = compare_strings(buffer_message,compare_buffer, buffer_error, 1);
+
+    if(!equal){
+
+	return handler_error(buffer_error);
+
+    }
+
+    printf("Test was completed correctly\n");
+
     return 0;
 }
 
 int test_create_game_client(char* buffer_message, char* buffer_error, int client_file_descriptor) {
     printf("\n ----- testing create game action ----- \n");
+
     int result = send_validated_message(buffer_message, buffer_error, client_file_descriptor);
+
     if (result == -1) {
-        printf("An error has occuried: %s\n", buffer_error);
-        printf("We are quitting the test, goodbye ...\n");
-        return -1;
+
+	return handler_error(buffer_error);
+
     }
 
-    printf("Test client has succesfully sent the following message: %s\n", buffer_message);
     result = receive_validated_message(buffer_message, buffer_error, client_file_descriptor);
+
     if (result == -1) {
-        printf("An error has occuried: %s\n", buffer_error);
-        printf("We are quitting the test, goodbye ...\n");
-        return -1;
-    }
 
-    printf("Server has returned the following statment: %s\n", buffer_message);
-
-    if(strcmp(buffer_message, test_message_server[CREATED_GAME_TEST])!=0){
-
-	printf("Expected message is the following: %s\n", test_message_server[CREATED_GAME_TEST]);
+	return handler_error(buffer_message);
 
     }
 
+    const char* compare_buffer[1] = {test_message_server[CREATED_GAME_TEST]};
+    bool equal = compare_strings(buffer_message,compare_buffer, buffer_error, 1);
+    if(!equal){
+
+	return handler_error(buffer_error);
+
+    }
     //after creating a game, the server is now going to wait until someone else enters the game, we are going to have to wait
     result = receive_validated_message(buffer_message, buffer_error, client_file_descriptor);
 
     if(result == -1){
 
-	printf("An error occured: %s", buffer_error);
-        printf("We are qutting the test, goodbye\n");
-	return -1;
+        return handler_error(buffer_error);
 
     }
 
-    printf("\nThis is the responce from the server: %s\n", buffer_message);
-    printf("Expected message was the following: %s\n", test_message_server[GAME_EXPERATION_TEST]);
-    if(strcmp(buffer_message, test_message_server[GAME_EXPERATION_TEST])!=0){
+    compare_buffer[0] = test_message_server[GAME_EXPERATION_TEST];
+    equal = compare_strings(buffer_message,compare_buffer,buffer_error, 1);
+    if(!equal){
 
-	printf("An error has occurred, both strings are not equal\n");
-	printf("We are qutting th test, goodye");
-	return -1;
+	return handler_error(buffer_error);
 
     }
-    printf("Both game and post response are correct, this test is a success !!\n");
+
+    printf("Test was completed correctly\n");
+
     return 0;
 
 }
@@ -282,11 +307,13 @@ int test_send_message(char* buffer_message, char* buffer_error, int client_file_
     printf("\n------ testing message sending ------\n");
     ssize_t result = send_validated_message(buffer_message, buffer_error, client_file_descriptor);
     if (result == -1) {
-        printf("Something went wrong: %s\n", buffer_error);
-        printf("We are qutting the test, goodbye ...\n");
-        return result;
+
+      return handler_error(buffer_error);
+
     }
 
-    printf("Sending a message was a success\n");
+
+    printf("Test was completed correctly\n");
+
     return 0;
 }
