@@ -167,7 +167,7 @@ void* handle_client(void* arg){
 
 				}else{
 
-					counter = 4;
+					counter = 2;
 
 				        int play = buffer_receive[counter] - '0';
 
@@ -219,7 +219,7 @@ void* handle_client(void* arg){
 
                                 }else{
 
-					 waiting_for_player(client, &index_game,&index_player, TM_EXP_WAIT_GAME, &ts, &counter,buffer_receive, &timed_out, temporary_buffer);
+					 waiting_for_player(client, &index_game,&index_player, TM_EXP_WAIT_GAME, &ts, buffer_receive, &timed_out, temporary_buffer);
 
 				}
 

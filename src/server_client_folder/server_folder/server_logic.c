@@ -232,16 +232,6 @@ bool validate_message_structure(char* buffer_message, char* buffer_error){
 
 	}
 
-	char* second_sep = strchr(first_sep + 1, '|');
-
-	if(second_sep == NULL){
-
-		snprintf(buffer_error, BUFFER_SIZE, error_string_holder[STRUCT_SECOND], buffer_message);
-
-		return false;
-
-	}
-
 	return true;
 
 }
@@ -285,44 +275,9 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
         first_number = (int)strtol(first, &end,10);
 
-
-
-        first = end + 1;
-
-        end = first;
-
-        end = strchr(first, delimiter);
-
-        if(end == NULL){
-
-                snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[STRUCT_SECOND]);
-
-                return false;
-
-        }
-
-        if(end == first){
-
-                snprintf(buffer_error, BUFFER_SIZE,error_string_holder[NO_SECOND_NUMBER], buffer_message);
-
-                return false;
-
-        }
-
-        second_number = (int)strtol(first, &end, 10);
-
         if(first_number<0 || first_number>10){
 
                 snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[PROT_FIRST_VALUE]);
-
-                return false;
-
-        }
-
-
-        if(second_number<0||second_number>10){
-
-                snprintf(buffer_error,BUFFER_SIZE,"%s",error_string_holder[PROT_SECOND_VALUE]);
 
                 return false;
 
@@ -501,7 +456,7 @@ int wait_signal_scnd_pl_indicate(game_struct_players* list_game_pointer, int ind
 
 }
 
-void waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[], int* timed_out, char* buffer_message){
+void waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, char buffer_receive[], int* timed_out, char* buffer_message){
 
 		game_struct_players* list_game_pointer = (client->pointer_list_game) + *(index_player);
 
