@@ -19,13 +19,15 @@
 #define TM_EXP_POLL 10000 //this time experation limit is used for the low level impellemtnation of sending and receiving information from the client, therefor>
 typedef enum {
 	ENTERING_CREATING_GAME_STATE = 0,
-	QUIT_CLIENT_STATE = 1,
-	RANDOM_MESSAGE_STATE = 2,
+	RANDOM_MESSAGE_STATE = 1,
+	WAIT_GAME_CREATING_STATE = 2,
 	MENU_PREPERATION_STATE = 3,
-	WAITING_INIT_STATE = 4,
-	KEEP_WAITING_STATE =5,
+	INIT_GAME_STATE = 4,
+	WAIT_SECOND_PLAYER_READY_STATE = 5, //this state is used for players to wait for the second player that enterd the game
 	PLAY_TIME_STATE = 6,
-	QUIT_SERVER_STATE = 7
+	QUIT_CLIENT_STATE = 7,
+	QUIT_SERVER_STATE = 8
+
 } FIRST_LAYER;
 
 typedef struct {
@@ -43,45 +45,45 @@ typedef struct {
 
 
 typedef enum{
-//error messages
 
-//protocol messages (for client)
+//each of these indices indicate different messages that each enum state of the server can send back to. There might be redundancy, repeated messages.
+//this redundancy is added to keep messages in their former enum state that they belong to
 
-FOUND_GAME = 0,
+FOUND_GAME__ENTER_STATE = 0,
+CREATE_GAME__ENTER_STATE = 1,
+GAMES_FULL__ENTER_STATE = 2,
+IN_GAME__ENTER_STATE = 3,
 
-CREATED_GAME = 1,
+RESPONSE_MESSAGE__RANDOM_STATE = 4,
 
-GAMES_OCCUPIED = 2,
+NO_SCND_PL__WAIT_CREATE_STATE = 5,
+SCND_PL_FOUND__WAIT_CREATE_STATE = 6,
+NO_CREATED_GAME__WAIT_CREATE_STATE = 7,
 
-RANDOM_MESSAGE_PROT = 3,
+NOT_IN_GAME__MENU_PREP_STATE = 8,
+//the following cases happen when for some reason one of the indeces is set to -1 or some value that is not correct, we are going to have to indicate this to the client.
+//this is added to protcol_message instead of error message because we are sending this to client
+INDEX_PL_ERR__MENU_PREP_STATE = 9,
+INDEX_GM_ERR__MENU_PREP_STATE = 10,
+MENU_INFO__MENU_PREP_STATE = 11,
 
-QUIT_CLIENT = 4, //there are several types of quit statments depending on the sitautoin 
+NOT_IN_GAME__INIT_STATE = 12,
+ALREADY_INDICATED_GAME__INIT_STATE = 13,
+INDICATED_PL_GAME__INIT_STATE = 14,
+INDICATED_QUIT_GAME__INIT_STATE = 15,
 
-MENU_PREPERATION_PROT = 5,
 
-//the following enums are used when the game is created, and after both players receive the menu info, they need to click play/confirm that they are going to play
+NOT_IN_GAME__W_SCND_PL_STATE = 16,
+NOT_INDICATED__W_SCND_PL_STATE = 17,
+OTHER_PL_QUIT__W_SCND_PL_STATE = 18,
+OTHER_PL_NOT_IND__W_SCND_PL_STATE = 19,
+OTHER_PL_PLAY_IND__W_SCND_PL_STATE = 20,
 
-PL_QUIT = 6,
+QUIT_STATMENT__QC_STATE = 21,
 
-OT_QUIT = 7,
+QUIT_STATMENT__QS_STATE = 22,
 
-BT_READY = 8,
-
-GAME_EXPERATION = 9,
-
-INVALID_OPT = 10,
-
-QUIT_SERVER = 11,
-
-GAME_NO_SCND_PLAYER = 12,
-
-MENU_PREPERATION_PROT_GAME_INDEX = 13,
-
-MENU_PREPERATION_PROT_PLAYER_INDEX = 14,
-
-NOT_IN_GAME_CLIENT_CREATE = 15,
-
-NOT_IN_GAME_CLIENT_MENU
+DEFAULT = 23
 
 }ProtocolmessageID;
 

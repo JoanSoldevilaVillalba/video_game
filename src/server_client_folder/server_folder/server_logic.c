@@ -1,29 +1,39 @@
 #include "server_logic.h"
 
 const char* protocol_string_holder[] ={
-[FOUND_GAME] = "0|1|you have found a game",
-[CREATED_GAME] = "0|2|you have created a game",
-[GAMES_OCCUPIED] = "0|3|all games occupied",
-[GAME_EXPERATION] = "0|4|Game not found: time expired",
-[GAME_NO_SCND_PLAYER] ="0|5|Second player for your match is not found yet",
-[RANDOM_MESSAGE_PROT] = "2|1|this is response to random message",
-[QUIT_CLIENT] = "1|1|server received quit statement, goodbye",
-[MENU_PREPERATION_PROT] = "3|7|%d|%d",
-[PL_QUIT] = "1|8|player is quitting",
-[OT_QUIT] = "1|4|other player is quitting",
-[BT_READY] = "3|3|other player ready",
-[INVALID_OPT] = "4|0|error, option not valid",
-[QUIT_SERVER] = "1|2|server is closing the connection, goodbye",
-[MENU_PREPERATION_PROT_PLAYER_INDEX] = "3|5|Error, player index",
-[MENU_PREPERATION_PROT_GAME_INDEX] = "3|4|Error, game index",
+[FOUND_GAME__ENTER_STATE] = "0|client found game",
+[CREATE_GAME__ENTER_STATE] = "0|client created game",
+[GAMES_FULL__ENTER_STATE] = "0|all games occupied",
+[IN_GAME__ENTER_STATE] = "0|client in game already",
+
+[RESPONSE_MESSAGE__RANDOM_STATE] = "1|Server reserved message",
+
+[NO_SCND_PL__WAIT_CREATE_STATE] = "2|no second player",
+[SCND_PL_FOUND__WAIT_CREATE_STATE] = "2|second player found",
+[NO_CREATED_GAME__WAIT_CREATE_STATE] = "2|Client not in game",
+
+[NOT_IN_GAME__MENU_PREP_STATE] = "3|Client not in game",
+[INDEX_PL_ERR__MENU_PREP_STATE] = "3|Index player error",
+[INDEX_GM_ERR__MENU_PREP_STATE] ="3|Game index error",
+[MENU_INFO__MENU_PREP_STATE] = "3|%d|%d",
+
+[NOT_IN_GAME__INIT_STATE] = "4|Client not in game",
+[ALREADY_INDICATED_GAME__INIT_STATE] = "4|Already indicated",
+[INDICATED_PL_GAME__INIT_STATE] = "4|Server received play indication",
+[INDICATED_QUIT_GAME__INIT_STATE] = "4|Server received quit indication",
+
+[NOT_IN_GAME__W_SCND_PL_STATE] = "5|Client not in game",
+[NOT_INDICATED__W_SCND_PL_STATE] = "5|Not indicated to server",
+[OTHER_PL_QUIT__W_SCND_PL_STATE] = "5|Other player indicated quit",
+[OTHER_PL_NOT_IND__W_SCND_PL_STATE] = "5|Other player yet to indicate",
+[OTHER_PL_PLAY_IND__W_SCND_PL_STATE] = "5|Other player indicated play",
 
 
-[IN_GAME_CREATE_CLIENT]="0|6|Client currently in game",
-[NOT_IN_GAME_MENU] = "3|6|Client currently not in game",
-[NOT_IN_GAME_WAITING_INIT] = "4|0|Client currently not in game",
-[NOT_READY_GAME_WAITING_INIT]="4|1|Client is not ready",
-[NOT_IN_GAME_KEEP_WAITING] = "5|0|Client currently not in game",
-[NOT_ASKED_MENU_KEEP_WAITING]="5|1|Client has not asked menu"
+[QUIT_STATMENT__QC_STATE] ="7|Server received client quit statment",
+
+[QUIT_STATMENT__QS_STATE] = "8|Server initiating quit statment",
+
+[DEFAULT] = "21|Error, invalid option"
 
 };
 
@@ -155,7 +165,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game,int* in
 					*(index_player) = temporary_fd;
 		                        pthread_cond_signal(&(game_list + i)->game_condition);
 	        	                pthread_mutex_unlock(&mutex_game_list);
-	                	       	snprintf(buffer_message,BUFFER_SIZE, "%s", protocol_string_holder[FOUND_GAME]);
+	                	       	snprintf(buffer_message,BUFFER_SIZE, "%s", protocol_string_holder[FOUND_GAME__ENTER_STATE]);
 					return;
 
 
@@ -167,7 +177,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game,int* in
 	                	        *(result_function) = 2;
         	                	*(index_game) = i;
 	                	        pthread_mutex_unlock(&mutex_game_list);
-					snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[CREATED_GAME]);
+					snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[CREATE_GAME__ENTER_STATE]);
 					return;
 
 	                	}
@@ -176,14 +186,11 @@ void create_game(int temporary_fd, int* result_function, int* index_game,int* in
 
         }
 
-
-
         *(result_function) = 3 ;
+
         *(index_game) = -1;
 
-
-
-        snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[GAMES_OCCUPIED]);
+        snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[GAMES_FULL__ENTER_STATE]);
 
 }
 
@@ -438,7 +445,7 @@ int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, s
 
 	pthread_mutex_lock(&mutex_game_list);
 
-         while(list_game_pointer->ready_player[index_player ^ 1] == false && !timed_out){
+         while(list_game_pointer->player_id[index_player ^ 1] == -1 && !timed_out){
 
          	int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &mutex_game_list, ts);
 
@@ -462,67 +469,71 @@ int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, s
 
 }
 
-void waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[], int* result_function, int* timed_out, char* buffer_message){
+int wait_signal_scnd_pl_indicate(game_struct_players* list_game_pointer, int index_player, struct timespec* ts, int time_exp){
 
-	time_init(ts,time_experation);
+        time_init(ts, time_exp);
 
-	*(counter) = 4;
+        int timed_out = 0;
 
-	int play = buffer_receive[*(counter)] - '0';//we receive what the current client wants to do after viewing menu information
+        pthread_mutex_lock(&mutex_game_list);
 
-	game_struct_players* list_game_pointer = ((client->pointer_list_game) + *(index_game)); //simplify pointer arithmetic
+         while(list_game_pointer->ready_player[index_player ^ 1] == false && !timed_out){
 
-	pthread_mutex_lock(&mutex_game_list);
+                int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &mutex_game_list, ts);
 
-		list_game_pointer->ready_player[*(index_player) & 1] = (bool)play;
+                 if(list_game_pointer->ready_player[index_player ^ 1] == false){
 
-		if(!play){
+                        timed_out = 1;
 
-			list_game_pointer->player_id[*(index_player) & 1] = -1;
+                 }
 
-		}
+                 if(rc == ETIMEDOUT){
 
-		pthread_cond_signal(&(list_game_pointer->game_condition));
+                                timed_out = 1;
 
+                }
 
-	if(play == false){
+        }
 
-		eliminate_game_slot(client, index_game, index_player);
+        pthread_mutex_unlock(&mutex_game_list);
 
-		pthread_mutex_unlock(&mutex_game_list);
+        return timed_out;
 
-		*(result_function) = 1;
+}
 
-		snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[PL_QUIT]);
+void waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[], int* timed_out, char* buffer_message){
 
+		game_struct_players* list_game_pointer = (client->pointer_list_game) + *(index_player);
 
-	}else{
-
-
-		pthread_mutex_unlock(&mutex_game_list);
-
-		*(timed_out) = wait_signal_cond(list_game_pointer, (*index_player), ts, time_experation);
-
-		//this has to be corrected, we forgot to include a possible scenario where the other player simply has not yet recevied the menu informaitno, therefore the server is just going to have to wait.
-		//it will be up to the player if she or he wants to quit waiting for the other player to quit
+		*(timed_out) = wait_signal_scnd_pl_indicate(list_game_pointer, (*index_player), ts, time_experation);
 
 		if(*(timed_out) == 1 || list_game_pointer->ready_player[*(index_player) ^ 1] == false){
 
-			switch_game_player_position(client->pointer_list_game,index_player);
+			if(list_game_pointer->player_id[*(index_player)^1] == -1){
 
-			*(result_function) = 2;
+				if(*(index_player) == 1){
 
-			snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[OT_QUIT]);
+					switch_game_player_position(client->pointer_list_game,index_player);
+
+				}
+
+				list_game_pointer->ready_player[*(index_player)] = false;
+
+				snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[OTHER_PL_QUIT__W_SCND_PL_STATE]);
+
+
+			}else{
+
+				snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[OTHER_PL_NOT_IND__W_SCND_PL_STATE]);
+
+			}
+
 
 		}else{
 
-			*(result_function) = 3;
-
-			snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[BT_READY]);
+			snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[OTHER_PL_PLAY_IND__W_SCND_PL_STATE]);
 
 		}
-
-	}
 
 }
 
@@ -604,7 +615,7 @@ int menu_preperation_validation(struct_client* client, int index_game, int index
 
 	if(index_game<0||index_game>=MAX_GAMES_SIZE){
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s",protocol_string_holder[MENU_PREPERATION_PROT_GAME_INDEX]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s",protocol_string_holder[INDEX_GM_ERR__MENU_PREP_STATE]);
 
 		return -1;
 
@@ -612,7 +623,7 @@ int menu_preperation_validation(struct_client* client, int index_game, int index
 
 	if(index_player == -1){
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s", protocol_string_holder[MENU_PREPERATION_PROT_PLAYER_INDEX]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s", protocol_string_holder[INDEX_PL_ERR__MENU_PREP_STATE]);
 
 		return -1;
 
@@ -622,7 +633,7 @@ int menu_preperation_validation(struct_client* client, int index_game, int index
 
 	int p1 = client->pointer_list_game[index_game].player_id[1];
 
-	int result = snprintf(temporary_buffer, BUFFER_SIZE, protocol_string_holder[MENU_PREPERATION_PROT], p0, p1); //in the future we are going to have to change this, using hardcoded strings is not good
+	int result = snprintf(temporary_buffer, BUFFER_SIZE, protocol_string_holder[MENU_INFO__MENU_PREP_STATE], p0, p1); //in the future we are going to have to change this, using hardcoded strings is not good
 
 	return result;
 }

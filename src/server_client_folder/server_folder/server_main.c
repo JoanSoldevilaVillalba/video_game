@@ -47,12 +47,11 @@ void* handle_client(void* arg){
 
 		switch(first_number){
 
-
 			case ENTERING_CREATING_GAME_STATE:{
 
 				if(index_game == -1 || index_player == -1){
 
-					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_IN_GAME_CREATE_CLIENT]);
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[IN_GAME__ENTER_STATE]);
 
 					bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
 
@@ -70,61 +69,14 @@ void* handle_client(void* arg){
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
 
-					memset(buffer_receive, 0, sizeof(buffer_receive));
-
-
-					if(!quit){
-
-						if(result == 1){
-
-							index_player = 1;
-
-						}else{
-
-							if(result == 2){
-
-								timed_out = wait_signal_cond((client->pointer_list_game) + index_game ,index_player, &ts, TM_EXP_WAIT_GAME);
-
-		        	                        	if(timed_out == 1 || (client->pointer_list_game + index_game)->player_id[1] == -1){
-
-									snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[GAME_EXPERATION]);
-
-		        	        	                }else{
-
-									snprintf(temporary_buffer, BUFFER_SIZE, "%s",protocol_string_holder[FOUND_GAME]);
-
-									index_player = 0;
-
-		                                		}
-
-							}
-
-							bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
-
-		                                        handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
-
-						}
-
-					}else{
-
-						snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_SERVER]); //in else statment, this means that quit is equal to true, meaning that something went wrong when trying to send the message,
-
-						bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
-
-				                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
-
-
-					}
-
 				}
 
 				break;
 
-				}
-
+			}
 			case RANDOM_MESSAGE_STATE:
 
-				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[RANDOM_MESSAGE_PROT]);
+				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[RESPONSE_MESSAGE__RANDOM_STATE]);
 
 				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
 
@@ -132,27 +84,35 @@ void* handle_client(void* arg){
 
 				break;
 
-			case QUIT_CLIENT_STATE:
 
-				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_CLIENT]);
+			case WAIT_GAME_CREATING_STATE:
 
-				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+				if(index_player == -1 ||index_game == -1){
 
-                                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NO_CREATED_GAME__WAIT_CREATE_STATE]);
 
-				quit = true;
+					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
-				break;
+					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
 
-			case QUIT_SERVER_STATE:
+				}else{
 
-				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_SERVER]);
+					timed_out = wait_signal_cond((client->pointer_list_game) + index_game, index_player, &ts, TM_EXP_WAIT_GAME);
 
-				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+					if(timed_out == 1 || ((client->pointer_list_game) + index_game)->player_id[index_player ^ 1] == -1){
 
-                                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
+						snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NO_SCND_PL__WAIT_CREATE_STATE]);
 
-				quit = true;
+					}else{
+
+						snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[SCND_PL_FOUND__WAIT_CREATE_STATE]);
+
+					}
+
+					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
+
+					handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
+				}
 
 				break;
 
@@ -162,7 +122,7 @@ void* handle_client(void* arg){
 
 				if(index_game != -1 && index_player != -1){
 
-					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_IN_GAME_CLIENT_MENU]);
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_IN_GAME__MENU_PREP_STATE]);
 
 					bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
 
@@ -186,21 +146,19 @@ void* handle_client(void* arg){
 
 			    break;
 
-			case WAITING_INIT_STATE:
-
-				//before entering in this state, we need to validate that the player has not yet indicated that he or she wants to continue to play after receving menu information
+			case INIT_GAME_STATE:
 
 				if(index_game == -1 || index_player == -1){
 
-					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[]); //in this case we have not enterd a game
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_IN_GAME__INIT_STATE]); //in this case we have not enterd a game
 
 					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
 
-				}else if((client->game_list + index_game)->ready_player[index_player] == true){
+				}else if((client->pointer_list_game + index_game)->ready_player[index_player] == true){
 
-					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[]);//in this case the player has already indicated what it wants to do
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[ALREADY_INDICATED_GAME__INIT_STATE]);//in this case the player has already indicated what it wants to do
 
 					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
@@ -209,63 +167,66 @@ void* handle_client(void* arg){
 
 				}else{
 
-					waiting_for_player(client, &index_game,&index_player, TM_EXP_WAIT_GAME, &ts, &counter,buffer_receive,  &result, &timed_out, temporary_buffer);
+					counter = 4;
 
-					result = -1;
-					//after receving what the player wants to do, we are going to have to return a message indicating what has happened on the server side
+				        int play = buffer_receive[counter] - '0';
 
-					bytes_result = send_validated_message(temporary_buffer, buffer_error, &quit);
+				        pthread_mutex_lock(&mutex_game_list);
+
+				                client->pointer_list_game->ready_player[index_player & 1] = (bool)play;
+
+						int temporal_index = index_game;
+
+				                if(!play){
+
+							eliminate_game_slot((void*)client, &index_game, &index_player);
+
+				                }
+
+				                pthread_cond_signal(&(((client->pointer_list_game) + temporal_index)->game_condition));
+
+					pthread_mutex_unlock(&mutex_game_list);
+
+					if(play){
+
+						snprintf(temporary_buffer, BUFFER_SIZE,"%s",protocol_string_holder[INDICATED_PL_GAME__INIT_STATE]);
+
+					}else{
+
+						snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[INDICATED_QUIT_GAME__INIT_STATE]);
+
+					}
+
+					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+
 
 				}
 
 				break;
 
-			case KEEP_WAITING_STATE:
+			case  WAIT_SECOND_PLAYER_READY_STATE:
 
-				//before entering in this state, player should have already indicated that he or she wants to play and has already recevied the menu information
+	                        if(index_game == -1 || index_player == -1){
 
-				//this enum state is going to have to be devided into two different enum states: waiting for second player after creating the game, waiting for second player to recevie its menu information and confirm that he or she wants to conitnue to play
+                                        snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_IN_GAME__W_SCND_PL_STATE]); //in this case we have not enterd a game
 
-				if(index_game == -1 || index_player == -1){
 
-					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[]); //in this case we have not enterd a game
+                                }else if((client->pointer_list_game + index_game)->ready_player[index_player] == false){
 
-					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
+                                        snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_INDICATED__W_SCND_PL_STATE]);//in this case the player has not already r>
 
-					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+                                }else{
 
-				}else if((client->game_list + index_game)->ready_player[index_player] == false){
-
-					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[]);//in this case the player has not already recevied information
-
-					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
-
-					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
-
-				}else{
-
-					timed_out = wait_signal_cond((client->pointer_list_game) + index_game, index_player, &ts, TM_EXP_WAIT_GAME);
-
-					if(timed_out == 1 || ((client->pointer_list_game) + index_game)->ready_player[index_player ^ 1] == false){
-
-					//temporary_pointer ="still no one"; //it some how needs to indicate that the server still has not found a player
-						snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[GAME_NO_SCND_PLAYER]);
-
-					}else{
-
-					//temporary_pointer = "someone else has enterd our game";
-
-						snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[FOUND_GAME]); //for now we are just going to use FOUND_GAME to indicate that a second player has enterd our game
-
-					}
-
-					bytes_result = send_validated_message(temorary_buffer, buffer_error, client->socket_fd);
-
-					handlePESerever(&bytes_result, temporary_buffer, buffer_error, &quit);
+					 waiting_for_player(client, &index_game,&index_player, TM_EXP_WAIT_GAME, &ts, &counter,buffer_receive, &timed_out, temporary_buffer);
 
 				}
+
+                                bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
+
+                                handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+
 
 				break;
 
@@ -275,10 +236,39 @@ void* handle_client(void* arg){
 
 				break;
 
+			case QUIT_CLIENT_STATE:
+
+/*
+
+*/
+
+				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_STATMENT__QC_STATE]);
+
+				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+
+                                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
+
+				quit = true;
+
+				break;
+
+			case QUIT_SERVER_STATE:
+
+				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_STATMENT__QS_STATE]);
+
+				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
+
+                                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
+
+				quit = true;
+
+				break;
+
+
 
 			default:
 
-				snprintf(temporary_buffer, sizeof(temporary_buffer), "%s", protocol_string_holder[INVALID_OPT]);
+				snprintf(temporary_buffer, sizeof(temporary_buffer), "%s", protocol_string_holder[DEFAULT]);
 
 				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
 

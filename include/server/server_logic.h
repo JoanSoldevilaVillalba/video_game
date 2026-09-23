@@ -36,7 +36,9 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player);
 
 int wait_signal_cond(game_struct_players * list_game_pointer, int index_player, struct timespec* ts, int time_exp);
 
-void waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[],  int* result_function, int* timed_out, char* buffer_message);
+int wait_signal_scnd_pl_indicate(game_struct_players* list_game_pointer, int index_player, struct timespec* ts, int time_exp);
+
+void waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, int* counter,char buffer_receive[], int* timed_out, char* buffer_message);
 
 void handlePEClient(ssize_t* result, char* buffer_receive,char* buffer_error, bool* quit, int* first_number);
 void handlePEServer(ssize_t* result, char* buffer_receive,char* buffer_error, bool* quit);
