@@ -23,39 +23,28 @@ const char* error_string_network_send[]={
 };
 
 int handle_poll_error(pfd* pstructure_pointer, int return_value_poll){
-
 	int result = -1;
 
 	if(return_value_poll>0){
 
-
-		switch (pstructure_pointer->revents) {
-
-			case POLLRDHUP:
+			if(pstructure_pointer->revents &&POLLRDHUP){
 
 				snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_RDHUP]);
 
 				result = SOFT_SHUTDOWN;
 
-			break;
-
-			case POLLHUP:
+			}else if(pstructure_pointer->revents && POLLHUP){
 
 				snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_HUP]);
-
 				/*en realitzar la crida sincrona, el sistema operatiu, el seu packet network 
 manager, veu que estem esperant per un packet duna connexio que ja s'havia tancat. De manera 
 que sense haver de rebre cap paquet, el network manager respon al nostre programma indicant que 
 la connexio socket ja esta desconnectada*/
-
 				result = HARD_SHUTDOWN;
 
-				break;
-
-			case POLLERR:
+			}else if(pstructure_pointer->revents && POLLERR){
 
 				//this error can occur due to asyncronus reasons:
-
 				/*
 				when calling poll function, our program is invoking the operating system to perform a system call, puttuing our thread to 
 				sleep untill an event occurs. The operating system then hands these to the network packet manager, which receives an error for example a RST packet,
@@ -65,27 +54,19 @@ la connexio socket ja esta desconnectada*/
 
 				result = HARD_SHUTDOWN;
 
-				break;
-
-			case POLLNVAL:
-
+			}else if(pstructure_pointer->revents && POLLNVAL){
 				//invalid request, meaning the file descriptor is not pointing to an actual file
 
 				snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_NVAL]);
 
 				result = HARD_SHUTDOWN;
 
-				break;
-
-			case POLLIN:
-
+			}else if(pstructure_pointer->revents && POLLIN){
 				//this is the correct case, no error, therfore NO_SHUTDOWN
 
 				snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_IN]);
 
 				result = NO_SHUTDOWN;
-
-				break;
 
 			}
 
@@ -117,54 +98,61 @@ int error_handler_recv(int result_receive){
 
 	int result = -1;
 
-	switch(result_receive){
+	if(result_receive<0){
 
-		case EAGAIN || EWOULDBLOCK:
+		if(errno == EAGAIN || erno == EWUOLDBLOCK || errno ==EINTR){
 
-			result = 0;
-
-			result = NO_SHUTDOWN;
-
-			break;
-
-		case EBDAF:
-
-			snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_recv[]);
-
-			//using an invalid file descriptor: negative integer, not initialized or opened befor
-
-			result = HARD_SHUTDOWN;
-
-			break;
-
-		case  EINVAL:
-
-			snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[]);
-
-			//we have passed an invalid argument to recv
-
-			result = HARD_SHUTDOWN;
-
-			break;
-
-		case ENOTCONN:
-
-			//no connection has been done to the file descriptor/socket
-			//this one will probably never happen b
-
-			snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[]);
-
-			result = HARD_SHUTDOWN;
-
-			break;
-
-			//we are in tcp, and we have not already established the connection
-
-		default:
+			//EINTR, the call was inturrupted, data can still be in the buffer, we can still read.
 
 			result = NO_SHUTDOWN;
 
-			break;
+		}else{
+
+			switch(result_receive){
+
+				case EBDAF:
+
+					snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_recv[]);
+
+					//using an invalid file descriptor: negative integer, not initialized or opened befor
+
+					result = HARD_SHUTDOWN;
+
+					break;
+
+				case  EINVAL:
+
+					snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[]);
+
+					//we have passed an invalid argument to recv
+
+					result = HARD_SHUTDOWN;
+
+					break;
+
+				case ENOTCONN:
+
+					//no connection has been done to the file descriptor/socket
+					//this one will probably never happen b
+
+					snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[]);
+
+					result = HARD_SHUTDOWN;
+
+					break;
+
+					//we are in tcp, and we have not already established the connection
+
+				default:
+
+					result = NO_SHUTDOWN;
+
+					break;
+
+				}
+
+			}
+
 
 	}
 
@@ -206,11 +194,17 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
 		}
 
-		rErrHand_result = error_handler_recv(n);
+		if(n<0){
 
-		if(rErrHand_result != NO_SHUTDOWN){
+			rErrHand_result = error_handler_recv(n);
 
-			return -1;
+			if(rErrHand_result != NO_SHUTDOWN){
+
+				return -1;
+
+			}
+
+			continue;
 
 		}
 
