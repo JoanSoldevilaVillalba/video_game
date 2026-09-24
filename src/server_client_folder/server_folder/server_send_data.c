@@ -1,8 +1,106 @@
 #include "server_send_data.h"
 
+//we could probably add some type of special event as a parameter to indicate if we want it to be true to read or write, we will see
+int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short correct_event){
 
-//in the future we are going to craete a new type of struct, called Error, in this struct we are going to allocate a char buffer aswell as a errno error number, and maybe we can also add a field for strerror(errno)
+	int result = -1;
 
+	if(return_value_poll>0){
+
+		switch(pstructure_pointer->revents){
+
+			case POLLHUP:
+
+				snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[SYS_POLL]);
+
+				break;
+
+			case POLLERR:
+
+				snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[SYS_POLL]);
+
+				break;
+
+			case POLLNVAL:
+
+				snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[SYS_POLL]);
+
+				break;
+
+			case correct_event:
+
+				snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[SYS_POLL]);
+
+				result = 0;
+
+				break;
+
+		}
+
+
+	}else if(return_value_poll == -1){
+
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[ERRNO_VALUES]);
+
+	}else if(return_value_poll == 0){
+
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[TIME_EXP_POLL]);
+
+	}
+
+
+	return result;
+
+
+}
+int error_handler_recv(int result_receive){
+
+	int result = -1;
+
+	switch(result_receive){
+
+		case EAGAIN || EWOULDBLOCK:
+
+			//in this case we have set the socket to non blocking for example but we have called recv, this occurs when recv does not have any infomration and allows for asycronyze programming.
+			//in our case we are not setting it to non blocking but we are just goin g to have it enabled
+
+			result = 0; //we can continue to execute
+
+			break;
+
+		case EBDAF:
+
+			snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[]);
+
+			break;
+
+		case  EINVAL:
+
+			snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[]);
+
+			break;
+
+
+		case ECONNREFUSED:
+
+			snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[]);
+
+			break;
+
+		case ENOTCONN:
+
+			snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[]);
+
+			//we are in tcp, and we have not already established the connection
+
+
+			break;
+
+	}
+
+	return result;
+
+}
 ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t length){
 
         ssize_t total_length  = 0;
@@ -24,24 +122,16 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
 		ret = poll(&pfd, 1, TM_EXP_POLL);
 
+		int ret = handle_poll_error(&pfd, ret, POLLIN);
+
 		if(ret == -1){
-
-			//strcpy(buffer_error, "Error in event driven poll syscall\0");//strerror(errno);
-
-			snprintf(buffer_error, BUFFER_SIZE, error_string_holder[SYS_POLL],strerror(errno));
-
-			return -1;
-
-		}else if(ret == 0){
-
-			snprintf(buffer_error,BUFFER_SIZE, "%s" ,error_string_holder[TIME_EXPIRED_POLL]);
 
 			return -1;
 
 		}
 
                 n = recv(temporary_fd,buffer+total_length,length - total_length, 0);
-
+/*
 		if(n<0){
 
 
@@ -61,7 +151,8 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 			break;
 
 		}
-                total_length+=n;
+*/
+              total_length+=n;
 
         }
 
