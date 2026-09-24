@@ -1,6 +1,5 @@
 #include "server_send_data.h"
 
-//we could probably add some type of special event as a parameter to indicate if we want it to be true to read or write, we will see
 int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short correct_event){
 
 	int result = -1;
@@ -8,6 +7,12 @@ int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short corr
 	if(return_value_poll>0){
 
 		switch(pstructure_pointer->revents){
+
+			case POLLRDHUP:
+
+				snprintf(buffer_error, BUFFER_SIZE; "%s", error_string_holder[]);
+
+				break;
 
 			case POLLHUP:
 
@@ -61,10 +66,7 @@ int error_handler_recv(int result_receive){
 
 		case EAGAIN || EWOULDBLOCK:
 
-			//in this case we have set the socket to non blocking for example but we have called recv, this occurs when recv does not have any infomration and allows for asycronyze programming.
-			//in our case we are not setting it to non blocking but we are just goin g to have it enabled
-
-			result = 0; //we can continue to execute
+			result = 0;
 
 			break;
 
@@ -93,6 +95,12 @@ int error_handler_recv(int result_receive){
 
 			//we are in tcp, and we have not already established the connection
 
+			break;
+
+		default:
+
+			//nothing really happned, we have received a number of bytes
+			result = result_receive;
 
 			break;
 
@@ -103,55 +111,51 @@ int error_handler_recv(int result_receive){
 }
 ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t length){
 
-        ssize_t total_length  = 0;
+	int ret = -1, pErrHand_result = -1, rErrHand_result = -1;
 
-	ssize_t n = 0;
+        ssize_t total_length  = 0, n = 0;
 
 	struct pollfd pfd;
 
 
 	pfd.fd = temporary_fd;
 
-	pfd.events = POLLIN;
+	pfd.events = (POLLIN || POLLRDHUP);
 
 	pfd.revents = 0;
-
-	int ret = -1;
 
         while(total_length < length){
 
 		ret = poll(&pfd, 1, TM_EXP_POLL);
 
-		int ret = handle_poll_error(&pfd, ret, POLLIN);
+		//the following call function for now does make that much sense for the following reason:
 
-		if(ret == -1){
+		/*we have set that the event for inturrption is POLLIN, no other events can cause the thread to be unblocked*/
+
+		pErrHand_result = handle_poll_error(&pfd, ret, POLLIN);
+
+		if(pErrHand_result == -1){
 
 			return -1;
 
 		}
 
                 n = recv(temporary_fd,buffer+total_length,length - total_length, 0);
-/*
-		if(n<0){
-
-
-			if(errno == EINTR){
-
-				continue;
-			}
-
-			snprintf(buffer_error , BUFFER_SIZE,error_string_holder[SYS_RECV],strerror(errno)); //strerror(errno);
-
-			return -1;
-
-		}
 
 		if(n == 0){
 
 			break;
 
 		}
-*/
+
+		rErrHand_result = error_handler_recv(n);
+
+		if(rErrHand_result==-1){
+
+			return -1;
+
+		}
+
               total_length+=n;
 
         }
