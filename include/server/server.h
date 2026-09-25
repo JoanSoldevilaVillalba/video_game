@@ -37,6 +37,7 @@ typedef struct {
     char name[62];
     int game_id;
     pthread_cond_t game_condition;
+    pthread_mutex_t mutex_game_list;
     bool ready_player[2];
 } game_struct_players;
 
@@ -144,9 +145,8 @@ extern const char* protocol_string_holder[];
 
 extern const char* error_string_holder[];
 
-extern pthread_mutex_t mutex_game_list;
+//extern pthread_mutex_t mutex_game_list;
 extern pthread_mutex_t mutex_thread_counter;
-extern pthread_cond_t conditional_variable;
 extern int counter_thread;
 
 void* handle_client(void* arg);

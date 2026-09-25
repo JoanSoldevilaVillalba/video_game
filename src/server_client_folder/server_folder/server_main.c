@@ -1,8 +1,7 @@
 b#include "server_logic.h"
 
-pthread_mutex_t mutex_game_list;
+//pthread_mutex_t mutex_game_list;
 pthread_mutex_t mutex_thread_counter;
-pthread_cond_t conditional_variable;
 int counter_thread;
 
 void* handle_client(void* arg){
@@ -230,7 +229,7 @@ void* handle_client(void* arg){
 
 				        int play = buffer_receive[counter] - '0';
 
-				        pthread_mutex_lock(&mutex_game_list);
+				        pthread_mutex_lock(&client->pointer_list_game->mutex_game_list);
 
 				                client->pointer_list_game->ready_player[index_player & 1] = (bool)play;
 
@@ -244,7 +243,7 @@ void* handle_client(void* arg){
 
 				                pthread_cond_signal(&(((client->pointer_list_game) + temporal_index)->game_condition));
 
-					pthread_mutex_unlock(&mutex_game_list);
+					pthread_mutex_unlock(&client->pointer_list_game->mutex_game_list);
 
 					if(play){
 
@@ -422,6 +421,8 @@ void initilizeGames(game_struct_players* game_list){
 
 		(game_list+i)->ready_player[1] = false;
 
+		pthread_mutex_init(&(game_list+i)->mutex_game_list,NULL);
+
 	}
 
 }
@@ -444,8 +445,6 @@ int main()
 
 
 	initilizeGames(game_list);
-
-	pthread_mutex_init(&mutex_game_list,NULL);
 
 	pthread_mutex_init(&mutex_thread_counter,NULL);
 
@@ -544,10 +543,9 @@ int main()
 
 		pthread_cond_destroy(&(game_list[i].game_condition));
 
+		pthread_mutex_destroy(&(game_list+i)->mutex_game_list, NULL);
+
 	}
-
-
-	pthread_mutex_destroy(&mutex_game_list);
 
 	pthread_mutex_destroy(&mutex_thread_counter);
 

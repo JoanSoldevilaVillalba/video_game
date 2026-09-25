@@ -155,7 +155,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game,int* in
 
         for(int i = 0;i<MAX_GAMES_SIZE;i++){
 
-                pthread_mutex_lock(&mutex_game_list);
+                pthread_mutex_lock(&(game_list+i)->mutex_game_list);
 
 	                	if((game_list+i)->game_id!=-1 && (game_list+i)->player_id[1]==-1){
 
@@ -164,7 +164,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game,int* in
 	                        	*(index_game) = i;
 					*(index_player) = temporary_fd;
 		                        pthread_cond_signal(&(game_list + i)->game_condition);
-	        	                pthread_mutex_unlock(&mutex_game_list);
+	        	                pthread_mutex_unlock(&(game_list+i)->mutex_game_list);
 	                	       	snprintf(buffer_message,BUFFER_SIZE, "%s", protocol_string_holder[FOUND_GAME__ENTER_STATE]);
 					return;
 
@@ -176,13 +176,13 @@ void create_game(int temporary_fd, int* result_function, int* index_game,int* in
 					*(index_player) = temporary_fd;
 	                	        *(result_function) = 2;
         	                	*(index_game) = i;
-	                	        pthread_mutex_unlock(&mutex_game_list);
+	                	        pthread_mutex_unlock(&(game_list+i)->mutex_game_list);
 					snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[CREATE_GAME__ENTER_STATE]);
 					return;
 
 	                	}
 
-	        pthread_mutex_unlock(&mutex_game_list);
+	        pthread_mutex_unlock(&(game_list + i)->mutex_game_list);
 
         }
 
@@ -358,13 +358,13 @@ ssize_t receive_validated_message(char* buffer_message,char* buffer_error, int c
 
 void switch_game_player_position(game_struct_players* list_game_pointer, int* index_player){
 
-	pthread_mutex_lock(&mutex_game_list);
+	pthread_mutex_lock(&list_game_pointer->mutex_game_list);
 
 		list_game_pointer->player_id[0] = list_game_pointer->player_id[1];
 
 		list_game_pointer->ready_player[0] = list_game_pointer->ready_player[1];
 
-	pthread_mutex_unlock(&mutex_game_list);
+	pthread_mutex_unlock(&list_game_pointer->mutex_game_list);
 
 	*(index_player) = 0;
 
@@ -401,11 +401,11 @@ int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, s
 
 	int timed_out = 0;
 
-	pthread_mutex_lock(&mutex_game_list);
+	pthread_mutex_lock(&list_game_pointer->mutex_game_list);
 
          while(list_game_pointer->player_id[index_player ^ 1] == -1 && !timed_out){
 
-         	int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &mutex_game_list, ts);
+         	int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &list_game_pointer->mutex_game_list, ts);
 
 	         if(list_game_pointer->player_id[index_player ^ 1] == -1){
 
@@ -421,7 +421,7 @@ int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, s
 
 	}
 
-	pthread_mutex_unlock(&mutex_game_list);
+	pthread_mutex_unlock(&list_game_pointer->mutex_game_list);
 
 	return timed_out; 
 
@@ -433,11 +433,11 @@ int wait_signal_scnd_pl_indicate(game_struct_players* list_game_pointer, int ind
 
         int timed_out = 0;
 
-        pthread_mutex_lock(&mutex_game_list);
+        pthread_mutex_lock(&list_game_pointer->mutex_game_list);
 
          while(list_game_pointer->ready_player[index_player ^ 1] == false && !timed_out){
 
-                int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &mutex_game_list, ts);
+                int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &list_game_pointer->mutex_game_list, ts);
 
                  if(list_game_pointer->ready_player[index_player ^ 1] == false){
 
@@ -453,7 +453,7 @@ int wait_signal_scnd_pl_indicate(game_struct_players* list_game_pointer, int ind
 
         }
 
-        pthread_mutex_unlock(&mutex_game_list);
+        pthread_mutex_unlock(&list_game_pointer->mutex_game_list);
 
         return timed_out;
 
