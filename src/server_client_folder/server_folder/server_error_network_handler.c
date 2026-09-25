@@ -1,3 +1,5 @@
+#include "server_send_recv_data.h"
+
 const char* error_string_network_poll[] = {
 [SYS_POLL] = "poll(): an error event was detected",
 [POLL_RDHUP] = "poll(): peer performed a half-close (POLLRDHUP)",

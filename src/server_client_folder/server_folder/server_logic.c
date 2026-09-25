@@ -293,21 +293,23 @@ ssize_t send_validated_message(char* buffer_message, char* buffer_error, int cli
 
         ssize_t result = 0;
 
+	//if errors happen here, that is due to interl error, in this case we are still going to try to do a gracefull shutdown of the connection
+
         if(!validate_message_length(buffer_message, buffer_error)){
 
-		return -1;
+		return SOFT_SHUTDOWN;
 
 	}
 
 	if(!validate_message_numbers(buffer_message,buffer_error)){
 
-		return -1;
+		return SOFT_SHUTDOWN;
 
 	}
 
 	if(!validate_message_structure(buffer_message, buffer_error)){
 
-		return -1;
+		return SOFT_SHUTDOWN;
 
 	}
 
@@ -324,28 +326,29 @@ ssize_t receive_validated_message(char* buffer_message,char* buffer_error, int c
 
         ssize_t result_bytes_receive = receive_framed_message(client_file_descriptor, buffer_message, buffer_error, (ssize_t) BUFFER_SIZE);
 
-        if(result_bytes_receive == -1){
+        if((int)result_bytes_receive == HARD_SHUTDOWN || (int)result_bytes_receive == SOFT_SHUTDOWN){
 
-		return -1;
+		return result_bytes_receive;
 
         }
 
+	//if the following cases do not work we are still going to try to do a gracefull shutdown
 
 	if(!validate_message_length(buffer_message, buffer_error)){
 
-		return -1;
+		return SOFT_SHUTDOWN;
 
 	}
 
 	if(!validate_message_structure(buffer_message, buffer_error)){
 
-		return -1;
+		return SOFT_SHUTDOWN;
 
 	}
 
 	if(!validate_message_numbers(buffer_message, buffer_error)){
 
-		return -1;
+		return SOFT_SHUTDOWN;
 
 	}
 
