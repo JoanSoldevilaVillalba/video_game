@@ -1,6 +1,4 @@
-#include "server_send_data.h"
-#include "server_send_data.h"
-
+#include "server_send_recv_data.h"
 ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t length){
 
 	int ret = -1, pErrHand_result = -1, rErrHand_result = -1;
