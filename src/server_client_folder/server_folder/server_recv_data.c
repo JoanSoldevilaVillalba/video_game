@@ -42,7 +42,7 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
 			if(rErrHand_result != NO_SHUTDOWN){
 
-				return -1;
+				return rErrHand_result;
 
 			}
 

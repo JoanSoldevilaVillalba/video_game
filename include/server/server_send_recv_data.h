@@ -22,7 +22,6 @@
 
 #define HARD_SHUTDOWN -2
 
-
 typedef enum{
 
 	SYS_POLL,          // poll() returned an error event
