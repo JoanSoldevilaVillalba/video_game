@@ -47,13 +47,15 @@ typedef enum{
 
 	NO_SETUP_RECV,
 
+	NO_SPECIFIC_ERROR_RECV
+
 
 }error_network_id;
 
 
 extern const char* error_string_network_holder[];
 
-extern const char* error_string_network_recv[];
+extern const char* error_string_network_recv_send[];
 
 ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error, ssize_t length);
 
