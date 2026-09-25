@@ -1,4 +1,4 @@
-#include "server_logic.h"
+b#include "server_logic.h"
 
 pthread_mutex_t mutex_game_list;
 pthread_mutex_t mutex_thread_counter;
@@ -13,7 +13,7 @@ void* handle_client(void* arg){
 
 	char buffer_receive[64], temporary_buffer[64], buffer_error[64];
 
-	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1, timed_out = 0;
+	int result = 0, counter = 0, first_number = -1, index_game = -1, index_player = -1, timed_out = 0; //variable bytes results already contains if we are having a NO_SHUTDOWN, SOFT_SHUTDOWN....
 
 	bool quit = false;
 
@@ -21,24 +21,23 @@ void* handle_client(void* arg){
 
 	struct timespec ts;
 
+	//depending on what type of shutdown we must do, we should or should not send a message to the client.
+
 	while(!quit){
 
 		memset(buffer_receive, 0, sizeof(buffer_receive));counter = 0 ;
 
-
 		bytes_result = receive_validated_message(buffer_receive, buffer_error,client->socket_fd);
 
-		handlePEClient(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
+		handlePEClient(&bytes_result, buffer_receive, buffer_error, &quit, &first_number, &type_shutdown);
 
-		if(quit == true){
-
-			first_number = QUIT_SERVER_STATE;
-
-			quit = true;
-
-		}else{
+		if(quit == false){
 
 			first_number = str_to_int(buffer_receive, buffer_error);
+
+		}else if(bytes_result = SOFT_SHUTDOWN || bytes_result == HARD_SHUTDOWN){
+
+			break; //we are breaking without sending a quit statment to the client
 
 		}
 
@@ -57,6 +56,13 @@ void* handle_client(void* arg){
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
 
+                	                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+        	                                break;
+
+	                                }
+
+
 				}else{
 
 					time_init(&ts,TM_EXP_WAIT_GAME);
@@ -68,6 +74,13 @@ void* handle_client(void* arg){
 					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+
+                	                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+        	                                break;
+
+	                                }
+
 
 				}
 
@@ -82,6 +95,12 @@ void* handle_client(void* arg){
 
 		                handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
 
+                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+                                        break;
+
+                                }
+
 				break;
 
 
@@ -94,6 +113,12 @@ void* handle_client(void* arg){
 					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+
+	                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+        	                                break;
+
+                	                }
 
 				}else{
 
@@ -112,6 +137,13 @@ void* handle_client(void* arg){
 					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
 					handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
+
+	                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+	                                        break;
+
+        	                        }
+
 				}
 
 				break;
@@ -127,6 +159,13 @@ void* handle_client(void* arg){
 					bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+
+	                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+        	                                break;
+
+                	                }
+
 				}else{
 
 					bytes_result = menu_preperation_validation(client,index_game,index_player, temporary_buffer,buffer_error);
@@ -142,6 +181,14 @@ void* handle_client(void* arg){
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
 
+                	                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+        	                                break;
+
+	                                }
+
+
+
 				}
 
 			    break;
@@ -156,6 +203,12 @@ void* handle_client(void* arg){
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
 
+	                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+        	                                break;
+
+                	                }
+
 				}else if((client->pointer_list_game + index_game)->ready_player[index_player] == true){
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[ALREADY_INDICATED_GAME__INIT_STATE]);//in this case the player has already indicated what it wants to do
@@ -163,6 +216,12 @@ void* handle_client(void* arg){
 					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+
+	                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+        	                                break;
+
+                	                }
 
 
 				}else{
@@ -201,6 +260,13 @@ void* handle_client(void* arg){
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
 
+	                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+	                                        break;
+
+	                                }
+
+
 
 				}
 
@@ -227,6 +293,12 @@ void* handle_client(void* arg){
 
                                 handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
 
+                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+                                        break;
+
+                                }
+
 
 				break;
 
@@ -238,10 +310,6 @@ void* handle_client(void* arg){
 
 			case QUIT_CLIENT_STATE:
 
-/*
-
-*/
-
 				snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[QUIT_STATMENT__QC_STATE]);
 
 				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
@@ -249,6 +317,13 @@ void* handle_client(void* arg){
                                 handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
 
 				quit = true;
+
+
+                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+                                        break;
+
+                                }
 
 				break;
 
@@ -262,6 +337,14 @@ void* handle_client(void* arg){
 
 				quit = true;
 
+
+				if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+					break;
+
+				}
+
+
 				break;
 
 
@@ -273,6 +356,12 @@ void* handle_client(void* arg){
 				bytes_result = send_validated_message(temporary_buffer,buffer_error, client->socket_fd);
 
                                 handlePEServer(&bytes_result, temporary_buffer,buffer_error, &quit);
+
+				if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+					break;
+
+				}
 
 				break;
 
@@ -300,9 +389,14 @@ void* handle_client(void* arg){
 
 	pthread_mutex_unlock(&mutex_thread_counter);
 
+	//the following line of shutdown should only be called when the connection is still alive but disconnection proces has been initiated
+	if(type_shutdown == SOFT_SHUTDOWN){
+
+		shutdown(client->socket_fd,SHUT_WR);
+
+	}
 
 	close(client->socket_fd);
-
 
 	free(client);
 

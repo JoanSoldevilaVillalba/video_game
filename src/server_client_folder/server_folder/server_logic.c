@@ -504,7 +504,7 @@ void handlePEClient(ssize_t* result, char* buffer_message,char* buffer_error, bo
 
 	printf("We have received the following number of bytes: %d\n",(int)*(result));
 
-	if(*(result) == -1){
+	if(*(result) <0){
 
 		if(buffer_error == NULL){
 
