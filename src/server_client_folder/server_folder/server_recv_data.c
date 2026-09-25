@@ -66,15 +66,13 @@ ssize_t receive_framed_message(int fd, char* buffer_message, char* buffer_error,
 
 	header_bytes = read_all(fd, (char*)&net_len, buffer_error, sizeof(net_len));
 
-	if((int)header_bytes <= 0){
+	if((int)header_bytes ==HARD_SHUTDOWN || (int)header_bytes == SOFT_SHUTDOWN){
 
-		return -1;
+		return  header_bytes;
 
-	}
-	//i don't think the following condition will ever happen, due to the experation,the socket will keep waiting untill all bytes asked are received, or when the time expeires, when time expeires a negative -1 is returned
 	if(header_bytes< (ssize_t)sizeof(net_len)){
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[INIT_RECV_LEN]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_network_recv_send[RECV_LEN]);
 
 		return -1;
 
@@ -84,9 +82,7 @@ ssize_t receive_framed_message(int fd, char* buffer_message, char* buffer_error,
 
 	if((ssize_t)payload_len >= max_buf_len){
 
-		//we need to figure out what to do here still, because, the client is still going to try to send the real message, regardless if there is buffer over_flow (even thought the client is going to be programmed in order to prevent this aswell, safeguards are necessary but maybe this one is not necessary i don't know)
-
-		snprintf(buffer_error, BUFFER_SIZE,"%s",error_string_holder[MESS_RECV_LEN_OVF]);
+		snprintf(buffer_error, BUFFER_SIZE,"%s",error_string_network_recv_send[MESS_RECV_LEN_OVF]);
 
 		return -1;
 
@@ -95,15 +91,15 @@ ssize_t receive_framed_message(int fd, char* buffer_message, char* buffer_error,
 
 	ssize_t payload_bytes = read_all(fd, buffer_message,buffer_error, (ssize_t)payload_len);
 
-	if(payload_bytes<=0){
+	if((int)payload_bytes == SOFT_SHUTDOWN || (int)payload_bytese == HARD_SHUTDOWN){
 
-		return -1;
+		return payload_bytes;
 
 	}
 
 	if(payload_bytes < (ssize_t)payload_len){
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[MESS_RECV_LEN]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_recv_send[RECV_LEN]);
 
 		return -1;
 	}

@@ -13,7 +13,13 @@ const char* error_string_network_recv_send[]={
 [INVALID_FD_RECV] = "recv: Invalid file descriptor is being used for current thread connection",
 [INVALID_ARG_RECV] = "recv: Invalid argument was passed to recv sys call",
 [NO_SETUP_RECV] = "recv: Connection was not established with the client",
-[NO_SPECIFIC_ERROR] = "recv: error happend but could not find specific error"
+[NO_SPECIFIC_ERROR_RECV] = "recv: error happend but could not find specific error",
+
+[RECV_LEN] = "Received message len incorrect",
+[MESS_RECV_LEN_OVF] = "Received message is overflowing buffer",
+
+[SEND_LEN] = "Sent message length is incorrect"
+
 };
 
 int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short expected){

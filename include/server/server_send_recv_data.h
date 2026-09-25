@@ -47,8 +47,15 @@ typedef enum{
 
 	NO_SETUP_RECV,
 
-	NO_SPECIFIC_ERROR_RECV
+	NO_SPECIFIC_ERROR_RECV,
 
+	RECV_LEN,
+
+	MESS_RECV_LEN_OVF,
+
+	SEND_LEN
+
+	//remember that in framed_message there is no overflow problem, that is checked before actually sending the message
 
 }error_network_id;
 

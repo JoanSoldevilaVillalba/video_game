@@ -53,44 +53,43 @@ ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssiz
 
         }
 
-
         return total_length;
 
 }
+
 ssize_t send_framed_message(int fd, const char *payload, char* buffer_error, uint32_t payload_len) {
 
 	uint32_t net_len = htonl(payload_len);
 
 	ssize_t result = send_all(fd, (const char *)&net_len, buffer_error, sizeof(net_len));
 
-	if((int)result == -1){
+	if((int)result == HARD_SHUTDOWN || (int)result == SOFT_SHUTDOWN){
 
-		return -1;
+		return result;
 
 	}
 
+	if (result != sizeof(net_len)) {
 
-	if ( result != sizeof(net_len)) {
+		snprintf(buffer_error,BUFFER_SIZE,"%s", error_string_network_recv_send[SEND_LEN]);
 
-		snprintf(buffer_error,BUFFER_SIZE,"%s", error_string_holder[INIT_SEND_LEN]);
+		return HARD_SHUTDOWN;
 
-        	return -1;
 	}
 
 	result = send_all(fd, payload, buffer_error,payload_len);
 
-	if((int)result == -1){
+	if((int)result == HARD_SHUTDOWN || (int)result == SOFT_SHUTDOWN){
 
-
-		return -1;
+		return result;
 
 	}
 
 	if ((int)result != (ssize_t)payload_len) {
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[MESS_SEND_LEN]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_network_recv_send[SEND_LEN]);
 
-	        return -1;
+	        return HARD_SHUTDOWN;
 	}
 
     return sizeof(net_len) + payload_len;
