@@ -92,6 +92,14 @@ DEFAULT
 
 typedef enum{
 
+NULL_POINTER,
+
+STRUCT_FIRST,
+NO_FIRST_NUMBER,
+
+BUFF_OVF,
+
+MESS_FIRST_VALUE
 
 }ErrormessageID;
 

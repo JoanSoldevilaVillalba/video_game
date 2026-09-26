@@ -38,27 +38,16 @@ const char* protocol_string_holder[] ={
 };
 
 const char* error_string_holder[] = {
-    [SYS_POLL]              = "Error in event driven poll syscall (errno str):%s",
-    [TIME_EXPIRED_POLL]     = "Error, time out expired for poll event",
-    [SYS_RECV]              = "Error, recv syscall went wrong (errno str):%s",
-    [SYS_SEND]              = "Error, send syscall went wrong (errno str): %s",
-    [INIT_SEND_LEN]         = "Error, amount of bytes sent in init message is not equal to 4 bytes",
-    [MESS_SEND_LEN]         = "Error, amount of bytes sent of real message is not equal to length/bytes of message",
-    [INIT_RECV_LEN]         = "Error, amount of bytes received in init message is not equal to 4 bytes",
-    [MESS_RECV_LEN_OVF]     = "Error, amount of bytes recevied in init message is overflowing (>BUFFER_SIZE)",
-    [MESS_RECV_LEN]         = "Error, amount of bytes received in real mesage is not equal to length/bytes of init message",
-    [BUFF_OVF]              = "Error, message length is too large: overflow",
-    [BUFF_STRUCT]           = "Error, message odes not have the correct structure",
-    [BUFF_PROT_FIRST]       = "Error, first protocol number was not found",
-    [BUFF_PROT_SECOND]      = "Error, second protocol number was not found",
-    [MENU_INDEX]            = "Error, game index contains bad value",
-    [STRUCT_FIRST]          = "Error, first seperator was not found in the following message: %s",
-    [STRUCT_SECOND]         = "Error, second seperator was not found in the following message: %s",
-    [NULL_MESS]             = "Error, null message",
-    [PROT_FIRST_VALUE]      = "Error, first protocol number is out of range (value not correct)",
-    [PROT_SECOND_VALUE]     = "Error, second protocol number is out of range (value not correct)",
-    [NO_FIRST_NUMBER]       = "Error, the following message does not contain first protocol number: %s",
-    [NO_SECOND_NUMBER]      = "Error, the folloiwng message does not contain second protocol number: %s"
+[NULL_POINTER] ="Null pointer is present",
+
+[STRUCT_FIRST] = "First | was not found in message",
+[NO_FIRST_NUMBER] = "first protocol number was not found",
+
+[BUFF_OVF] ="Buffer overflow",
+
+[MESS_FIRST_VALUE] = "Value of first protocol number was not correct",
+
+
 };
 
 
@@ -75,7 +64,7 @@ int str_to_int(char* buffer_message, char* buffer_error){
 
 	if(buffer_message == NULL){
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_POINTER]);
 
 		return -1;
 
@@ -216,7 +205,7 @@ bool validate_message_structure(char* buffer_message, char* buffer_error){
 
 	if(buffer_message == NULL){
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_POINTER]);
 
 		return false;
 
@@ -248,7 +237,7 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
         if(buffer_message == NULL){
 
-                snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
+                snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_POINTER]);
 
                 return false;
 
@@ -277,7 +266,7 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
         if(first_number<0 || first_number>10){
 
-                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[PROT_FIRST_VALUE]);
+                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[MESS_FIRST_VALUE]);
 
                 return false;
 
