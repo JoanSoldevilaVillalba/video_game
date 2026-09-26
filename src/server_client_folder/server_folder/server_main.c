@@ -33,7 +33,7 @@ void* handle_client(void* arg){
 
 			first_number = str_to_int(buffer_receive, buffer_error);
 
-		}else if(bytes_result = SOFT_SHUTDOWN || bytes_result == HARD_SHUTDOWN){
+		}else if(bytes_result == SOFT_SHUTDOWN || bytes_result == HARD_SHUTDOWN){
 
 			break; //we are breaking without sending a quit statment to the client
 
@@ -228,7 +228,7 @@ void* handle_client(void* arg){
 
 				        int play = buffer_receive[counter] - '0';
 
-				        pthread_mutex_lock(&client->pointer_list_game->mutex_game_list);
+				        pthread_mutex_lock(&client->(pointer_list_game + index_game)->mutex_game_list);
 
 				                client->pointer_list_game->ready_player[index_player & 1] = (bool)play;
 
@@ -242,7 +242,7 @@ void* handle_client(void* arg){
 
 				                pthread_cond_signal(&(((client->pointer_list_game) + temporal_index)->game_condition));
 
-					pthread_mutex_unlock(&client->pointer_list_game->mutex_game_list);
+					pthread_mutex_unlock(&client->(pointer_list_game+i)->mutex_game_list);
 
 					if(play){
 

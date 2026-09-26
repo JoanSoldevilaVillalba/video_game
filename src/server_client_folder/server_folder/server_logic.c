@@ -151,7 +151,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game,int* in
         	                	(game_list+i)->player_id[1] = temporary_fd;
 	                	        *(result_function) = 1;
 	                        	*(index_game) = i;
-					*(index_player) = temporary_fd;
+					*(index_player) = 1;//second player
 		                        pthread_cond_signal(&(game_list + i)->game_condition);
 	        	                pthread_mutex_unlock(&(game_list+i)->mutex_game_list);
 	                	       	snprintf(buffer_message,BUFFER_SIZE, "%s", protocol_string_holder[FOUND_GAME__ENTER_STATE]);
@@ -162,7 +162,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game,int* in
 
         	        	        (game_list+i)->game_id = i;
                 	        	(game_list+i)->player_id[0] = temporary_fd;
-					*(index_player) = temporary_fd;
+					*(index_player) = 0; //first player
 	                	        *(result_function) = 2;
         	                	*(index_game) = i;
 	                	        pthread_mutex_unlock(&(game_list+i)->mutex_game_list);
