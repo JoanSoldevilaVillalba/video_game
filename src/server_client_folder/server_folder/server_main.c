@@ -1,6 +1,5 @@
 b#include "server_logic.h"
 
-//pthread_mutex_t mutex_game_list;
 pthread_mutex_t mutex_thread_counter;
 int counter_thread;
 

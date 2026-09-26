@@ -15,9 +15,8 @@
 #define BUFFER_SIZE 64
 #define MAX_GAMES_SIZE 2
 #define MAX_CLIENT_THREADS (MAX_GAMES_SIZE*2)
-#define TM_EXP_WAIT_GAME 2 // the player is going to wait for 60 seconds every time that she or he desires to wait for someone to enter the game
-#define TM_EXP_POLL 10000 //this time experation limit is used for the low level impellemtnation of sending and receiving information from the client, therefor>
-
+#define TM_EXP_WAIT_GAME 2
+#define TM_EXP_POLL 10000
 
 typedef enum {
 	ENTERING_CREATING_GAME_STATE,
@@ -25,11 +24,10 @@ typedef enum {
 	WAIT_GAME_CREATING_STATE,
 	MENU_PREPERATION_STATE,
 	INIT_GAME_STATE,
-	WAIT_SECOND_PLAYER_READY_STATE, //this state is used for players to wait for the second player that enterd the game
+	WAIT_SECOND_PLAYER_READY_STATE,
 	PLAY_TIME_STATE,
 	QUIT_CLIENT_STATE,
 	QUIT_SERVER_STATE
-
 } FIRST_LAYER;
 
 typedef struct {
@@ -46,75 +44,39 @@ typedef struct {
 	game_struct_players* pointer_list_game;
 } struct_client;
 
-
 typedef enum{
+	FOUND_GAME__ENTER_STATE ,
+	CREATE_GAME__ENTER_STATE,
+	GAMES_FULL__ENTER_STATE ,
+	IN_GAME__ENTER_STATE ,
+	RESPONSE_MESSAGE__RANDOM_STATE,
+	NO_SCND_PL__WAIT_CREATE_STATE,
+	SCND_PL_FOUND__WAIT_CREATE_STATE,
+	NO_CREATED_GAME__WAIT_CREATE_STATE,
+	NOT_IN_GAME__MENU_PREP_STATE,
+	INDEX_PL_ERR__MENU_PREP_STATE,
+	INDEX_GM_ERR__MENU_PREP_STATE,
+	MENU_INFO__MENU_PREP_STATE,
+	NOT_IN_GAME__INIT_STATE,
+	ALREADY_INDICATED_GAME__INIT_STATE,
+	INDICATED_PL_GAME__INIT_STATE,
+	INDICATED_QUIT_GAME__INIT_STATE,
+	NOT_IN_GAME__W_SCND_PL_STATE,
+	NOT_INDICATED__W_SCND_PL_STATE,
+	OTHER_PL_QUIT__W_SCND_PL_STATE,
+	OTHER_PL_NOT_IND__W_SCND_PL_STATE,
+	OTHER_PL_PLAY_IND__W_SCND_PL_STATE,
+	QUIT_STATMENT__QC_STATE,
+	QUIT_STATMENT__QS_STATE,
+	DEFAULT
+} ProtocolmessageID;
 
-//each of these indices indicate different messages that each enum state of the server can send back to. There might be redundancy, repeated messages.
-//this redundancy is added to keep messages in their former enum state that they belong to
-
-FOUND_GAME__ENTER_STATE ,
-CREATE_GAME__ENTER_STATE,
-GAMES_FULL__ENTER_STATE ,
-IN_GAME__ENTER_STATE ,
-
-RESPONSE_MESSAGE__RANDOM_STATE,
-
-NO_SCND_PL__WAIT_CREATE_STATE,
-SCND_PL_FOUND__WAIT_CREATE_STATE,
-NO_CREATED_GAME__WAIT_CREATE_STATE,
-
-NOT_IN_GAME__MENU_PREP_STATE,
-//the following cases happen when for some reason one of the indeces is set to -1 or some value that is not correct, we are going to have to indicate this to the client.
-//this is added to protcol_message instead of error message because we are sending this to client
-INDEX_PL_ERR__MENU_PREP_STATE,
-INDEX_GM_ERR__MENU_PREP_STATE,
-MENU_INFO__MENU_PREP_STATE,
-
-NOT_IN_GAME__INIT_STATE,
-ALREADY_INDICATED_GAME__INIT_STATE,
-INDICATED_PL_GAME__INIT_STATE,
-INDICATED_QUIT_GAME__INIT_STATE,
-
-
-NOT_IN_GAME__W_SCND_PL_STATE,
-NOT_INDICATED__W_SCND_PL_STATE,
-OTHER_PL_QUIT__W_SCND_PL_STATE,
-OTHER_PL_NOT_IND__W_SCND_PL_STATE,
-OTHER_PL_PLAY_IND__W_SCND_PL_STATE,
-
-QUIT_STATMENT__QC_STATE,
-
-QUIT_STATMENT__QS_STATE,
-
-DEFAULT
-
-}ProtocolmessageID;
-
-typedef enum{
-
-NULL_POINTER,
-
-STRUCT_FIRST,
-NO_FIRST_NUMBER,
-
-BUFF_OVF,
-
-MESS_FIRST_VALUE
-
-}ErrormessageID;
-
-
-//the followig numbers are going to have to be revised
 extern const char* protocol_string_holder[];
-
 extern const char* error_string_holder[];
-
-//extern pthread_mutex_t mutex_game_list;
 extern pthread_mutex_t mutex_thread_counter;
 extern int counter_thread;
 
 void* handle_client(void* arg);
 void initilizeGames(game_struct_players* game_list);
-
 
 #endif //SERVER_H

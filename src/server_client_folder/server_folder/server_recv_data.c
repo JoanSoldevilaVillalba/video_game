@@ -1,5 +1,4 @@
-#include "server_send_data.h"
-#include "server_send_data.h"
+#include "server_send_dat_recv_data.h"
 
 ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t length){
 
@@ -20,7 +19,7 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
 		ret = poll(&pfd, 1, TM_EXP_POLL);
 
-		pErrHand_result = handle_poll_error(&pfd, ret, POLLIN);
+		pErrHand_result = handle_poll_error(&pfd, ret, POLLIN, buffer_error);
 
 		if(pErrHand_result != NO_SHUTDOWN){
 
@@ -38,7 +37,7 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
 		if(n<0){
 
-			rErrHand_result = error_handler_recv(n);
+			rErrHand_result = error_handler_recv(n, buffer_error);
 
 			if(rErrHand_result != NO_SHUTDOWN){
 
