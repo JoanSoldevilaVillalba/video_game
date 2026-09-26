@@ -70,6 +70,13 @@ typedef enum{
 	QUIT_STATMENT__QS_STATE,
 	DEFAULT
 } ProtocolmessageID;
+typedef enum{
+NULL_POINTER,
+STRUCT_FIRST,
+NO_FIRST_NUMBER,
+BUFF_OVF,
+MESS_FIRST_VALUE
+}errorStringId;
 
 extern const char* protocol_string_holder[];
 extern const char* error_string_holder[];
