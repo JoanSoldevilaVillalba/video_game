@@ -1,4 +1,4 @@
-b#include "server_logic.h"
+#include "server_logic.h"
 
 pthread_mutex_t mutex_thread_counter;
 int counter_thread;
@@ -27,7 +27,7 @@ void* handle_client(void* arg){
 
 		bytes_result = receive_validated_message(buffer_receive, buffer_error,client->socket_fd);
 
-		handlePEClient(&bytes_result, buffer_receive, buffer_error, &quit, &first_number, &type_shutdown);
+		handlePEClient(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
 
 		if(quit == false){
 
@@ -388,7 +388,7 @@ void* handle_client(void* arg){
 	pthread_mutex_unlock(&mutex_thread_counter);
 
 	//the following line of shutdown should only be called when the connection is still alive but disconnection proces has been initiated
-	if(type_shutdown == SOFT_SHUTDOWN){
+	if(bytes_result == SOFT_SHUTDOWN){
 
 		shutdown(client->socket_fd,SHUT_WR);
 
@@ -542,7 +542,7 @@ int main()
 
 		pthread_cond_destroy(&(game_list[i].game_condition));
 
-		pthread_mutex_destroy(&(game_list+i)->mutex_game_list, NULL);
+		pthread_mutex_destroy(&(game_list+i)->mutex_game_list);
 
 	}
 

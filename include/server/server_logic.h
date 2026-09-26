@@ -7,6 +7,8 @@
 #include "server.h"
 #include "server_send_recv_data.h"
 
+
+void create_game(int temporary_fd, int* result_function, int* index_game,int* index_player, game_struct_players* game_list, char* buffer_message);
 void time_init(struct timespec* ts, int time_experation);
 int str_to_int(char* buffer_message, char* buffer_error);
 void reverse(char* pointer);

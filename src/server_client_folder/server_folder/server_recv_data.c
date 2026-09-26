@@ -1,4 +1,4 @@
-#include "server_send_dat_recv_data.h"
+#include "server_send_recv_data.h"
 
 ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t length){
 
@@ -37,7 +37,7 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
 		if(n<0){
 
-			rErrHand_result = error_handler_recv(n, buffer_error);
+			rErrHand_result = error_handler_recv_send(n, buffer_error);
 
 			if(rErrHand_result != NO_SHUTDOWN){
 
@@ -68,6 +68,7 @@ ssize_t receive_framed_message(int fd, char* buffer_message, char* buffer_error,
 	if((int)header_bytes ==HARD_SHUTDOWN || (int)header_bytes == SOFT_SHUTDOWN){
 
 		return  header_bytes;
+	}
 
 	if(header_bytes< (ssize_t)sizeof(net_len)){
 
@@ -90,7 +91,7 @@ ssize_t receive_framed_message(int fd, char* buffer_message, char* buffer_error,
 
 	ssize_t payload_bytes = read_all(fd, buffer_message,buffer_error, (ssize_t)payload_len);
 
-	if((int)payload_bytes == SOFT_SHUTDOWN || (int)payload_bytese == HARD_SHUTDOWN){
+	if((int)payload_bytes == SOFT_SHUTDOWN || (int)payload_bytes == HARD_SHUTDOWN){
 
 		return payload_bytes;
 

@@ -2,11 +2,12 @@
 
 const char* error_string_network_poll[] = {
 [SYS_POLL] = "poll(): an error event was detected",
-[POLL_RDHUP] = "poll(): peer performed a half-close (POLLRDHUP)",
-[POLL_HUP] = "poll(): connection hangup detected (POLLHUP)",
-[POLL_ERR] = "poll(): error condition detected (POLLERR)",
-[POLL_NVAL] = "poll(): invalid file descriptor (POLLNVAL)",
-[POLL_IN] = "poll(): data is available to read (POLLIN)",
+[POLL_RDHUP_PERSONAL] = "poll(): peer performed a half-close (POLLRDHUP)",
+[POLL_HUP_PERSONAL] = "poll(): connection hangup detected (POLLHUP)",
+[POLL_ERR_PERSONAL] = "poll(): error condition detected (POLLERR)",
+[POLL_NVAL_PERSONAL] = "poll(): invalid file descriptor (POLLNVAL)",
+[POLL_IN_PERSONAL] = "poll(): data is available to read (POLLIN)",
+[POLL_OUT_PERSONAL]="poll(): data has been sent (POLLOUT)",
 [ERRNO_VALUES_POLL] = "poll(): system call failed; check errno",
 [TIME_EXP_POLL] ="poll(): timeout expired; no events occurred"
 };
@@ -24,7 +25,7 @@ const char* error_string_network_recv_send[]={
 
 };
 
-int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short expected,char*buffer_error){
+int handle_poll_error(struct pollfd* pstructure_pointer, int return_value_poll, short expected,char*buffer_error){
 
         int result = -1;
 
@@ -32,38 +33,38 @@ int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short expe
 
                         if(pstructure_pointer->revents & POLLRDHUP){
 
-                                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_RDHUP]);
+                                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_RDHUP_PERSONAL]);
 
                                 result = SOFT_SHUTDOWN;
 
                         }else if(pstructure_pointer->revents & POLLHUP){
 
-                                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_HUP]);
+                                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_HUP_PERSONAL]);
 
                                 result = HARD_SHUTDOWN;
 
                         }else if(pstructure_pointer->revents & POLLERR){
 
-                                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_ERR]);
+                                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_ERR_PERSONAL]);
 
                                 result = HARD_SHUTDOWN;
 
                         }else if(pstructure_pointer->revents & POLLNVAL){
 
-                                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_NVAL]);
+                                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_NVAL_PERSONAL]);
 
                                 result = HARD_SHUTDOWN;
 
                         }else if((pstructure_pointer->revents & POLLIN) && (pstructure_pointer->revents & expected)){
 
-                                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_IN]);
+                                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_poll[POLL_IN_PERSONAL]);
 
                                 result = NO_SHUTDOWN;
 
                         }else if((pstructure_pointer->revents & POLLOUT) && (pstructure_pointer->revents & expected)){
 
 
-				snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_network_poll[POLL_IN]);
+				snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_network_poll[POLL_OUT_PERSONAL]);
 
 				result = NO_SHUTDOWN;
 
@@ -71,14 +72,14 @@ int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short expe
 
         }else if(return_value_poll == -1){
 
-                snprintf(buffer_error, BUFFER_SIZE, error_string_network_poll[ERRNO_VALUES], strerror(errno));
+                snprintf(buffer_error, BUFFER_SIZE, error_string_network_poll[ERRNO_VALUES_POLL], strerror(errno));
 
                 result = HARD_SHUTDOWN;
 
 
         }else if(return_value_poll == 0){
 
-                snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_netowrk_poll[TIME_EXP_POLL]);
+                snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_network_poll[TIME_EXP_POLL]);
 
                 result = SOFT_SHUTDOWN;
 
@@ -93,7 +94,7 @@ int error_handler_recv_send(int result_receive,char*buffer_error){
 
 	int result = 0;
 
-                if(errno == EAGAIN || erno == EWUOLDBLOCK || errno ==EINTR){
+                if(errno == EAGAIN || errno == EWOULDBLOCK || errno ==EINTR){
 
                         result = NO_SHUTDOWN;
 
@@ -101,7 +102,7 @@ int error_handler_recv_send(int result_receive,char*buffer_error){
 
                         switch(result_receive){
 
-                                case EBDAF:
+                                case EBADF:
 
                                         snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_recv_send[INVALID_FD_RECV]);
 
@@ -129,7 +130,7 @@ int error_handler_recv_send(int result_receive,char*buffer_error){
 
                                         result = HARD_SHUTDOWN;
 
-                                        snprintf(buffer_error, BUFFE_SIZE, "%s", error_string_network_recv_send[NO_SPECIFIC_ERROR_RECV]);
+                                        snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_network_recv_send[NO_SPECIFIC_ERROR_RECV]);
 
                                         break;
 
