@@ -1,4 +1,4 @@
-b#include "server_logic.h"
+#include "server_logic.h"
 
 //pthread_mutex_t mutex_game_list;
 pthread_mutex_t mutex_thread_counter;
@@ -47,7 +47,7 @@ void* handle_client(void* arg){
 
 			case ENTERING_CREATING_GAME_STATE:{
 
-				if(index_game == -1 || index_player == -1){
+				if(index_game != -1 || index_player != -1){
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[IN_GAME__ENTER_STATE]);
 
@@ -151,7 +151,7 @@ void* handle_client(void* arg){
 
 				//client can always ask for menu infomration however many times it wants, there is no limit
 
-				if(index_game != -1 && index_player != -1){
+				if(index_game == -1 || index_player == -1){
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_IN_GAME__MENU_PREP_STATE]);
 
