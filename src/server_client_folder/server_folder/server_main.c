@@ -229,11 +229,11 @@ void* handle_client(void* arg){
 
 				        int play = buffer_receive[counter] - '0';
 
-				        pthread_mutex_lock(&client->pointer_list_game->mutex_game_list);
+					int temporal_index = index_game;
 
-				                client->pointer_list_game->ready_player[index_player & 1] = (bool)play;
+				        pthread_mutex_lock(&(client->pointer_list_game + temporal_index)->mutex_game_list);
 
-						int temporal_index = index_game;
+				                client->pointer_list_game->ready_player[index_player] = (bool)play;
 
 				                if(!play){
 
@@ -243,7 +243,7 @@ void* handle_client(void* arg){
 
 				                pthread_cond_signal(&(((client->pointer_list_game) + temporal_index)->game_condition));
 
-					pthread_mutex_unlock(&client->pointer_list_game->mutex_game_list);
+					pthread_mutex_unlock(&(client->pointer_list_game + temporal_index)->mutex_game_list);
 
 					if(play){
 
@@ -378,7 +378,7 @@ void* handle_client(void* arg){
 			counter_thread --;
 
 		}
-	pthread_mutex_lock(&mutex_thread_counter);
+	pthread_mutex_unlock(&mutex_thread_counter);
 
 
 	if(index_game != -1 && index_player != -1){
