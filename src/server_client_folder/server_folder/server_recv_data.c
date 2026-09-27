@@ -16,11 +16,17 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
 	pfd.revents = 0;
 
+	int saved_errno_poll = 0;
+
+	int saved_errno_recv = 0;
+
         while(total_length < length){
 
 		ret = poll(&pfd, 1, TM_EXP_POLL);
 
-		pErrHand_result = handle_poll_error(&pfd, ret, POLLIN);
+		saved_errno_poll = errno;
+
+		pErrHand_result = handle_poll_error(&pfd, ret, POLLIN, saved_errno_poll);
 
 		if(pErrHand_result != NO_SHUTDOWN){
 
@@ -30,6 +36,8 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
                 n = recv(temporary_fd,buffer+total_length,length - total_length, 0);
 
+		saved_errno_recv = errno;
+
 		if(n == 0){
 
 			break;
@@ -38,7 +46,7 @@ ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t l
 
 		if(n<0){
 
-			rErrHand_result = error_handler_recv(n);
+			rErrHand_result = error_handler_recv(n, saved_errno_recv);
 
 			if(rErrHand_result != NO_SHUTDOWN){
 

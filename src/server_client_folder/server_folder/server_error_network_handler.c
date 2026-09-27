@@ -24,7 +24,7 @@ const char* error_string_network_recv_send[]={
 
 };
 
-int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short expected){
+int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short expected, int saved_errno){
 
         int result = -1;
 
@@ -71,7 +71,7 @@ int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short expe
 
         }else if(return_value_poll == -1){
 
-                snprintf(buffer_error, BUFFER_SIZE, error_string_network_poll[ERRNO_VALUES], strerror(errno));
+                snprintf(buffer_error, BUFFER_SIZE, error_string_network_poll[ERRNO_VALUES], strerror(saved_errno));
 
                 result = HARD_SHUTDOWN;
 
@@ -89,11 +89,11 @@ int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short expe
 
 
 }
-int error_handler_recv_send(int result_receive){
+int error_handler_recv_send(int result_receive, int saved_errno){
 
 	int result = 0;
 
-                if(errno == EAGAIN || erno == EWUOLDBLOCK || errno ==EINTR){
+                if(saved_errno == EAGAIN || saved_errno == EWUOLDBLOCK || saved_errno ==EINTR){
 
                         result = NO_SHUTDOWN;
 

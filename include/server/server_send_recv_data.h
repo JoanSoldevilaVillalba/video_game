@@ -63,6 +63,10 @@ extern const char* error_string_network_holder[];
 
 extern const char* error_string_network_recv_send[];
 
+int handle_poll_error(pfd* pstructure_pointer, int return_value_poll, short expected, int saved_errno);
+
+int error_handler_recv_send(int result_receive, int saved_errno);
+
 ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error, ssize_t length);
 
 ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssize_t length);

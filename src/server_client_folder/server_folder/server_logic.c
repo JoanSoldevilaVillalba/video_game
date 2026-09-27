@@ -528,7 +528,7 @@ void handlePEServer(ssize_t* result, char* buffer_message, char* buffer_error, b
 
         printf("Server has sent the following number of bytes: %d\n",(int)*(result));
 
-        if(*(result) == -1){
+        if(*(result) < 0){
 
                 if(buffer_error == NULL){
 

@@ -15,11 +15,17 @@ ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssiz
 
 	pfd.revents = 0;
 
+	int saved_errno_poll = 0;
+
+	int saved_errno_send = 0;
+
         while(total_length<length){
 
 		ret = poll(&pfd, 1, TM_EXP_POLL);
 
-		pError_result = handle_poll_error(&pfd, ret , POLLOUT);
+		saved_errno_poll = errno;
+
+		pError_result = handle_poll_error(&pfd, ret , POLLOUT, saved_errno_poll);
 
 		if(pError_result != NO_SHUTDOWN){
 
@@ -29,6 +35,8 @@ ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssiz
 
                 n = send(temporary_fd,buffer+total_length,length - total_length,0);
 
+		saved_errno_send = errno;
+
                 if(n == 0){
 
 			break;
@@ -37,7 +45,7 @@ ssize_t send_all(int temporary_fd, const char*  buffer, char* buffer_error, ssiz
 
 		if(n<0){
 
-			pError_send = error_handler_recv_send(n);
+			pError_send = error_handler_recv_send(n, saved_errno_send);
 
 			if(pError_send != NO_SHUTDOWN){
 
