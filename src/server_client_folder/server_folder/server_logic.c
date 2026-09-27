@@ -407,15 +407,9 @@ int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, s
 
          	int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &list_game_pointer->mutex_game_list, ts);
 
-	         if(list_game_pointer->player_id[index_player ^ 1] == -1){
+	        if(rc == ETIMEDOUT){
 
-	         	timed_out = 1;
-
-	         }
-
-	         if(rc == ETIMEDOUT){
-
-		                timed_out = 1;
+			timed_out = 1;
 
 		}
 
@@ -438,12 +432,6 @@ int wait_signal_scnd_pl_indicate(game_struct_players* list_game_pointer, int ind
          while(list_game_pointer->ready_player[index_player ^ 1] == false && !timed_out){
 
                 int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &list_game_pointer->mutex_game_list, ts);
-
-                 if(list_game_pointer->ready_player[index_player ^ 1] == false){
-
-                        timed_out = 1;
-
-                 }
 
                  if(rc == ETIMEDOUT){
 

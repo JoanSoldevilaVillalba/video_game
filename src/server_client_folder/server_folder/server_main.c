@@ -378,17 +378,21 @@ void* handle_client(void* arg){
 			counter_thread --;
 
 		}
+	pthread_mutex_lock(&mutex_thread_counter);
 
 
 	if(index_game != -1 && index_player != -1){
 
-		eliminate_game_slot(client,&index_game, &index_player);
+		int index_game_temporal = index_game; //we are going to erase this, this is needed in order to implement the lock 
+
+		pthread_mutex_lock((client->pointer_list_game + index_game_temporal)->mutex_game_list);
+
+			eliminate_game_slot(client,&index_game, &index_player);
+
+		pthread_mutex_lock((client->pointer_list_game + index_game_temporal)->mutex_game_list);
 
 	}
 
-	pthread_mutex_unlock(&mutex_thread_counter);
-
-	//the following line of shutdown should only be called when the connection is still alive but disconnection proces has been initiated
 	if(type_shutdown == SOFT_SHUTDOWN){
 
 		shutdown(client->socket_fd,SHUT_WR);
