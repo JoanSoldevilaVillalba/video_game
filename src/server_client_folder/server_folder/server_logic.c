@@ -449,7 +449,7 @@ int wait_signal_scnd_pl_indicate(game_struct_players* list_game_pointer, int ind
 
 void waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, char buffer_receive[], int* timed_out, char* buffer_message){
 
-		game_struct_players* list_game_pointer = (client->pointer_list_game) + *(index_player);
+		game_struct_players* list_game_pointer = (client->pointer_list_game) + *(index_game);
 
 		*(timed_out) = wait_signal_scnd_pl_indicate(list_game_pointer, (*index_player), ts, time_experation);
 
