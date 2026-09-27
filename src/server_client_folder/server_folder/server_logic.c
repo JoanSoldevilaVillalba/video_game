@@ -380,9 +380,9 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 
 	game_struct_players* temp_pointer = (fast_pointer->pointer_list_game) + *(index_game);
 
-		temp_pointer->player_id[*(index_player) & 1] = -1;
+		temp_pointer->player_id[*(index_player)] = -1;
 
-		temp_pointer->ready_player[*(index_player) & 1] = false;
+		temp_pointer->ready_player[*(index_player)] = false;
 
 		if(temp_pointer->player_id[*(index_player) ^ 1] == -1){
 
