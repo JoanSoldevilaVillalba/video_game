@@ -241,7 +241,7 @@ void* handle_client(void* arg){
 
 				                }
 
-				                pthread_cond_signal(&(((client->pointer_list_game) + temporal_index)->game_condition));
+				                pthread_cond_signal(&((client->pointer_list_game + temporal_index)->game_condition));
 
 					pthread_mutex_unlock(&(client->pointer_list_game + temporal_index)->mutex_game_list);
 
