@@ -1,5 +1,4 @@
 #include "server_send_data.h"
-#include "server_send_data.h"
 
 ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error  , ssize_t length){
 
