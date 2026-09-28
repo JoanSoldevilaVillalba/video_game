@@ -93,7 +93,7 @@ int error_handler_recv_send(int result_receive, int saved_errno){
 
 	int result = 0;
 
-                if(saved_errno == EAGAIN || saved_errno == EWUOLDBLOCK || saved_errno ==EINTR){
+                if(saved_errno == EAGAIN || saved_errno == EWOULDBLOCK || saved_errno ==EINTR){
 
                         result = NO_SHUTDOWN;
 
@@ -101,7 +101,7 @@ int error_handler_recv_send(int result_receive, int saved_errno){
 
                         switch(result_receive){
 
-                                case EBDAF:
+                                case EBADF:
 
                                         snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_network_recv_send[INVALID_FD_RECV]);
 
@@ -129,7 +129,7 @@ int error_handler_recv_send(int result_receive, int saved_errno){
 
                                         result = HARD_SHUTDOWN;
 
-                                        snprintf(buffer_error, BUFFE_SIZE, "%s", error_string_network_recv_send[NO_SPECIFIC_ERROR_RECV]);
+                                        snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_network_recv_send[NO_SPECIFIC_ERROR_RECV]);
 
                                         break;
 
