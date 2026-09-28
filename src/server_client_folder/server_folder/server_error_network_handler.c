@@ -7,7 +7,7 @@ const char* error_string_network_poll[] = {
 [POLL_ERR] = "poll(): error condition detected (POLLERR)",
 [POLL_NVAL] = "poll(): invalid file descriptor (POLLNVAL)",
 [POLL_IN] = "poll(): data is available to read (POLLIN)",
-[ERRNO_VALUES_POLL] = "poll(): system call failed; check errno",
+[ERRNO_VALUES_POLL] = "poll(): system call failed; check errno: %s",
 [TIME_EXP_POLL] ="poll(): timeout expired; no events occurred"
 };
 
