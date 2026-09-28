@@ -2,6 +2,7 @@
 
 const char* error_string_network_poll[] = {
 [SYS_POLL] = "poll(): an error event was detected",
+<<<<<<< HEAD
 [POLL_RDHUP_PERSONAL] = "poll(): peer performed a half-close (POLLRDHUP)",
 [POLL_HUP_PERSONAL] = "poll(): connection hangup detected (POLLHUP)",
 [POLL_ERR_PERSONAL] = "poll(): error condition detected (POLLERR)",
@@ -9,6 +10,14 @@ const char* error_string_network_poll[] = {
 [POLL_IN_PERSONAL] = "poll(): data is available to read (POLLIN)",
 [POLL_OUT_PERSONAL]="poll(): data has been sent (POLLOUT)",
 [ERRNO_VALUES_POLL] = "poll(): system call failed; check errno",
+=======
+[POLL_RDHUP] = "poll(): peer performed a half-close (POLLRDHUP)",
+[POLL_HUP] = "poll(): connection hangup detected (POLLHUP)",
+[POLL_ERR] = "poll(): error condition detected (POLLERR)",
+[POLL_NVAL] = "poll(): invalid file descriptor (POLLNVAL)",
+[POLL_IN] = "poll(): data is available to read (POLLIN)",
+[ERRNO_VALUES_POLL] = "poll(): system call failed; check errno: %s",
+>>>>>>> mutex_gamelist_refactor
 [TIME_EXP_POLL] ="poll(): timeout expired; no events occurred"
 };
 
@@ -25,7 +34,7 @@ const char* error_string_network_recv_send[]={
 
 };
 
-int handle_poll_error(struct pollfd* pstructure_pointer, int return_value_poll, short expected,char*buffer_error){
+int handle_poll_error(struct pollfd* pstructure_pointer, int return_value_poll, short expected, int saved_errno, char*buffer_error){
 
         int result = -1;
 
@@ -72,7 +81,7 @@ int handle_poll_error(struct pollfd* pstructure_pointer, int return_value_poll, 
 
         }else if(return_value_poll == -1){
 
-                snprintf(buffer_error, BUFFER_SIZE, error_string_network_poll[ERRNO_VALUES_POLL], strerror(errno));
+                snprintf(buffer_error, BUFFER_SIZE, error_string_network_poll[ERRNO_VALUES], strerror(saved_errno));
 
                 result = HARD_SHUTDOWN;
 
@@ -90,11 +99,11 @@ int handle_poll_error(struct pollfd* pstructure_pointer, int return_value_poll, 
 
 
 }
-int error_handler_recv_send(int result_receive,char*buffer_error){
+int error_handler_recv_send(int result_receive, int saved_errno, char* buffer_error){
 
 	int result = 0;
 
-                if(errno == EAGAIN || errno == EWOULDBLOCK || errno ==EINTR){
+                if(saved_errno == EAGAIN || saved_errno == EWOULDBLOCK || saved_errno ==EINTR){
 
                         result = NO_SHUTDOWN;
 

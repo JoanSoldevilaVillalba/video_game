@@ -369,9 +369,9 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 
 	game_struct_players* temp_pointer = (fast_pointer->pointer_list_game) + *(index_game);
 
-		temp_pointer->player_id[*(index_player) & 1] = -1;
+		temp_pointer->player_id[*(index_player)] = -1;
 
-		temp_pointer->ready_player[*(index_player) & 1] = false;
+		temp_pointer->ready_player[*(index_player)] = false;
 
 		if(temp_pointer->player_id[*(index_player) ^ 1] == -1){
 
@@ -396,15 +396,9 @@ int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, s
 
          	int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &list_game_pointer->mutex_game_list, ts);
 
-	         if(list_game_pointer->player_id[index_player ^ 1] == -1){
+	        if(rc == ETIMEDOUT){
 
-	         	timed_out = 1;
-
-	         }
-
-	         if(rc == ETIMEDOUT){
-
-		                timed_out = 1;
+			timed_out = 1;
 
 		}
 
@@ -428,12 +422,6 @@ int wait_signal_scnd_pl_indicate(game_struct_players* list_game_pointer, int ind
 
                 int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &list_game_pointer->mutex_game_list, ts);
 
-                 if(list_game_pointer->ready_player[index_player ^ 1] == false){
-
-                        timed_out = 1;
-
-                 }
-
                  if(rc == ETIMEDOUT){
 
                                 timed_out = 1;
@@ -450,7 +438,7 @@ int wait_signal_scnd_pl_indicate(game_struct_players* list_game_pointer, int ind
 
 void waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, char buffer_receive[], int* timed_out, char* buffer_message){
 
-		game_struct_players* list_game_pointer = (client->pointer_list_game) + *(index_player);
+		game_struct_players* list_game_pointer = (client->pointer_list_game) + *(index_game);
 
 		*(timed_out) = wait_signal_scnd_pl_indicate(list_game_pointer, (*index_player), ts, time_experation);
 
@@ -529,7 +517,7 @@ void handlePEServer(ssize_t* result, char* buffer_message, char* buffer_error, b
 
         printf("Server has sent the following number of bytes: %d\n",(int)*(result));
 
-        if(*(result) == -1){
+        if(*(result) < 0){
 
                 if(buffer_error == NULL){
 
