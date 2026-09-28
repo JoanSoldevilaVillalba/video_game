@@ -28,7 +28,7 @@ void* handle_client(void* arg){
 
 		bytes_result = receive_validated_message(buffer_receive, buffer_error,client->socket_fd);
 
-		handlePEClient(&bytes_result, buffer_receive, buffer_error, &quit, &first_number, &type_shutdown);
+		handlePEClient(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
 
 		if(quit == false){
 
@@ -385,15 +385,15 @@ void* handle_client(void* arg){
 
 		int index_game_temporal = index_game; //we are going to erase this, this is needed in order to implement the lock 
 
-		pthread_mutex_lock((client->pointer_list_game + index_game_temporal)->mutex_game_list);
+		pthread_mutex_lock(&(client->pointer_list_game + index_game_temporal)->mutex_game_list);
 
 			eliminate_game_slot(client,&index_game, &index_player);
 
-		pthread_mutex_lock((client->pointer_list_game + index_game_temporal)->mutex_game_list);
+		pthread_mutex_lock(&(client->pointer_list_game + index_game_temporal)->mutex_game_list);
 
 	}
 
-	if(type_shutdown == SOFT_SHUTDOWN){
+	if(bytes_result == SOFT_SHUTDOWN){
 
 		shutdown(client->socket_fd,SHUT_WR);
 
@@ -547,7 +547,7 @@ int main()
 
 		pthread_cond_destroy(&(game_list[i].game_condition));
 
-		pthread_mutex_destroy(&(game_list+i)->mutex_game_list, NULL);
+		pthread_mutex_destroy(&(game_list+i)->mutex_game_list);
 
 	}
 

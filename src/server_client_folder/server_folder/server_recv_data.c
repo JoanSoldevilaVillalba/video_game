@@ -78,6 +78,8 @@ ssize_t receive_framed_message(int fd, char* buffer_message, char* buffer_error,
 
 		return  header_bytes;
 
+	}
+
 	if(header_bytes< (ssize_t)sizeof(net_len)){
 
 		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_network_recv_send[RECV_LEN]);
@@ -99,7 +101,7 @@ ssize_t receive_framed_message(int fd, char* buffer_message, char* buffer_error,
 
 	ssize_t payload_bytes = read_all(fd, buffer_message,buffer_error, (ssize_t)payload_len);
 
-	if((int)payload_bytes == SOFT_SHUTDOWN || (int)payload_bytese == HARD_SHUTDOWN){
+	if((int)payload_bytes == SOFT_SHUTDOWN || (int)payload_bytes == HARD_SHUTDOWN){
 
 		return payload_bytes;
 
