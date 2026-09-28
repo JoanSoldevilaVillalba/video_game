@@ -38,6 +38,10 @@ typedef enum {
 extern const char* error_string_network_holder[];
 extern const char* error_string_network_recv_send[];
 
+int handle_poll_error(struct pollfd* pstructure_pointer, int return_value_poll, short expected, int saved_errno, char* buffer_error);
+
+int error_handler_recv_send(int result_receive, int saved_errno, char* buffer_error);
+
 ssize_t read_all(int temporary_fd, char* buffer, char* buffer_error, ssize_t length);
 ssize_t send_all(int temporary_fd, const char* buffer, char* buffer_error, ssize_t length);
 ssize_t send_framed_message(int fd, const char* payload, char* buffer_error, uint32_t payload_len);
