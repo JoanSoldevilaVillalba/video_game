@@ -211,11 +211,7 @@ void* handle_client(void* arg){
 
 					int index_temporal = index_game
 
-					pthread_mutex_lock(&(client->pointer_list_game + index_temporal)->mutex_game_list)
-
 					 if((client->pointer_list_game + index_temporal)->ready_player[index_player] == true){ //pthread_mutex_lock should be added here, we are reading a value that a thread can change, race condition
-
-						pthread_mutex_unlock(&(client->pointer_list_game + index_temporal)->mutex_game_list);
 
 						snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[ALREADY_INDICATED_GAME__INIT_STATE]);//in this case the player has already indicated what it wants to do
 
@@ -232,6 +228,8 @@ void* handle_client(void* arg){
 							counter = 2;
 
 						        int play = buffer_receive[counter] - '0';
+
+						pthread_mutex_lock(&(client->pointer_list_game + index_temporal)->game_condition);
 
 				        	        (client->pointer_list_game + index_temporal)->ready_player[index_player] = (bool)play;
 
