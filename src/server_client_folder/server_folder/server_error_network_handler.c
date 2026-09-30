@@ -2,7 +2,6 @@
 
 const char* error_string_network_poll[] = {
 [SYS_POLL] = "poll(): an error event was detected",
-<<<<<<< HEAD
 [POLL_RDHUP_PERSONAL] = "poll(): peer performed a half-close (POLLRDHUP)",
 [POLL_HUP_PERSONAL] = "poll(): connection hangup detected (POLLHUP)",
 [POLL_ERR_PERSONAL] = "poll(): error condition detected (POLLERR)",
@@ -10,14 +9,6 @@ const char* error_string_network_poll[] = {
 [POLL_IN_PERSONAL] = "poll(): data is available to read (POLLIN)",
 [POLL_OUT_PERSONAL]="poll(): data has been sent (POLLOUT)",
 [ERRNO_VALUES_POLL] = "poll(): system call failed; check errno",
-=======
-[POLL_RDHUP] = "poll(): peer performed a half-close (POLLRDHUP)",
-[POLL_HUP] = "poll(): connection hangup detected (POLLHUP)",
-[POLL_ERR] = "poll(): error condition detected (POLLERR)",
-[POLL_NVAL] = "poll(): invalid file descriptor (POLLNVAL)",
-[POLL_IN] = "poll(): data is available to read (POLLIN)",
-[ERRNO_VALUES_POLL] = "poll(): system call failed; check errno: %s",
->>>>>>> mutex_gamelist_refactor
 [TIME_EXP_POLL] ="poll(): timeout expired; no events occurred"
 };
 
@@ -81,7 +72,7 @@ int handle_poll_error(struct pollfd* pstructure_pointer, int return_value_poll, 
 
         }else if(return_value_poll == -1){
 
-                snprintf(buffer_error, BUFFER_SIZE, error_string_network_poll[ERRNO_VALUES], strerror(saved_errno));
+                snprintf(buffer_error, BUFFER_SIZE, error_string_network_poll[ERRNO_VALUES_POLL], strerror(saved_errno));
 
                 result = HARD_SHUTDOWN;
 
