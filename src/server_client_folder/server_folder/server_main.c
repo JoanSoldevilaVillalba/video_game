@@ -1,6 +1,5 @@
-b#include "server_logic.h"
+#include "server_logic.h"
 
-//pthread_mutex_t mutex_game_list;
 pthread_mutex_t mutex_thread_counter;
 int counter_thread;
 
@@ -28,13 +27,13 @@ void* handle_client(void* arg){
 
 		bytes_result = receive_validated_message(buffer_receive, buffer_error,client->socket_fd);
 
-		handlePEClient(&bytes_result, buffer_receive, buffer_error, &quit, &first_number, &type_shutdown);
+		handlePEClient(&bytes_result, buffer_receive, buffer_error, &quit, &first_number);
 
 		if(quit == false){
 
 			first_number = str_to_int(buffer_receive, buffer_error);
 
-		}else if(bytes_result = SOFT_SHUTDOWN || bytes_result == HARD_SHUTDOWN){
+		}else if(bytes_result == SOFT_SHUTDOWN || bytes_result == HARD_SHUTDOWN){
 
 			break; //we are breaking without sending a quit statment to the client
 
@@ -47,7 +46,7 @@ void* handle_client(void* arg){
 
 			case ENTERING_CREATING_GAME_STATE:{
 
-				if(index_game == -1 || index_player == -1){
+				if(index_game != -1 || index_player != -1){
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[IN_GAME__ENTER_STATE]);
 
@@ -151,7 +150,7 @@ void* handle_client(void* arg){
 
 				//client can always ask for menu infomration however many times it wants, there is no limit
 
-				if(index_game != -1 && index_player != -1){
+				if(index_game == -1 || index_player == -1){
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_IN_GAME__MENU_PREP_STATE]);
 
@@ -196,7 +195,7 @@ void* handle_client(void* arg){
 
 				if(index_game == -1 || index_player == -1){
 
-					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_IN_GAME__INIT_STATE]); //in this case we have not enterd a game
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_IN_GAME__INIT_STATE]);
 
 					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
@@ -207,63 +206,70 @@ void* handle_client(void* arg){
         	                                break;
 
                 	                }
-
-				}else if((client->pointer_list_game + index_game)->ready_player[index_player] == true){
-
-					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[ALREADY_INDICATED_GAME__INIT_STATE]);//in this case the player has already indicated what it wants to do
-
-					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
-
-					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
-
-	                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
-
-        	                                break;
-
-                	                }
-
 
 				}else{
 
-					counter = 2;
+					int index_temporal = index_game;
 
-				        int play = buffer_receive[counter] - '0';
+					 if((client->pointer_list_game + index_temporal)->ready_player[index_player] == true){
 
-				        pthread_mutex_lock(&client->pointer_list_game->mutex_game_list);
+						snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[ALREADY_INDICATED_GAME__INIT_STATE]);//in this case the player has already indicated what it wants to do
 
-				                client->pointer_list_game->ready_player[index_player & 1] = (bool)play;
+						bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
-						int temporal_index = index_game;
+						handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
 
-				                if(!play){
+		                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
 
-							eliminate_game_slot((void*)client, &index_game, &index_player);
+	        	                                break;
 
-				                }
+						}
 
-				                pthread_cond_signal(&(((client->pointer_list_game) + temporal_index)->game_condition));
+                	                }else{
 
-					pthread_mutex_unlock(&client->pointer_list_game->mutex_game_list);
+							counter = 2;
 
-					if(play){
+						        int play = buffer_receive[counter] - '0';
 
-						snprintf(temporary_buffer, BUFFER_SIZE,"%s",protocol_string_holder[INDICATED_PL_GAME__INIT_STATE]);
+						pthread_mutex_lock(&(client->pointer_list_game + index_temporal)->mutex_game_list);
 
-					}else{
+				        	        (client->pointer_list_game + index_temporal)->ready_player[index_player] = (bool)play;
 
-						snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[INDICATED_QUIT_GAME__INIT_STATE]);
+					                if(!play){
 
-					}
+								eliminate_game_slot((void*)client, &index_game, &index_player);
 
-					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
+					                }
 
-					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+					                pthread_cond_signal(&((client->pointer_list_game + index_temporal)->game_condition));
 
-	                                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+						pthread_mutex_unlock(&(client->pointer_list_game + index_temporal)->mutex_game_list);
 
-	                                        break;
+						if(play){
+
+							snprintf(temporary_buffer, BUFFER_SIZE,"%s",protocol_string_holder[INDICATED_PL_GAME__INIT_STATE]);
+
+						}else{
+
+							snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[INDICATED_QUIT_GAME__INIT_STATE]);
+
+						}
+
+						bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
+
+						handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+
+	        	                        if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+		                                        break;
 
 	                                }
+
+
+
+
+				}
+
 
 
 
@@ -378,18 +384,22 @@ void* handle_client(void* arg){
 			counter_thread --;
 
 		}
+	pthread_mutex_unlock(&mutex_thread_counter);
 
 
 	if(index_game != -1 && index_player != -1){
 
-		eliminate_game_slot(client,&index_game, &index_player);
+		int index_game_temporal = index_game; //we are going to erase this, this is needed in order to implement the lock 
+
+		pthread_mutex_lock(&(client->pointer_list_game + index_game_temporal)->mutex_game_list);
+
+			eliminate_game_slot(client,&index_game, &index_player);
+
+		pthread_mutex_unlock(&(client->pointer_list_game + index_game_temporal)->mutex_game_list);
 
 	}
 
-	pthread_mutex_unlock(&mutex_thread_counter);
-
-	//the following line of shutdown should only be called when the connection is still alive but disconnection proces has been initiated
-	if(type_shutdown == SOFT_SHUTDOWN){
+	if(bytes_result == SOFT_SHUTDOWN){
 
 		shutdown(client->socket_fd,SHUT_WR);
 
@@ -543,7 +553,7 @@ int main()
 
 		pthread_cond_destroy(&(game_list[i].game_condition));
 
-		pthread_mutex_destroy(&(game_list+i)->mutex_game_list, NULL);
+		pthread_mutex_destroy(&(game_list+i)->mutex_game_list);
 
 	}
 

@@ -38,27 +38,16 @@ const char* protocol_string_holder[] ={
 };
 
 const char* error_string_holder[] = {
-    [SYS_POLL]              = "Error in event driven poll syscall (errno str):%s",
-    [TIME_EXPIRED_POLL]     = "Error, time out expired for poll event",
-    [SYS_RECV]              = "Error, recv syscall went wrong (errno str):%s",
-    [SYS_SEND]              = "Error, send syscall went wrong (errno str): %s",
-    [INIT_SEND_LEN]         = "Error, amount of bytes sent in init message is not equal to 4 bytes",
-    [MESS_SEND_LEN]         = "Error, amount of bytes sent of real message is not equal to length/bytes of message",
-    [INIT_RECV_LEN]         = "Error, amount of bytes received in init message is not equal to 4 bytes",
-    [MESS_RECV_LEN_OVF]     = "Error, amount of bytes recevied in init message is overflowing (>BUFFER_SIZE)",
-    [MESS_RECV_LEN]         = "Error, amount of bytes received in real mesage is not equal to length/bytes of init message",
-    [BUFF_OVF]              = "Error, message length is too large: overflow",
-    [BUFF_STRUCT]           = "Error, message odes not have the correct structure",
-    [BUFF_PROT_FIRST]       = "Error, first protocol number was not found",
-    [BUFF_PROT_SECOND]      = "Error, second protocol number was not found",
-    [MENU_INDEX]            = "Error, game index contains bad value",
-    [STRUCT_FIRST]          = "Error, first seperator was not found in the following message: %s",
-    [STRUCT_SECOND]         = "Error, second seperator was not found in the following message: %s",
-    [NULL_MESS]             = "Error, null message",
-    [PROT_FIRST_VALUE]      = "Error, first protocol number is out of range (value not correct)",
-    [PROT_SECOND_VALUE]     = "Error, second protocol number is out of range (value not correct)",
-    [NO_FIRST_NUMBER]       = "Error, the following message does not contain first protocol number: %s",
-    [NO_SECOND_NUMBER]      = "Error, the folloiwng message does not contain second protocol number: %s"
+[NULL_POINTER] ="Null pointer is present",
+
+[STRUCT_FIRST] = "First | was not found in message",
+[NO_FIRST_NUMBER] = "first protocol number was not found",
+
+[BUFF_OVF] ="Buffer overflow",
+
+[MESS_FIRST_VALUE] = "Value of first protocol number was not correct",
+
+
 };
 
 
@@ -75,7 +64,7 @@ int str_to_int(char* buffer_message, char* buffer_error){
 
 	if(buffer_message == NULL){
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_POINTER]);
 
 		return -1;
 
@@ -162,7 +151,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game,int* in
         	                	(game_list+i)->player_id[1] = temporary_fd;
 	                	        *(result_function) = 1;
 	                        	*(index_game) = i;
-					*(index_player) = temporary_fd;
+					*(index_player) = 1;//second player
 		                        pthread_cond_signal(&(game_list + i)->game_condition);
 	        	                pthread_mutex_unlock(&(game_list+i)->mutex_game_list);
 	                	       	snprintf(buffer_message,BUFFER_SIZE, "%s", protocol_string_holder[FOUND_GAME__ENTER_STATE]);
@@ -173,7 +162,7 @@ void create_game(int temporary_fd, int* result_function, int* index_game,int* in
 
         	        	        (game_list+i)->game_id = i;
                 	        	(game_list+i)->player_id[0] = temporary_fd;
-					*(index_player) = temporary_fd;
+					*(index_player) = 0; //first player
 	                	        *(result_function) = 2;
         	                	*(index_game) = i;
 	                	        pthread_mutex_unlock(&(game_list+i)->mutex_game_list);
@@ -216,7 +205,7 @@ bool validate_message_structure(char* buffer_message, char* buffer_error){
 
 	if(buffer_message == NULL){
 
-		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
+		snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_POINTER]);
 
 		return false;
 
@@ -248,7 +237,7 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
         if(buffer_message == NULL){
 
-                snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_MESS]);
+                snprintf(buffer_error, BUFFER_SIZE, "%s", error_string_holder[NULL_POINTER]);
 
                 return false;
 
@@ -277,7 +266,7 @@ bool validate_message_numbers(char* buffer_message, char* buffer_error){
 
         if(first_number<0 || first_number>10){
 
-                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[PROT_FIRST_VALUE]);
+                snprintf(buffer_error, BUFFER_SIZE, "%s",error_string_holder[MESS_FIRST_VALUE]);
 
                 return false;
 
@@ -380,9 +369,9 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 
 	game_struct_players* temp_pointer = (fast_pointer->pointer_list_game) + *(index_game);
 
-		temp_pointer->player_id[*(index_player) & 1] = -1;
+		temp_pointer->player_id[*(index_player)] = -1;
 
-		temp_pointer->ready_player[*(index_player) & 1] = false;
+		temp_pointer->ready_player[*(index_player)] = false;
 
 		if(temp_pointer->player_id[*(index_player) ^ 1] == -1){
 
@@ -407,15 +396,9 @@ int wait_signal_cond(game_struct_players* list_game_pointer, int index_player, s
 
          	int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &list_game_pointer->mutex_game_list, ts);
 
-	         if(list_game_pointer->player_id[index_player ^ 1] == -1){
+	        if(rc == ETIMEDOUT){
 
-	         	timed_out = 1;
-
-	         }
-
-	         if(rc == ETIMEDOUT){
-
-		                timed_out = 1;
+			timed_out = 1;
 
 		}
 
@@ -439,12 +422,6 @@ int wait_signal_scnd_pl_indicate(game_struct_players* list_game_pointer, int ind
 
                 int rc = pthread_cond_timedwait((&list_game_pointer->game_condition), &list_game_pointer->mutex_game_list, ts);
 
-                 if(list_game_pointer->ready_player[index_player ^ 1] == false){
-
-                        timed_out = 1;
-
-                 }
-
                  if(rc == ETIMEDOUT){
 
                                 timed_out = 1;
@@ -461,7 +438,7 @@ int wait_signal_scnd_pl_indicate(game_struct_players* list_game_pointer, int ind
 
 void waiting_for_player(struct_client* client, int* index_game,int* index_player, int time_experation, struct timespec* ts, char buffer_receive[], int* timed_out, char* buffer_message){
 
-		game_struct_players* list_game_pointer = (client->pointer_list_game) + *(index_player);
+		game_struct_players* list_game_pointer = (client->pointer_list_game) + *(index_game);
 
 		*(timed_out) = wait_signal_scnd_pl_indicate(list_game_pointer, (*index_player), ts, time_experation);
 
@@ -540,7 +517,7 @@ void handlePEServer(ssize_t* result, char* buffer_message, char* buffer_error, b
 
         printf("Server has sent the following number of bytes: %d\n",(int)*(result));
 
-        if(*(result) == -1){
+        if(*(result) < 0){
 
                 if(buffer_error == NULL){
 
