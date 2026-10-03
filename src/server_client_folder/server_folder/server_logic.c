@@ -347,13 +347,10 @@ ssize_t receive_validated_message(char* buffer_message,char* buffer_error, int c
 
 void switch_game_player_position(game_struct_players* list_game_pointer, int* index_player){
 
-	pthread_mutex_lock(&list_game_pointer->mutex_game_list);
 
-		list_game_pointer->player_id[0] = list_game_pointer->player_id[1];
+	list_game_pointer->player_id[0] = list_game_pointer->player_id[1];
 
-		list_game_pointer->ready_player[0] = list_game_pointer->ready_player[1];
-
-	pthread_mutex_unlock(&list_game_pointer->mutex_game_list);
+	list_game_pointer->ready_player[0] = list_game_pointer->ready_player[1];
 
 	*(index_player) = 0;
 
@@ -369,18 +366,23 @@ void eliminate_game_slot(void* arg, int* index_game, int* index_player){
 
 	game_struct_players* temp_pointer = (fast_pointer->pointer_list_game) + *(index_game);
 
-		temp_pointer->player_id[*(index_player)] = -1;
+	temp_pointer->player_id[*(index_player)] = -1;
 
-		temp_pointer->ready_player[*(index_player)] = false;
+	temp_pointer->ready_player[*(index_player)] = false;
 
-		if(temp_pointer->player_id[*(index_player) ^ 1] == -1){
+	//remember that when calling this function, we have already locked the mutex, meaing there are no possible race conditions in teh following line
 
-			temp_pointer->game_id = -1;
+	if(temp_pointer->player_id[*(index_player) ^ 1] == -1){
 
-		}
+		temp_pointer->game_id = -1;
 
-		pthread_cond_signal(&(temp_pointer->game_condition));
+	}
 
+	pthread_cond_signal(&(temp_pointer->game_condition));
+
+	*(index_player) = -1;
+
+	*(index_game) = -1;
 
 }
 
@@ -442,33 +444,39 @@ void waiting_for_player(struct_client* client, int* index_game,int* index_player
 
 		*(timed_out) = wait_signal_scnd_pl_indicate(list_game_pointer, (*index_player), ts, time_experation);
 
-		if(*(timed_out) == 1 || list_game_pointer->ready_player[*(index_player) ^ 1] == false){
+		pthread_mutex_lock(&(client->pointer_list_game + *(index_game))->mutex_game_list);
 
-			if(list_game_pointer->player_id[*(index_player)^1] == -1){
+			if(*(timed_out) == 1 || list_game_pointer->ready_player[*(index_player) ^ 1] == false){
 
-				if(*(index_player) == 1){
+				if(list_game_pointer->player_id[*(index_player)^1] == -1){
 
-					switch_game_player_position(client->pointer_list_game,index_player);
+					if(*(index_player) == 1){
+
+						switch_game_player_position(client->pointer_list_game,index_player);
+
+					}
+
+					list_game_pointer->ready_player[*(index_player)] = false;
+
+					snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[OTHER_PL_QUIT__W_SCND_PL_STATE]);
+
+
+				}else{
+
+					snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[OTHER_PL_NOT_IND__W_SCND_PL_STATE]);
 
 				}
 
-				list_game_pointer->ready_player[*(index_player)] = false;
-
-				snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[OTHER_PL_QUIT__W_SCND_PL_STATE]);
-
-
 			}else{
 
-				snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[OTHER_PL_NOT_IND__W_SCND_PL_STATE]);
+				snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[OTHER_PL_PLAY_IND__W_SCND_PL_STATE]);
 
 			}
 
+		pthread_mutex_unlock(&(client->pointer_list_game + *(index_game))->mutex_game_list);
 
-		}else{
 
-			snprintf(buffer_message, BUFFER_SIZE, "%s", protocol_string_holder[OTHER_PL_PLAY_IND__W_SCND_PL_STATE]);
 
-		}
 
 }
 
@@ -564,9 +572,13 @@ int menu_preperation_validation(struct_client* client, int index_game, int index
 
 	}
 
-	int p0 = client->pointer_list_game[index_game].player_id[0];
+	int p0 = client->pointer_list_game[index_game].player_id[index_player];
 
-	int p1 = client->pointer_list_game[index_game].player_id[1];
+	pthread_mutex_lock(&(client->pointer_list_game + index_game)->mutex_game_list);
+
+		int p1 = client->pointer_list_game[index_game].player_id[1];
+
+	pthread_mutex_unlock(&(client->pointer_list_game + index_game)->mutex_game_list);
 
 	int result = snprintf(temporary_buffer, BUFFER_SIZE, protocol_string_holder[MENU_INFO__MENU_PREP_STATE], p0, p1); //in the future we are going to have to change this, using hardcoded strings is not good
 
