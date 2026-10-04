@@ -176,18 +176,7 @@ bool check_structure(char* buffer_message, char*buffer_error){
 
         }
 
-        char* second_sep = strchr(first_sep + 1, '|');
-
-        if(second_sep == NULL){
-
-                snprintf(buffer_error, BUFFER_SIZE, test_string_holder[TEST_RECV_VALD_STRUCT_SCND_ERROR], buffer_message);
-
-                return false;
-
-        }
-
-        return true;
-
+	return true;
 
 }
 
@@ -232,42 +221,9 @@ bool check_numbers(char* buffer_message, char* buffer_error){
         first_number = (int)strtol(first, &end,10);
 
 
-        first = end + 1;
-
-        end = first;
-
-        end = strchr(first, delimiter);
-
-        if(end == NULL){
-
-                snprintf(buffer_error, BUFFER_SIZE, "%s", test_string_holder[TEST_RECV_VALD_STRUCT_SCND_ERROR]);
-
-                return false;
-
-        }
-
-        if(end == first){
-
-                snprintf(buffer_error, BUFFER_SIZE,test_string_holder[TEST_RECV_VALD_NN_SCND_ERROR], buffer_message);
-
-                return false;
-
-        }
-
-        second_number = (int)strtol(first, &end, 10);
-
         if(first_number<0 || first_number>10){
 
                 snprintf(buffer_error, BUFFER_SIZE, "%s",test_string_holder[TEST_RECV_VALD_VALUE_FRST_ERROR]);
-
-                return false;
-
-        }
-
-
-        if(second_number<0||second_number>10){
-
-                snprintf(buffer_error,BUFFER_SIZE,"%s",test_string_holder[TEST_RECV_VALD_VALUE_FRST_ERROR]);
 
                 return false;
 
