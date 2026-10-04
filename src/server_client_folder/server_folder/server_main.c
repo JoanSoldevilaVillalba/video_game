@@ -46,7 +46,7 @@ void* handle_client(void* arg){
 
 			case ENTERING_CREATING_GAME_STATE:{
 
-				if(index_game != -1 || index_player != -1){
+				if(index_game != -1 && index_player != -1){
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[IN_GAME__ENTER_STATE]);
 
@@ -244,23 +244,19 @@ void* handle_client(void* arg){
 
 								eliminate_game_slot((void*)client, &index_game, &index_player);
 
-					                }
+								snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[INDICATED_QUIT_GAME__INIT_STATE]);
+
+					                }else{
+
+								snprintf(temporary_buffer, BUFFER_SIZE,"%s",protocol_string_holder[INDICATED_PL_GAME__INIT_STATE]);
+
+							}
 
 						pthread_cond_signal(&((client->pointer_list_game + temporal_game)->game_condition));
 
 					pthread_mutex_unlock(&(client->pointer_list_game+temporal_game)->mutex_game_list);
 
 					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
-
-					if(play){
-
-						snprintf(temporary_buffer, BUFFER_SIZE,"%s",protocol_string_holder[INDICATED_PL_GAME__INIT_STATE]);
-
-					}else{
-
-						snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[INDICATED_QUIT_GAME__INIT_STATE]);
-
-					}
 
 					handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
 
