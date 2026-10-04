@@ -13,6 +13,7 @@ const char* protocol_string_holder[] ={
 [NO_CREATED_GAME__WAIT_CREATE_STATE] = "2|Client not in game",
 
 [NOT_IN_GAME__MENU_PREP_STATE] = "3|Client not in game",
+[NO_SCND_PLAYER__MENU_PREP_STATE]="3|There is no second player",
 [INDEX_PL_ERR__MENU_PREP_STATE] = "3|Index player error",
 [INDEX_GM_ERR__MENU_PREP_STATE] ="3|Game index error",
 [MENU_INFO__MENU_PREP_STATE] = "3|%d|%d",
@@ -576,7 +577,7 @@ int menu_preperation_validation(struct_client* client, int index_game, int index
 
 	pthread_mutex_lock(&(client->pointer_list_game + index_game)->mutex_game_list);
 
-		int p1 = client->pointer_list_game[index_game].player_id[1];
+		int p1 = client->pointer_list_game[index_game].player_id[index_player^1];
 
 	pthread_mutex_unlock(&(client->pointer_list_game + index_game)->mutex_game_list);
 

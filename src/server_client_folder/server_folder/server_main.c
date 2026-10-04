@@ -155,6 +155,10 @@ void* handle_client(void* arg){
 
 				//client can always ask for menu infomration however many times it wants, there is no limit
 
+				// in this state we need for there to be another player that has enterd in our game, not just us being inside of a game
+
+
+
 				if(index_game == -1 || index_player == -1){
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_IN_GAME__MENU_PREP_STATE]);
@@ -171,14 +175,37 @@ void* handle_client(void* arg){
 
 				}else{
 
-					bytes_result = menu_preperation_validation(client,index_game,index_player, temporary_buffer,buffer_error);
+					pthread_mutex_lock(&(client->pointer_list_game+index_game)->mutex_game_list)
 
-					if(bytes_result == -1){
+						if((client->pointer_list_game+index_game)->player_id[index_player ^ 1]==-1){
 
-						snprintf(temporary_buffer, BUFFER_SIZE, "%s", buffer_error);//if there in menu preperation, we need to communicate this to the client so that the client him or her self knows
+					pthread_mutex_unlock(&(client->pointer_list_game+index_game)->mutex_game_list);
 
-					}
+							snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NO_SCND_PLAYER__MENU_PREP_STATE]);
 
+							bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
+
+							handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
+
+		                	                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
+
+        		                	                break;
+
+                		                	}
+
+						}else{
+
+					pthread_mutex_unlock(&(clinet->pointer_list_game+index_game)->mutex_game_list);
+
+							bytes_result = menu_preperation_validation(client,index_game,index_player, temporary_buffer,buffer_error);
+
+							if(bytes_result == -1){
+
+								snprintf(temporary_buffer, BUFFER_SIZE, "%s", buffer_error);//if there in menu preperation, we need to communicate this to the client so that the client him or her self knows
+
+							}
+
+						}
 
 					bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
 
