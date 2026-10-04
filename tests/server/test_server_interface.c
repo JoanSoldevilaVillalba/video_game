@@ -2,17 +2,76 @@
 #include "test_server_interface.h"
 #include "test_server_logic.h"
 
+#include "server_logic.h"
+/*
+const char* protocol_string_holder[] ={
+[FOUND_GAME__ENTER_STATE] = "0|client found game",
+[CREATE_GAME__ENTER_STATE] = "0|client created game",
+[GAMES_FULL__ENTER_STATE] = "0|all games occupied",
+[IN_GAME__ENTER_STATE] = "0|client in game already",
+
+[RESPONSE_MESSAGE__RANDOM_STATE] = "1|Server reserved message",
+
+[NO_SCND_PL__WAIT_CREATE_STATE] = "2|no second player",
+[SCND_PL_FOUND__WAIT_CREATE_STATE] = "2|second player found",
+[NO_CREATED_GAME__WAIT_CREATE_STATE] = "2|Client not in game",
+
+[NOT_IN_GAME__MENU_PREP_STATE] = "3|Client not in game",
+[INDEX_PL_ERR__MENU_PREP_STATE] = "3|Index player error",
+[INDEX_GM_ERR__MENU_PREP_STATE] ="3|Game index error",
+[MENU_INFO__MENU_PREP_STATE] = "3|%d|%d",
+
+[NOT_IN_GAME__INIT_STATE] = "4|Client not in game",
+[ALREADY_INDICATED_GAME__INIT_STATE] = "4|Already indicated",
+[INDICATED_PL_GAME__INIT_STATE] = "4|Server received play indication",
+[INDICATED_QUIT_GAME__INIT_STATE] = "4|Server received quit indication",
+
+[NOT_IN_GAME__W_SCND_PL_STATE] = "5|Client not in game",
+[NOT_INDICATED__W_SCND_PL_STATE] = "5|Not indicated to server",
+[OTHER_PL_QUIT__W_SCND_PL_STATE] = "5|Other player indicated quit",
+[OTHER_PL_NOT_IND__W_SCND_PL_STATE] = "5|Other player yet to indicate",
+[OTHER_PL_PLAY_IND__W_SCND_PL_STATE] = "5|Other player indicated play",
+
+
+[QUIT_STATMENT__QC_STATE] ="7|Server received client quit statment",
+
+[QUIT_STATMENT__QS_STATE] = "8|Server initiating quit statment",
+
+[DEFAULT] = "21|Error, invalid option"
+
+};
+*/
+const char* error_string_holder[] = {
+[NULL_POINTER] ="Null pointer is present",
+
+[STRUCT_FIRST] = "First | was not found in message",
+[NO_FIRST_NUMBER] = "first protocol number was not found",
+
+[BUFF_OVF] ="Buffer overflow",
+
+[MESS_FIRST_VALUE] = "Value of first protocol number was not correct",
+
+
+};
+
+
+
 const char* test_message_server[] = {
-    [RANDOM_MESSAGE_TEST] = "2|1|this is response to random message",
-    [QUIT_CLIENT_MESSAGE_TEST] = "1|1|server received quit statement, goodbye",
-    [FOUND_GAME_TEST] = "0|1|you have found a game",
-    [CREATED_GAME_TEST] = "0|2|you have created a game",
-    [GAMES_OCCUPIED_TEST] = "0|3|all games occupied",
-    [GAME_EXPERATION_TEST] = "0|4|Game not found: time expired",
-    [GAME_NO_SCND_PLAYER_TEST] = "0|5|Second player for your match is not found yet",
-    [MENU_PREPERATION_INFO] = "3|7|",
-    [MENU_PREPERATION_FAIL_GI] = "3|4|Error, game index",
-    [MENU_PREPERATION_FAIL_PI]="3|5|Error, player index",
+    [RANDOM_MESSAGE_TEST] = "1|Server reserved message",
+
+    [QUIT_CLIENT_MESSAGE_TEST] = "7|Server received client quit statment",
+
+    [FOUND_GAME_TEST] = "0|client found game",
+    [CREATED_GAME_TEST] = "0|client created game",
+    [GAMES_OCCUPIED_TEST] = "0|all games occupied",
+
+    [MENU_PREPERATION_FAIL_GI] = "3|Client not in game",
+    [MENU_PREPERATION_FAIL_PI]="3|Index player error",
+
+    [NO_CREATED_GAME_WAIT] = "2|Client not in game",
+    [SCND_PL_FOUND_WATT]  = "2|second player found",
+    [SCND_PL_NOT_FOUND_WAIT] = "2|no second player",
+
     [MAX_MESSAGES_TEST] = NULL
 };
 
@@ -47,33 +106,6 @@ bool compare_strings(char* buffer_message, const char* compare_messages[], char*
 
 }
 
-int test_init_wait_client(char* buffer_message, char* buffer_error, int file_descriptor){
-
-	printf("\n --- Testing init waiting mechanics -----\n");
-
-	ssize_t result = send_validated_message(buffer_message, buffer_error, file_descriptor);
-
-	if(result == -1){
-
-		return handler_error(buffer_error);
-
-	}
-
-	result = receive_validated_message(buffer_message, buffer_error, file_descriptor);
-
-	if(result == -1){
-
-		return handler_error(buffer_error);
-
-	}
-
-	printf("Server has sent the following message: %s\n", buffer_message);
-
-	printf("Test was completed correctly\n");
-
-}
-
-
 int test_menu_information_in_game(char* buffer_message, char* buffer_error, int file_descriptor){
 //we need to keep in mind the following: this is only called when a game is created, meaning the server has already registesrt the playuer inside of a game slot
 
@@ -95,15 +127,25 @@ int test_menu_information_in_game(char* buffer_message, char* buffer_error, int 
 
 	}
 
-	const char* compare_buffer[1] = {test_message_server[MENU_PREPERATION_INFO]};
 
-	bool equal = compare_strings(buffer_message, compare_buffer, buffer_error, 1); //last parameter indicates the amount of strings that the server can resonid with that are valid
+	printf("Server responded with the following message: %s\n", buffer_message);
 
-	if(!equal){
+	if(strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_GI]) != 0){
+
+		snprintf(buffer_error, BUFFER_SIZE, "We have the following error: %s",test_message_server[MENU_PREPERATION_FAIL_GI]);
 
 		return handler_error(buffer_error);
 
 	}
+
+	if(strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_PI])!=0){
+
+		snprintf(buffer_error, BUFFER_SIZE, "We have the following error: %s",test_message_server[MENU_PREPERATION_FAIL_PI]);
+
+		return handler_error(buffer_error);
+
+	}
+
 
 	printf("Test was completed correctly\n");
 
@@ -131,6 +173,8 @@ int test_menu_information_not_in_game(char* buffer_message, char* buffer_error, 
 		return handler_error(buffer_error);
 
 	}
+
+	printf("Server responded witht eh following message: %s\n", buffer_message);
 
 	const char* compare_buffer[2] = {test_message_server[MENU_PREPERATION_FAIL_GI], test_message_server[MENU_PREPERATION_FAIL_PI]};
 
@@ -233,19 +277,30 @@ int test_enter_game_client(char* buffer_message, char* buffer_error, int client_
     }
 
     result = receive_validated_message(buffer_message, buffer_error, client_file_descriptor);
+
     if (result == -1) {
 
 	return handler_error(buffer_error);
 
     }
 
-    const char* compare_buffer[1]={test_message_server[FOUND_GAME_TEST]};
+    printf("Server responded with the following message: %s\n", buffer_message);
 
-    bool equal = compare_strings(buffer_message,compare_buffer, buffer_error, 1);
+    const char* compare_buffer[3]={test_message_server[FOUND_GAME_TEST], test_message_server[CREATED_GAME_TEST], test_message_server[GAMES_OCCUPIED]};
+
+    bool equal = compare_strings(buffer_message,compare_buffer, buffer_error, 3);
 
     if(!equal){
 
 	return handler_error(buffer_error);
+
+    }
+
+    if(strcmp(test_message_server[FOUND_GAME_TEST]) != 0){
+
+	printf("Server returned a valid message, but this test was specificly made to find a game, not create one or check if all games are occupied, we are going to exit now\n");
+
+	return -1;
 
     }
 
@@ -273,27 +328,19 @@ int test_create_game_client(char* buffer_message, char* buffer_error, int client
 
     }
 
-    const char* compare_buffer[1] = {test_message_server[CREATED_GAME_TEST]};
-    bool equal = compare_strings(buffer_message,compare_buffer, buffer_error, 1);
+    const char* compare_buffer[3] = {test_message_server[CREATED_GAME_TEST], test_message_server[FOUND_GAME_TEST], test_message_server[GAMES_OCCUPIED_TEST]};
+    bool equal = compare_strings(buffer_message,compare_buffer, buffer_error, 3);
     if(!equal){
 
 	return handler_error(buffer_error);
 
     }
-    //after creating a game, the server is now going to wait until someone else enters the game, we are going to have to wait
-    result = receive_validated_message(buffer_message, buffer_error, client_file_descriptor);
 
-    if(result == -1){
+    if(strcmp(buffer_message, test_message_server[CREATED_GAME_TEST])!=0){
 
-        return handler_error(buffer_error);
+	printf("Server returned a valide, message, but this test was specificlyu made to create a game, not find an already created game or check if games are all occupied\n");
 
-    }
-
-    compare_buffer[0] = test_message_server[GAME_EXPERATION_TEST];
-    equal = compare_strings(buffer_message,compare_buffer,buffer_error, 1);
-    if(!equal){
-
-	return handler_error(buffer_error);
+	return -1;
 
     }
 
@@ -316,4 +363,58 @@ int test_send_message(char* buffer_message, char* buffer_error, int client_file_
     printf("Test was completed correctly\n");
 
     return 0;
+}
+
+//this is called by the client that has created a game, and now it is waiting for the second player to enter
+int test_wait_second_player_init(char*buffer_message,char* buffer_error,int client_file_descriptor){
+
+	const int max_counter = 10; //remember that const does not mean that the expression that follows it is computed during compiliation, in c++ it is contsxrp
+
+	int counter = 10;
+
+	while(counter<max_counter){
+
+		ssize_t result = send_validated_message(buffer_message, buffer_error, client_file_descriptor);
+
+		if(result == -1){
+
+			return handle_error(buffer_error);
+
+		}
+
+		printf("Server responded with the following message: %s\n", buffer_message);
+
+		if(strcmp(buffer_message, test_message_server[NO_CREATED_GAME_WAIT])==0){
+
+			printf("Server indicatest that we have not created a game\n");
+
+			//if we have not created a game, we are going to make the test suit quit
+
+			return -1;
+
+		}
+
+		if(strcmp(buffer_message, test_message_server[SCND_PL_FOUND_WAT])==0){
+
+			printf("We have found a second player\n");
+
+			return 1; //one means that found second player;
+
+		}
+
+
+		if(strcmp(buffer_message, test_message_server[SCND_PL_NOT_FOUND_WAIT])==0){
+
+			printf("Server indicates that a second player was not found\n We have %d iterations to go\n", max_counter-counter);
+
+		}
+
+		counter++;
+
+	 }
+
+
+	return 2; //this means that a second player was not found during the 10 different iterations
+
+
 }

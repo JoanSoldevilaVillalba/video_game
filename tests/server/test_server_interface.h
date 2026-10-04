@@ -4,17 +4,20 @@
 #include "test_server_main.h"
 
 typedef enum {
-    RANDOM_MESSAGE_TEST = 0,
-    QUIT_CLIENT_MESSAGE_TEST = 1,
-    FOUND_GAME_TEST = 2,
-    CREATED_GAME_TEST = 3,
-    GAMES_OCCUPIED_TEST = 4,
-    GAME_EXPERATION_TEST = 5,
-    GAME_NO_SCND_PLAYER_TEST = 6,
-    MENU_PREPERATION_INFO = 7,
-    MENU_PREPERATION_FAIL_GI = 8,
-    MENU_PREPERATION_FAIL_PI = 9,
-    MAX_MESSAGES_TEST = 10
+    RANDOM_MESSAGE_TEST,
+    QUIT_CLIENT_MESSAGE_TEST,
+    FOUND_GAME_TEST,
+    CREATED_GAME_TEST,
+    GAMES_OCCUPIED_TEST,
+    GAME_EXPERATION_TEST,
+    GAME_NO_SCND_PLAYER_TEST,
+    MENU_PREPERATION_INFO,
+    MENU_PREPERATION_FAIL_GI,
+    MENU_PREPERATION_FAIL_PI,
+    NO_CREATED_GAME_WAIT,
+    SCND_PL_FOUND_WATT,
+    SCND_PL_NOT_FOUND_WAIT,
+    MAX_MESSAGES_TEST
 } message_server_id;
 
 extern const char* test_message_server[];
@@ -27,5 +30,5 @@ int test_setup_connection(char* buffer_error, int server_port);
 int test_create_game_client(char* buffer_message, char* buffer_error, int client_file_descriptor);
 int test_enter_game_client(char* buffer_message, char* buffer_error, int client_file_descriptor);
 int test_send_message(char* buffer_message, char* buffer_error, int client_file_descriptor);
-int test_init_wait_client(char* buffer_message,char* buffer_error, int client_file_descriptor);
+int test_wait_second_player_init(char*buffer_message,char* buffer_error,int client_file_descriptor);
 #endif // TEST_SERVER_INTERFACE_H
