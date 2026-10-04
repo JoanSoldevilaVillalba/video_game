@@ -175,7 +175,7 @@ void* handle_client(void* arg){
 
 				}else{
 
-					pthread_mutex_lock(&(client->pointer_list_game+index_game)->mutex_game_list)
+					pthread_mutex_lock(&(client->pointer_list_game+index_game)->mutex_game_list);
 
 						if((client->pointer_list_game+index_game)->player_id[index_player ^ 1]==-1){
 
@@ -183,19 +183,10 @@ void* handle_client(void* arg){
 
 							snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NO_SCND_PLAYER__MENU_PREP_STATE]);
 
-							bytes_result = send_validated_message(temporary_buffer, buffer_error, client->socket_fd);
-
-							handlePEServer(&bytes_result, temporary_buffer, buffer_error, &quit);
-
-		                	                if(bytes_result == SOFT_SHUTDOWN|| bytes_result == HARD_SHUTDOWN){
-
-        		                	                break;
-
-                		                	}
 
 						}else{
 
-					pthread_mutex_unlock(&(clinet->pointer_list_game+index_game)->mutex_game_list);
+					pthread_mutex_unlock(&(client->pointer_list_game+index_game)->mutex_game_list);
 
 							bytes_result = menu_preperation_validation(client,index_game,index_player, temporary_buffer,buffer_error);
 
@@ -425,7 +416,7 @@ void* handle_client(void* arg){
 
 	}
 
-	if(bytes_result == SOFT_SHUTDOWN){
+	if(bytes_result == SOFT_SHUTDOWN || bytes_result>0){
 
 		shutdown(client->socket_fd,SHUT_WR);
 
