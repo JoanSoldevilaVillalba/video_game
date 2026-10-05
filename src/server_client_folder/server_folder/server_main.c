@@ -104,6 +104,8 @@ void* handle_client(void* arg){
 
 			case WAIT_GAME_CREATING_STATE:
 
+				//we also need to keep in mind that if index_player is equal to 1, the client is not able to wait for the seocnd player, meanign we should probnably add this safeguard in the server
+
 				if(index_player == -1 ||index_game == -1){
 
 					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NO_CREATED_GAME__WAIT_CREATE_STATE]);
