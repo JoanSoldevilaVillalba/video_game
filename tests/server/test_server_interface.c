@@ -1,46 +1,6 @@
-
 #include "test_server_interface.h"
 #include "test_server_logic.h"
 
-#include "server_logic.h"
-/*
-const char* protocol_string_holder[] ={
-[FOUND_GAME__ENTER_STATE] = "0|client found game",
-[CREATE_GAME__ENTER_STATE] = "0|client created game",
-[GAMES_FULL__ENTER_STATE] = "0|all games occupied",
-[IN_GAME__ENTER_STATE] = "0|client in game already",
-
-[RESPONSE_MESSAGE__RANDOM_STATE] = "1|Server reserved message",
-
-[NO_SCND_PL__WAIT_CREATE_STATE] = "2|no second player",
-[SCND_PL_FOUND__WAIT_CREATE_STATE] = "2|second player found",
-[NO_CREATED_GAME__WAIT_CREATE_STATE] = "2|Client not in game",
-
-[NOT_IN_GAME__MENU_PREP_STATE] = "3|Client not in game",
-[INDEX_PL_ERR__MENU_PREP_STATE] = "3|Index player error",
-[INDEX_GM_ERR__MENU_PREP_STATE] ="3|Game index error",
-[MENU_INFO__MENU_PREP_STATE] = "3|%d|%d",
-
-[NOT_IN_GAME__INIT_STATE] = "4|Client not in game",
-[ALREADY_INDICATED_GAME__INIT_STATE] = "4|Already indicated",
-[INDICATED_PL_GAME__INIT_STATE] = "4|Server received play indication",
-[INDICATED_QUIT_GAME__INIT_STATE] = "4|Server received quit indication",
-
-[NOT_IN_GAME__W_SCND_PL_STATE] = "5|Client not in game",
-[NOT_INDICATED__W_SCND_PL_STATE] = "5|Not indicated to server",
-[OTHER_PL_QUIT__W_SCND_PL_STATE] = "5|Other player indicated quit",
-[OTHER_PL_NOT_IND__W_SCND_PL_STATE] = "5|Other player yet to indicate",
-[OTHER_PL_PLAY_IND__W_SCND_PL_STATE] = "5|Other player indicated play",
-
-
-[QUIT_STATMENT__QC_STATE] ="7|Server received client quit statment",
-
-[QUIT_STATMENT__QS_STATE] = "8|Server initiating quit statment",
-
-[DEFAULT] = "21|Error, invalid option"
-
-};
-*/
 const char* error_string_holder[] = {
 [NULL_POINTER] ="Null pointer is present",
 
@@ -49,7 +9,7 @@ const char* error_string_holder[] = {
 
 [BUFF_OVF] ="Buffer overflow",
 
-[MESS_FIRST_VALUE] = "Value of first protocol number was not correct",
+[MESS_FIRST_VALUE] = "Value of first protocol number was not correct"
 
 
 };
@@ -69,9 +29,18 @@ const char* test_message_server[] = {
     [MENU_PREPERATION_FAIL_PI]="3|Index player error",
 
     [NO_CREATED_GAME_WAIT] = "2|Client not in game",
-    [SCND_PL_FOUND_WATT]  = "2|second player found",
+    [SCND_PL_FOUND_WAIT]  = "2|second player found",
     [SCND_PL_NOT_FOUND_WAIT] = "2|no second player",
 
+
+    [NOT_IN_GAME_INIT]="4|Client not in game",
+    [ALREADY_INDICATE] = "4|Already indicated",
+    [INDICATED_PL] = "4|Already indicated",
+    [INDICATED_QT] ="4|Server received quit indication",
+
+    [OTHER_NOT_INDICATE] ="5|Other player yet to indicate",
+    [OTHER_INDICATED_PL] = "5|Other player indicated play",
+    [OTHER_INDICATED_QT]= "5|Other player indicated quit",
     [MAX_MESSAGES_TEST] = NULL
 };
 
@@ -286,7 +255,7 @@ int test_enter_game_client(char* buffer_message, char* buffer_error, int client_
 
     printf("Server responded with the following message: %s\n", buffer_message);
 
-    const char* compare_buffer[3]={test_message_server[FOUND_GAME_TEST], test_message_server[CREATED_GAME_TEST], test_message_server[GAMES_OCCUPIED]};
+    const char* compare_buffer[3]={test_message_server[FOUND_GAME_TEST], test_message_server[CREATED_GAME_TEST], test_message_server[GAMES_OCCUPIED_TEST]};
 
     bool equal = compare_strings(buffer_message,compare_buffer, buffer_error, 3);
 
@@ -296,7 +265,7 @@ int test_enter_game_client(char* buffer_message, char* buffer_error, int client_
 
     }
 
-    if(strcmp(test_message_server[FOUND_GAME_TEST]) != 0){
+    if(strcmp(buffer_message, test_message_server[FOUND_GAME_TEST]) != 0){
 
 	printf("Server returned a valid message, but this test was specificly made to find a game, not create one or check if all games are occupied, we are going to exit now\n");
 
@@ -378,11 +347,9 @@ int test_wait_second_player_init(char*buffer_message,char* buffer_error,int clie
 
 		if(result == -1){
 
-			return handle_error(buffer_error);
+			return handler_error(buffer_error);
 
 		}
-
-		printf("Server responded with the following message: %s\n", buffer_message);
 
 		if(strcmp(buffer_message, test_message_server[NO_CREATED_GAME_WAIT])==0){
 
@@ -394,7 +361,7 @@ int test_wait_second_player_init(char*buffer_message,char* buffer_error,int clie
 
 		}
 
-		if(strcmp(buffer_message, test_message_server[SCND_PL_FOUND_WAT])==0){
+		if(strcmp(buffer_message, test_message_server[SCND_PL_FOUND_WAIT])==0){
 
 			printf("We have found a second player\n");
 
@@ -409,12 +376,144 @@ int test_wait_second_player_init(char*buffer_message,char* buffer_error,int clie
 
 		}
 
+		printf("Server responded with the following message: %s\n", buffer_message);
+
+		//we are just going to sleep for 3 seconds();
+
+		printf("%d number done\n", counter);
+
+		sleep(1);
+
 		counter++;
 
 	 }
 
 
-	return 2; //this means that a second player was not found during the 10 different iterations
+	return -1;
 
+
+}
+
+int test_indicate_play(char* buffer_message, char* buffer_error, int client_file_descriptor){
+
+	ssize_t result = send_validated_message(buffer_message, buffer_error, client_file_descriptor);
+
+	if(result == -1){
+
+		return handler_error(buffer_error);
+
+	}
+
+	result = receive_validated_message(buffer_message, buffer_error, client_file_descriptor);
+
+	if(result == -1){
+
+		return handler_error(buffer_error);
+
+	}
+
+	printf("Server responded with the following message: %s\n", buffer_message);
+
+	if(strcmp(buffer_message, test_message_server[NOT_IN_GAME_INIT]) == 0){
+
+		printf("Message recevied from server is a possible valid message, but not what we were looking for\n");
+
+		return -1;
+
+	}
+
+	if(strcmp(buffer_message, test_message_server[ALREADY_INDICATE]) == 0){
+
+		printf("Message received from server is a possible valid mesage, but not what we were looking for\n");
+
+		return -1;
+
+	}
+
+	if(strcmp(buffer_message, test_message_server[INDICATED_QT])==0){
+
+		printf("Error in messaging protocol, we tried to indicate that we want to play not quit\n");
+
+		return -1;
+
+	}
+
+
+	if(strcmp(buffer_message, test_message_server[INDICATED_PL])!=0){
+
+		printf("Something very wrong happened\n");
+
+		return -1;
+
+	}
+
+
+	printf("Server responded with the following message: %s", buffer_message);
+
+
+
+
+}
+
+
+int test_wait_other_indicate(char* buffer_message, char* buffer_error, int file_descriptor){
+
+	const int max_counter = 5;
+
+	int counter = 0;
+
+	ssize_t result = 0;
+
+	while(counter<max_counter){
+
+		result = send_validated_message(buffer_message, buffer_error, file_descriptor);
+
+		if(result == -1){
+
+			return handler_error(buffer_error);
+
+		}
+
+		result = receive_validated_message(buffer_message, buffer_error, file_descriptor);
+
+		printf("Server responded with the following message: %s\n", buffer_message);
+
+		if(result == -1){
+
+			return handler_error(buffer_error);
+
+		}
+
+		if(strcmp(buffer_message,test_message_server[OTHER_NOT_INDICATE])==0){
+
+			printf("The other player has not yet indicated, we have %d iterations to go", max_counter-counter);
+
+		}else if(strcmp(buffer_message, test_message_server[OTHER_INDICATED_PL])==0){
+
+			printf("The other player as indicated that he or she is also going to play\n");
+
+			return result;
+
+		}else if(strcmp(buffer_message, test_message_server[OTHER_INDICATED_QT])==0){
+
+			printf("Possible message was recieved but not the expected message\n");
+
+			return -1;
+		}else{
+
+			printf("Either we were not in a game or we have still yet to indicate. This was not the expected message\n");
+
+			return -1;
+
+		}
+
+		sleep(1);
+
+		counter++;
+
+
+	}
+
+	return -1;
 
 }

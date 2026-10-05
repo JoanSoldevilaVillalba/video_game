@@ -43,11 +43,10 @@ int main(){
 		return message_receive_result;
 
 	}
-	//this client is going to be the client that creates the game
 
 	snprintf(buffer_send, BUFFER_SIZE, "%s", "0|client wants game");
 
-	int result_create_game =  test_create_game_client(char* buffer_send, buffer_error, client_file_descriptor);
+	int result_create_game =  test_create_game_client(buffer_send, buffer_error, client_file_descriptor);
 
 	if(result_create_game == -1){
 
@@ -69,17 +68,53 @@ int main(){
 
 	}
 
-	//after having done this, we can now ask for menu inforamtion
 
-	snprintf(buffer_send, BUFFER_SIZE, "%s", "3|ask menu info"
+	snprintf(buffer_send, BUFFER_SIZE, "%s", "3|ask menu info");
 
 	int menu_information_result = test_menu_information_in_game(buffer_send, buffer_error, client_file_descriptor);
 
-	if(menu_information == -1){
+	if(menu_information_result == -1){
 
 		close(client_file_descriptor);
 
-		return menu_information_result
+		return menu_information_result;
+
+	}
+
+	int indication = 1;
+
+	snprintf(buffer_send, BUFFER_SIZE, "4|%d", indication);
+
+	int result_indicate_play = test_indicate_play(buffer_send, buffer_error, client_file_descriptor);
+
+	if(result_indicate_play == -1){
+
+		close(client_file_descriptor);
+
+		return result_indicate_play;
+	}
+
+	snprintf(buffer_send, BUFFER_SIZE, "%s", "5|wait other indicate");
+
+	int result_wait_other_indicate = test_wait_other_indicate(buffer_send, buffer_error, client_file_descriptor);
+
+	if(result_wait_other_indicate == -1){
+
+		close(client_file_descriptor);
+
+		return result_wait_other_indicate;
+
+	}
+
+	snprintf(buffer_send, BUFFER_SIZE, "%s", "7|clients wants quit");
+
+	int result_quit_init = test_quit_client(buffer_send, buffer_error, client_file_descriptor);
+
+	if(result_quit_init == 1){
+
+		close(client_file_descriptor);
+
+		return result_quit_init;
 
 	}
 

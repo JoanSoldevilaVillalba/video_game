@@ -48,7 +48,7 @@ int main(){
 
 	//we are first going to make it sleep for a second in order for the other client to have time for craeting the game that this client is going to try to find and enter
 
-	sleep(1);
+	sleep(2);
 
 	snprintf(buffer_send, BUFFER_SIZE, "%s","0|find game for client");
 
@@ -66,7 +66,7 @@ int main(){
 
 	snprintf(buffer_send, BUFFER_SIZE, "%s", "3|ask menu info");
 
-	int result_menu_information = test_menu_inforamtion_in_game(buffer_send, buffer_error, client_file_descriptor);
+	int result_menu_information = test_menu_information_in_game(buffer_send, buffer_error, client_file_descriptor);
 
 	if(result_menu_information == -1){
 
@@ -75,6 +75,35 @@ int main(){
 		return result_menu_information;
 
 	}
+
+	int indication = 1;
+
+	snprintf(buffer_send, BUFFER_SIZE, "4|%d",indication);
+
+	sleep(2); 
+
+	int result_indicate_play = test_indicate_play(buffer_send,buffer_error, client_file_descriptor);
+
+	if(result_indicate_play == -1){
+
+		close(client_file_descriptor);
+
+		return result_menu_information;
+
+	}
+
+	snprintf(buffer_send, BUFFER_SIZE, "%s", "7|client wants quit");
+
+	int result_quit_client = test_quit_client(buffer_send, buffer_error, client_file_descriptor);
+
+	if(result_quit_client==-1){
+
+		close(client_file_descriptor);
+
+		return result_menu_information;
+
+	}
+
 
 	close(client_file_descriptor);
 
