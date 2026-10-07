@@ -99,7 +99,7 @@ int test_menu_information_in_game(char* buffer_message, char* buffer_error, int 
 
 	printf("Server responded with the following message: %s\n", buffer_message);
 
-	if(strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_GI]) != 0){
+	if(strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_GI]) == 0){
 
 		snprintf(buffer_error, BUFFER_SIZE, "We have the following error: %s",test_message_server[MENU_PREPERATION_FAIL_GI]);
 
@@ -107,7 +107,7 @@ int test_menu_information_in_game(char* buffer_message, char* buffer_error, int 
 
 	}
 
-	if(strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_PI])!=0){
+	if(strcmp(buffer_message, test_message_server[MENU_PREPERATION_FAIL_PI])==0){
 
 		snprintf(buffer_error, BUFFER_SIZE, "We have the following error: %s",test_message_server[MENU_PREPERATION_FAIL_PI]);
 
@@ -143,7 +143,7 @@ int test_menu_information_not_in_game(char* buffer_message, char* buffer_error, 
 
 	}
 
-	printf("Server responded witht eh following message: %s\n", buffer_message);
+//	printf("Server responded witht eh following message: %s\n", buffer_message);
 
 	const char* compare_buffer[2] = {test_message_server[MENU_PREPERATION_FAIL_GI], test_message_server[MENU_PREPERATION_FAIL_PI]};
 
@@ -253,7 +253,7 @@ int test_enter_game_client(char* buffer_message, char* buffer_error, int client_
 
     }
 
-    printf("Server responded with the following message: %s\n", buffer_message);
+	//compare_strings function already prints what server responds with, no  need to print it in function that calls/invokes compare_srings.
 
     const char* compare_buffer[3]={test_message_server[FOUND_GAME_TEST], test_message_server[CREATED_GAME_TEST], test_message_server[GAMES_OCCUPIED_TEST]};
 
