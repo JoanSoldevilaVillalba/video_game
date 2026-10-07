@@ -337,13 +337,25 @@ int test_send_message(char* buffer_message, char* buffer_error, int client_file_
 //this is called by the client that has created a game, and now it is waiting for the second player to enter
 int test_wait_second_player_init(char*buffer_message,char* buffer_error,int client_file_descriptor){
 
+	printf("\n------ testing waiting for second player mechanic (just after creating the game) ------\n");
+
 	const int max_counter = 10; //remember that const does not mean that the expression that follows it is computed during compiliation, in c++ it is contsxrp
 
 	int counter = 0;
 
+	ssize_t result = -1;
+
 	while(counter<max_counter){
 
-		ssize_t result = send_validated_message(buffer_message, buffer_error, client_file_descriptor);
+		result = send_validated_message(buffer_message, buffer_error, client_file_descriptor);
+
+		if(result == -1){
+
+			return handler_error(buffer_error);
+
+		}
+
+		result = receive_validated_message(buffer_message, buffer_error, client_file_descriptor);
 
 		if(result == -1){
 

@@ -74,7 +74,7 @@ ssize_t receive_framed_message(int fd, char* buf, ssize_t max_buf_len, char* buf
 
         struct timeval timeout;
 
-        timeout.tv_sec = 5;
+        timeout.tv_sec = 20;
 
         timeout.tv_usec = 0;
 
