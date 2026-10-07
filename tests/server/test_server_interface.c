@@ -293,7 +293,7 @@ int test_create_game_client(char* buffer_message, char* buffer_error, int client
 
     if (result == -1) {
 
-	return handler_error(buffer_message);
+	return handler_error(buffer_error);
 
     }
 
@@ -339,7 +339,7 @@ int test_wait_second_player_init(char*buffer_message,char* buffer_error,int clie
 
 	const int max_counter = 10; //remember that const does not mean that the expression that follows it is computed during compiliation, in c++ it is contsxrp
 
-	int counter = 10;
+	int counter = 0;
 
 	while(counter<max_counter){
 

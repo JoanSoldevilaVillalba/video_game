@@ -21,7 +21,7 @@ int main(){
 
 	}
 
-	snprintf(buffer_send, BUFFER_SIZE, "%s", "2|random message init"); //this is the random message that we are going to have to send to the server side
+	snprintf(buffer_send, BUFFER_SIZE, "%s", "1|random message init"); //this is the random message that we are going to have to send to the server side
 
 
 	int message_send_result = test_send_message(buffer_send, buffer_error, client_file_descriptor);
