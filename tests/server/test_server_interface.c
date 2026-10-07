@@ -35,7 +35,7 @@ const char* test_message_server[] = {
 
     [NOT_IN_GAME_INIT]="4|Client not in game",
     [ALREADY_INDICATE] = "4|Already indicated",
-    [INDICATED_PL] = "4|Already indicated",
+    [INDICATED_PL] = "4|Server received play indication",
     [INDICATED_QT] ="4|Server received quit indication",
 
     [OTHER_NOT_INDICATE] ="5|Other player yet to indicate",
