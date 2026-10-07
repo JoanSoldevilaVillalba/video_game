@@ -442,6 +442,8 @@ void initilizeGames(game_struct_players* game_list){
 
 		(game_list+i)->player_id[1] = -1;
 
+		(game_list+i)->game_id = -1 ;
+
 		memset((game_list+i)->name,0,sizeof((game_list+i)->name));
 
 		pthread_cond_init(&(game_list+i)->game_condition,NULL);
