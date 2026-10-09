@@ -16,7 +16,7 @@ const char* protocol_string_holder[] ={
 [NO_SCND_PLAYER__MENU_PREP_STATE]="3|There is no second player",
 [INDEX_PL_ERR__MENU_PREP_STATE] = "3|Index player error",
 [INDEX_GM_ERR__MENU_PREP_STATE] ="3|Game index error",
-[MENU_INFO__MENU_PREP_STATE] = "3|%d|%d",
+[MENU_INFO__MENU_PREP_STATE] = "3|Game index: %d|Game id: %d|%d|%d",
 
 [NOT_IN_GAME__INIT_STATE] = "4|Client not in game",
 [ALREADY_INDICATED_GAME__INIT_STATE] = "4|Already indicated",
@@ -581,7 +581,7 @@ int menu_preperation_validation(struct_client* client, int index_game, int index
 
 	pthread_mutex_unlock(&(client->pointer_list_game + index_game)->mutex_game_list);
 
-	int result = snprintf(temporary_buffer, BUFFER_SIZE, protocol_string_holder[MENU_INFO__MENU_PREP_STATE], p0, p1); //in the future we are going to have to change this, using hardcoded strings is not good
+	int result = snprintf(temporary_buffer, BUFFER_SIZE, protocol_string_holder[MENU_INFO__MENU_PREP_STATE],index_game,client->pointer_list_game[index_game].game_id,p0, p1); //in the future we are going to have to change this, using hardcoded strings is not good
 
 	return result;
 }

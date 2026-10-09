@@ -460,10 +460,11 @@ int test_indicate_play(char* buffer_message, char* buffer_error, int client_file
 	}
 
 
-	printf("Server responded with the following message: %s", buffer_message);
+
+	printf("Test passed with no problems\n");
 
 
-
+	return result;
 
 }
 

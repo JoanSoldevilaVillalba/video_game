@@ -3,6 +3,18 @@
 pthread_mutex_t mutex_thread_counter;
 int counter_thread;
 
+void print_game(struct_client* client){
+
+	for(int i = 0;i<MAX_GAMES_SIZE;i++){
+
+		printf("Game slot with index: %d\n", i);
+
+		printf("Players %d and player %d are in here\n\n", client->pointer_list_game[i].player_id[0], client->pointer_list_game[i].player_id[1]);
+
+	}
+
+}
+
 void* handle_client(void* arg){
 
 	struct_client* client = (struct_client*)arg;
@@ -213,6 +225,8 @@ void* handle_client(void* arg){
 
 
 				}
+
+				print_game(client);
 
 			    break;
 
@@ -511,7 +525,7 @@ int main()
 
 	}
 
-	listen(server_file_descriptor,2);
+	listen(server_file_descriptor,4);
 
 	printf("----------SERVER-----------\n");
 

@@ -92,8 +92,6 @@ int main(){
 
 	}
 
-	sleep(30);
-
 	snprintf(buffer_send, BUFFER_SIZE, "%s", "7|client wants quit");
 
 	int result_quit_client = test_quit_client(buffer_send, buffer_error, client_file_descriptor);
