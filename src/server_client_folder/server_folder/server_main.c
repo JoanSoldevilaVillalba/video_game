@@ -552,7 +552,7 @@ int main()
 
 		pthread_mutex_lock(&mutex_thread_counter);
 
-		if(counter_thread + 1>=MAX_CLIENT_THREADS){
+		if(counter_thread + 1>MAX_CLIENT_THREADS){
 
 
 			printf("The server is full\n");
