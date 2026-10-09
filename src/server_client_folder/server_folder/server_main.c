@@ -311,8 +311,37 @@ void* handle_client(void* arg){
 				break;
 
 			case PLAY_TIME_STATE:
-				//in this case we are going to have to check that we have enterd inside of a game and that we have recevied menu information, we are going to to this by just using some attributes that are defined inside the current clients game slot
 
+				if(index_game == -1 || index_player == -1){
+
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", ...);
+
+					//player is not in a match, meaning it cannot play a match, error
+
+				}else{
+
+					//player is in a match, but now we need to check wether the other player indicated that he or she wants to play
+
+					pthread_mutex_lock(&client->pointer_list_game[index_game].mutex_game_list);
+
+						if(client->pointer_list_game[index_game].ready_player[0] == false ||client->pointer_list_game[index_game].ready_player[1] == false){
+
+							snprintf(temporary_buffer, BUFFER_SIZE, "%s", ...);
+
+						}else{
+
+							//this measn that both players have indicated taht they are goingt o play
+							//here is where we call our swap function, switching from tcp to udp
+							//after that we can initiate the game
+							//the same thread is going to be used for the udp, no need to create a new thread just for udp
+						}
+
+					pthread_mutex_unlock(&client->pointer_list_game[index_game].mutex_game_list);
+
+
+
+
+				}
 
 				break;
 
