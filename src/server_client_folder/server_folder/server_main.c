@@ -314,9 +314,11 @@ void* handle_client(void* arg){
 
 				if(index_game == -1 || index_player == -1){
 
-					snprintf(temporary_buffer, BUFFER_SIZE, "%s", ...);
+					snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[NOT_IN_GAME__PLAY_TIME]);
 
-					//player is not in a match, meaning it cannot play a match, error
+					result = send_validated_message(temporary_buffer, buffer_error, client->fd);
+
+					handlePEServer(&result, temporary_buffer, buffer_error,&quit);
 
 				}else{
 
@@ -324,22 +326,40 @@ void* handle_client(void* arg){
 
 					pthread_mutex_lock(&client->pointer_list_game[index_game].mutex_game_list);
 
-						if(client->pointer_list_game[index_game].ready_player[0] == false ||client->pointer_list_game[index_game].ready_player[1] == false){
+						if(client->pointer_list_game[index_game].ready_player[index_player] == false){
 
-							snprintf(temporary_buffer, BUFFER_SIZE, "%s", ...);
+
+					pthread_mutex_unlock(&client->pointer_list_game[index_game].mutex_game_list);
+
+							snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[PL_NOT_IND__PLAY_TIME]);
+
+	        	                                result = send_validated_message(temporary_buffer, buffer_error, client->fd);
+
+        	        	                        handlePEServer(&result, temporary_buffer, buffer_error,&quit);
+
+						}else if(client->pointer_list_game[index_game].ready_player[indexe_player ^ 1] == false){
+
+					pthread_mutex_unlock(&client->pointer_list_game[index_game].mutex_game_list);
+
+							snprintf(temporary_buffer, BUFFER_SIZE, "%s", protocol_string_holder[OTHER_PL_NOT_IND__PLAY_TIME]);
+
+		                                        result = send_validated_message(temporary_buffer, buffer_error, client->fd);
+
+                		                        handlePEServer(&result, temporary_buffer, buffer_error,&quit);
+
 
 						}else{
+
+					pthread_mutex_unlock(&client->pointer_list_game[index_game].mutex_game_list);
 
 							//this measn that both players have indicated taht they are goingt o play
 							//here is where we call our swap function, switching from tcp to udp
 							//after that we can initiate the game
 							//the same thread is going to be used for the udp, no need to create a new thread just for udp
+
 						}
 
 					pthread_mutex_unlock(&client->pointer_list_game[index_game].mutex_game_list);
-
-
-
 
 				}
 
