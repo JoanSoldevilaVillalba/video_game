@@ -28,6 +28,10 @@ const char* protocol_string_holder[] ={
 [OTHER_PL_NOT_IND__W_SCND_PL_STATE] = "5|Other player yet to indicate",
 [OTHER_PL_PLAY_IND__W_SCND_PL_STATE] = "5|Other player indicated play",
 
+[OTHER_PL_NOT_IND__PLAY_TIME]="6|Other player not indicate",
+[PL_NOT_IND__PLAY_TIME]="6|Current player not indicate",
+[NOT_IN_GAME__PLAY_TIME]="6|Current player not in game"
+
 
 [QUIT_STATMENT__QC_STATE] ="7|Server received client quit statment",
 
